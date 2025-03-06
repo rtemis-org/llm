@@ -1,3 +1,12 @@
+# Dev
+__dev/
+
+# Mac OS
+.DS_Store
+
+# VS Code
+*.code-workspace
+
 # History files
 .Rhistory
 .Rapp.history
@@ -47,3 +56,4 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.Rproj.user
