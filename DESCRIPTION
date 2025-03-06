@@ -3,10 +3,12 @@ Title: API Access To Large Language Models
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: This package provides an interface for accessing large language models through an API.
+Description: This package provides an interface for accessing large language models.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Suggests:
-    ollamar
+    ollamar,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
