@@ -28,7 +28,7 @@ kaimana_version <- packageVersion("kaimana")
   ))
   if (interactive()) {
     packageStartupMessage(paste0(
-      # rtlogo,
+      kmnlogo,
       .startup,
       "\n  ", red(bold("PSA:"), "Do not throw data at LLMs. Chat responsibly!")
     ))
