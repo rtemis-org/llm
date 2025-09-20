@@ -1,9 +1,10 @@
 # test-ollama.R
 # ::kaimana::
-# 2025 SDG rtemis.org
+# 2025 EDG rtemis.org
 
-test_model <- "gemma2:9b"
-test_prompt <- "Pick a color."
+# library(testthat)
+
+model_name <- "qwen3:8b"
 
 # List Ollama Models ----
 test_that("list_ollama_models works", {
@@ -12,7 +13,7 @@ test_that("list_ollama_models works", {
 
 # Message Ollama ----
 msg_res <- msg_ollama(
-  model = test_model,
+  model = model_name,
   system = "You are a helpful assistant.",
   user = "Hello.",
   output_type = "text"
@@ -23,9 +24,10 @@ test_that("msg_ollama works", {
 
 #' Generate Ollama Response ----
 gen_res <- gen_ollama(
-  model = test_model,
-  prompt = "Tell me a 50-word story.",
-  output = "text"
+  model = model_name,
+  prompt = "Pick a color.",
+  output_type = "text"
 )
 test_that("gen_ollama works", {
-}
+  expect_type(gen_res, "character")
+}) # /gen_ollama

@@ -1,16 +1,20 @@
 Package: kaimana
-Title: API Access To Large Language Models
-Version: 0.0.1
+Title: LLMs and Agentic AI for the rtemis ecosystem
+Version: 0.2.0
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: This package provides an interface for accessing large language models.
+Description: This package provides an interface for accessing large language models and AI Agents within the rtemis ecosystem.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports:
-    rtemis
+    rtemis,
+    S7,
+    data.table
 Suggests:
+    httr2,
+    jsonlite,
     ollamar,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -7,11 +7,11 @@
 list_ollama_models()
 }
 \value{
-Character: List of model names.
+Character vector: Model names.
 }
 \description{
 List Ollama Models
 }
 \author{
-SDG
+EDG
 }

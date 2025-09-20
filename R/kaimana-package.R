@@ -14,6 +14,6 @@
 #' @name kaimana-package
 #' @import rtemis data.table S7
 #' @importFrom utils sessionInfo
-#' @importFrom rtemis repr show_ls get_output_type check_inherits
+#' @importFrom rtemis repr show_ls get_output_type check_inherits msg
 "_PACKAGE"
 NULL

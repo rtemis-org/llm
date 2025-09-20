@@ -23,5 +23,5 @@ Character: Model response.
 Message Ollama
 }
 \author{
-SDG
+EDG
 }
