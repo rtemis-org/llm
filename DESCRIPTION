@@ -1,8 +1,7 @@
 Package: kaimana
 Title: LLMs and Agentic AI for the rtemis ecosystem
-Version: 0.2.0
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Version: 0.2.5
+Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre"), email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: This package provides an interface for accessing large language models and AI Agents within the rtemis ecosystem.
 License: GPL (>= 3)
 Encoding: UTF-8
