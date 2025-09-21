@@ -2,17 +2,17 @@
 % Please edit documentation in R/tool_wikipedia.R
 \name{query_wikipedia}
 \alias{query_wikipedia}
-\title{Build a data.table of Wikipedia search results with sections and text}
+\title{Query Wikipedia}
 \usage{
 query_wikipedia(
   query,
-  limit = 3,
+  limit = 3L,
   language = "en",
-  verbosity = 1L,
   max_sections_per_page = NULL,
   clean_refs = TRUE,
   output = c("JSON", "data.table"),
-  json_pretty = FALSE
+  json_pretty = FALSE,
+  verbosity = 1L
 )
 }
 \arguments{
@@ -22,6 +22,9 @@ query_wikipedia(
 
 \item{language}{Character: Language edition of Wikipedia, e.g. "en", "de".}
 
+\item{max_sections_per_page}{Integer: Maximum number of sections to retrieve per page. If NULL
+(default), retrieves all sections.}
+
 \item{clean_refs}{Logical: If TRUE, remove numeric bracketed references like \verb{[1]}, \verb{[2]} from
 text.}
 
@@ -29,10 +32,12 @@ text.}
 returns a JSON string with one object per row.}
 
 \item{json_pretty}{Logical: If TRUE and output == "JSON", pretty-print the JSON (default FALSE).}
+
+\item{verbosity}{Integer: Verbosity level.}
 }
 \value{
 data.table or JSON string: Combined data of search results, sections, text, and page URL.
 }
 \description{
-Build a data.table of Wikipedia search results with sections and text
+Query Wikipedia
 }

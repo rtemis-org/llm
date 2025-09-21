@@ -152,31 +152,34 @@ wiki_section_text <- function(
   out
 }
 
-#' Build a data.table of Wikipedia search results with sections and text
+#' Query Wikipedia
 #'
 #' @param query Character: Search query.
 #' @param limit Integer: Number of search results to return.
 #' @param language Character: Language edition of Wikipedia, e.g. "en", "de".
-#'
+#' @param max_sections_per_page Integer: Maximum number of sections to retrieve per page. If NULL
+#' (default), retrieves all sections.
 #' @param clean_refs Logical: If TRUE, remove numeric bracketed references like `[1]`, `[2]` from
 #' text.
 #' @param output Character: One of "data.table" or "JSON" (default "data.table"). When "JSON",
 #'   returns a JSON string with one object per row.
 #' @param json_pretty Logical: If TRUE and output == "JSON", pretty-print the JSON (default FALSE).
+#' @param verbosity Integer: Verbosity level.
+#'
 #' @return data.table or JSON string: Combined data of search results, sections, text, and page URL.
 query_wikipedia <- function(
   query,
-  limit = 3,
+  limit = 3L,
   language = "en",
-  verbosity = 1L,
   max_sections_per_page = NULL,
   clean_refs = TRUE,
   output = c("JSON", "data.table"),
-  json_pretty = FALSE
+  json_pretty = FALSE,
+  verbosity = 1L
 ) {
   output <- match.arg(output)
   if (verbosity > 0L) {
-    msg("Querying Wikipedia for '", query, "' with limit ", limit, "...")
+    msg0("Querying Wikipedia for '", query, "' with limit ", limit, "...")
   }
   results <- wiki_search(
     query,
@@ -213,7 +216,11 @@ query_wikipedia <- function(
     pageid <- results$pageid[i]
     title <- results$title[i]
 
-    secs <- wiki_sections(pageid, language = language, verbosity = verbosity)
+    secs <- wiki_sections(
+      pageid,
+      language = language,
+      verbosity = verbosity - 1L
+    )
     if (is.null(secs) || NROW(secs) == 0L) {
       next
     }
@@ -237,7 +244,7 @@ query_wikipedia <- function(
         sec_index,
         language = language,
         clean_refs = clean_refs,
-        verbosity = verbosity
+        verbosity = verbosity - 1L
       )
       rows[[length(rows) + 1L]] <- data.table::data.table(
         page_id = pageid,

@@ -19,7 +19,7 @@ library(kaimana)
 List available Ollama models
 
 ```r
-list_ollama_models()
+ollama_list_models()
 ```
 
 Chat with a model

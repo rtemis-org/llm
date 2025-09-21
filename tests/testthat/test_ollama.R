@@ -7,9 +7,9 @@
 model_name <- "qwen3:8b"
 
 # List Ollama Models ----
-test_that("list_ollama_models works", {
-  expect_type(list_ollama_models(), "character")
-}) # /list_ollama_models
+test_that("ollama_list_models works", {
+  expect_type(ollama_list_models(), "character")
+}) # /ollama_list_models
 
 # Message Ollama ----
 msg_res <- msg_ollama(

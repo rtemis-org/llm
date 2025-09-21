@@ -11,9 +11,9 @@
 #'
 #' @author EDG
 #' @export
-list_ollama_models <- function() {
+ollama_list_models <- function() {
   ollamar::list_models(output = "text")
-} # /list_ollama_models
+} # /ollama_list_models
 
 
 #' Get Ollama Model Info
@@ -50,7 +50,7 @@ get_ollama_model_info <- function(model = NULL, output = "df") {
 #' @author EDG
 #' @export
 check_ollama_model <- function(model) {
-  if (model %in% list_ollama_models()) {
+  if (model %in% ollama_list_models()) {
     invisible(NULL)
   } else {
     stop(
