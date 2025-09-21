@@ -10,7 +10,7 @@ query_wikipedia(
   language = "en",
   max_sections_per_page = NULL,
   clean_refs = TRUE,
-  output = c("JSON", "data.table"),
+  output = c("data.table", "JSON"),
   json_pretty = FALSE,
   verbosity = 1L
 )
