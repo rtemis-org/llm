@@ -12,22 +12,22 @@ test_that("ollama_list_models works", {
 }) # /ollama_list_models
 
 # Message Ollama ----
-msg_res <- msg_ollama(
+msg_res <- ollama_chat(
   model = model_name,
   system = "You are a helpful assistant.",
   user = "Hello.",
   output_type = "text"
 )
-test_that("msg_ollama works", {
+test_that("ollama_chat works", {
   expect_type(msg_res, "character")
-}) # /msg_ollama
+}) # /ollama_chat
 
 #' Generate Ollama Response ----
-gen_res <- gen_ollama(
+gen_res <- ollama_generate(
   model = model_name,
   prompt = "Pick a color.",
   output_type = "text"
 )
-test_that("gen_ollama works", {
+test_that("ollama_generate works", {
   expect_type(gen_res, "character")
-}) # /gen_ollama
+}) # /ollama_generate

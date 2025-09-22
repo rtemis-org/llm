@@ -25,5 +25,5 @@ ollama_list_models()
 Chat with a model
 
 ```r
-msg_ollama("granite3.2:8b", "Explain quantum superposition to a 5 year old.")
+ollama_chat("granite3.2:8b", "Explain quantum superposition to a 5 year old.")
 ```

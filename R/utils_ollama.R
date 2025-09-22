@@ -2,6 +2,10 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+# TOC:
+#   - ollama_list_models
+#   - ollama_get_model_info
+
 # References
 # https://hauselin.github.io/ollama-r/
 
@@ -25,7 +29,7 @@ ollama_list_models <- function() {
 #'
 #' @author EDG
 #' @export
-get_ollama_model_info <- function(model = NULL, output = "df") {
+ollama_get_model_info <- function(model = NULL, output = "df") {
   models <- ollamar::list_models(output = output)
   if (is.null(model)) {
     return(models)
@@ -39,7 +43,7 @@ get_ollama_model_info <- function(model = NULL, output = "df") {
     }
     return(model_info)
   }
-} # /get_ollama_model_info
+} # /ollama_get_model_info
 
 #' Check Ollama Model is Available
 #'
@@ -49,7 +53,7 @@ get_ollama_model_info <- function(model = NULL, output = "df") {
 #'
 #' @author EDG
 #' @export
-check_ollama_model <- function(model) {
+ollama_check_model <- function(model) {
   if (model %in% ollama_list_models()) {
     invisible(NULL)
   } else {
@@ -59,7 +63,7 @@ check_ollama_model <- function(model) {
       " is not available. Please check the model name and install if necessary."
     )
   }
-} # /check_ollama_model
+} # /ollama_check_model
 
 #' Message Ollama
 #'
@@ -73,13 +77,13 @@ check_ollama_model <- function(model) {
 #'
 #' @author EDG
 #' @export
-msg_ollama <- function(
+ollama_chat <- function(
   model,
   system = NULL,
   user = "Hello.",
   output_type = "text"
 ) {
-  check_ollama_model(model)
+  ollama_check_model(model)
   messages <- Filter(
     Negate(is.null),
     list(
@@ -92,7 +96,8 @@ msg_ollama <- function(
     messages = messages
   )
   ollamar::resp_process(resp = response, output = output_type)
-} # /msg_ollama
+} # /ollama_chat
+
 
 #' Generate Ollama Response
 #'
@@ -131,14 +136,16 @@ msg_ollama <- function(
 #'   ]
 #' }
 #' }
-gen_ollama <- function(
+ollama_generate <- function(
   model_name,
+  system_prompt = "",
   prompt,
+  temperature = 0.1,
   output_schema = NULL,
-  output_type = "text"
+  output = "resp"
 ) {
   # Check if the model is available
-  check_ollama_model(model_name)
+  ollama_check_model(model_name)
 
   if (!is.null(output_schema)) {
     format <- list(
@@ -153,11 +160,13 @@ gen_ollama <- function(
 
   response <- ollamar::generate(
     model = model_name,
+    system = system_prompt,
     prompt = prompt,
     format = format,
-    output = "resp"
+    output = output,
+    temperature = temperature
   )
 
   # Process the response based on the output type
-  ollamar::resp_process(resp = response, output = output_type)
-} # /gen_ollama
+  ollamar::resp_process(resp = response, output = output)
+} # /ollama_generate

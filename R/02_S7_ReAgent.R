@@ -2,6 +2,18 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+# %% ReasoningResponse Class ----
+#' ReasoningResponse Class
+#'
+#' @name ReasoningResponse
+#' @title ReasoningResponse Class
+#' @description
+#' Class for reasoning responses containing reasoning steps and final response.
+#'
+#' @field response List of format `
+#' list(role = "reasoning", content = <character>, role = "response", content = <character>)`
+#' containing reasoning and final response.
+
 # %% ReAgent Class ----
 
 #' ReAgent Class
@@ -24,7 +36,8 @@ ReAgent <- new_class(
   "ReAgent",
   properties = list(
     model_name = class_character,
-    system_prompt = class_character
+    system_prompt = class_character,
+    output_format = class_list
   )
 ) # kaimana::ReAgent
 
@@ -40,7 +53,7 @@ ReAgent <- new_class(
 #' @author EDG
 #' @export
 create_ReAgent <- function(model_name, system_prompt) {
-  check_ollama_model(model_name)
+  ollama_check_model(model_name)
   ReAgent(
     model_name = model_name,
     system_prompt = system_prompt
@@ -70,7 +83,7 @@ method(invoke, ReAgent) <- function(
   x,
   prompt
 ) {
-  check_ollama_model(x@model_name)
+  ollama_check_model(x@model_name)
   resp <- ollamar::chat(
     model = x@model_name,
     messages = ollamar::create_messages(
