@@ -116,7 +116,7 @@ AIThinking <- new_class(
 #'
 #' @description
 #' Class for AI responses that can include thinking steps, tool calls, structured output, and free
-#' text output.
+#' text.
 #'
 #' @field response List of named lists including thinking, tool calls, structured output, and text output.
 #'
@@ -133,7 +133,7 @@ method(repr, AIResponse) <- function(x, output_type = NULL) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
   }
-  # Print each message in the response
+  # Get each message in the response
   out <- ""
   for (msg1 in x@response) {
     role <- msg1[["role"]]
