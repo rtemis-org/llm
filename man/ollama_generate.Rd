@@ -4,7 +4,14 @@
 \alias{ollama_generate}
 \title{Generate Ollama Response}
 \usage{
-ollama_generate(model_name, prompt, output_schema = NULL, output = "resp")
+ollama_generate(
+  model_name,
+  system_prompt = "",
+  prompt,
+  temperature = 0.1,
+  output_schema = NULL,
+  output = "resp"
+)
 }
 \arguments{
 \item{prompt}{Character: Prompt to send to model.}

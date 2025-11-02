@@ -22,7 +22,6 @@
 #'
 #' Lather, Rinse, Repeat
 #'
-#' @name ReAgent
 #' @title ReAgent Class
 #' @description
 #' Class for ReAgent agents

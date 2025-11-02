@@ -43,8 +43,8 @@ test_that("km_generate works with thinking", {
 })
 
 
-# %% Test setup_output_schema()
-state_schema <- setup_output_schema(
+# %% Test make_output_schema()
+state_schema <- make_output_schema(
   capital = list(
     type = "string",
     description = "The state capital"
@@ -63,7 +63,7 @@ state_schema <- setup_output_schema(
   ),
   required = "all"
 )
-test_that("setup_output_schema works", {
+test_that("make_output_schema works", {
   expect_type(state_schema, "list")
   expect_equal(state_schema[["type"]], "object")
   expect_true(all(
@@ -90,7 +90,7 @@ test_that("km_generate works with thinking", {
 })
 
 # %% Simple schema
-person_schema <- setup_output_schema(
+person_schema <- make_output_schema(
   first_name = list(
     type = "string",
     description = "The person's name"

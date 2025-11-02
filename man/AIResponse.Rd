@@ -8,7 +8,7 @@ AIResponse(response = list())
 }
 \description{
 Class for AI responses that can include thinking steps, tool calls, structured output, and free
-text output.
+text.
 }
 \section{Fields}{
 

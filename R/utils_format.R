@@ -13,3 +13,19 @@ repr_bracket <- function(x, output_type = NULL) {
     fmt("]", muted = TRUE, output_type = output_type)
   )
 } # /kaimana::repr_bracket
+
+
+#' Convert character vector to markdown list
+#'
+#' @param x Character vector
+#'
+#' @return Character string formatted as markdown list
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' md_char2list(c("Item 1", "Item 2", "Item 3")) |> cat()
+md_char2list <- function(x) {
+  paste0("- ", x, collapse = "\n")
+}

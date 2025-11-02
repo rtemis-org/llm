@@ -156,7 +156,7 @@ km_get_models <- function(
 #' Generate a response from Kaimana REST API
 #'
 #' @param prompt Character: User prompt for the API.
-#' @param output_schema List: output schema defined using [setup_output_schema].
+#' @param output_schema List: output schema defined using [make_output_schema].
 #' @param url Character: URL of the generate endpoint.
 #' @param model_name Character: Model to use for the API.
 #' @param temperature Numeric: Sampling temperature.

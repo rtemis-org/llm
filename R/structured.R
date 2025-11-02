@@ -16,7 +16,7 @@
 #' @author EDG
 #'
 #' @export
-setup_output_schema <- function(..., required = "all") {
+make_output_schema <- function(..., required = "all") {
   properties <- list(...)
   if (length(required) == 1L && required == "all") {
     required <- names(properties)
@@ -26,4 +26,4 @@ setup_output_schema <- function(..., required = "all") {
     properties = properties,
     required = required
   )
-} # /kaimana::setup_output_schema
+} # /kaimana::make_output_schema

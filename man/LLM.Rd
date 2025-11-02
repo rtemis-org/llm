@@ -4,7 +4,12 @@
 \alias{LLM}
 \title{LLM Class}
 \usage{
-LLM(model_name = character(0), system_prompt = character(0))
+LLM(
+  model_name = character(0),
+  system_prompt = character(0),
+  temperature = integer(0),
+  output_schema = list()
+)
 }
 \description{
 Class for interacting with LLMs directly.
@@ -12,7 +17,7 @@ Class for interacting with LLMs directly.
 \details{
 LLM Class
 
-A stateless LLM with support for reasoning.
+A stateless LLM with support for reasoning & structured output.
 }
 \section{Fields}{
 
@@ -20,6 +25,8 @@ A stateless LLM with support for reasoning.
 \item{\code{model_name}}{Character: The name of the LLM model to use.}
 
 \item{\code{system_prompt}}{Character: The system prompt to use.}
+
+\item{\code{temperature}}{Numeric: The temperature for the model.}
 }}
 
 \author{

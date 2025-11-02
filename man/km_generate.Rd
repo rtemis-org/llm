@@ -16,7 +16,7 @@ km_generate(
 \arguments{
 \item{prompt}{Character: User prompt for the API.}
 
-\item{output_schema}{List: output schema defined using \link{setup_output_schema}.}
+\item{output_schema}{List: output schema defined using \link{make_output_schema}.}
 
 \item{model_name}{Character: Model to use for the API.}
 

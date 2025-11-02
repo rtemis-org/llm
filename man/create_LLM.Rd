@@ -4,12 +4,16 @@
 \alias{create_LLM}
 \title{Create a LLM Object}
 \usage{
-create_LLM(model_name, system_prompt)
+create_LLM(model_name, system_prompt, temperature = 0.1, output_schema = NULL)
 }
 \arguments{
 \item{model_name}{Character: The name of the LLM model to use. Must be an Ollama model.}
 
 \item{system_prompt}{Character: The system prompt to use.}
+
+\item{temperature}{Numeric: The temperature for the model.}
+
+\item{output_schema}{List: An optional output schema.}
 }
 \value{
 A LLM object.

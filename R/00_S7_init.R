@@ -2,6 +2,16 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+#' Get content
+#'
+#' @param x An object of class AIResponse or ReasoningResponse
+#'
+#' @return Character if content is text, data.table if content is structured
+#'
+#' @author EDG
+#' @export
+get_content <- new_generic("get_content", "x")
+
 # References
 # ollamar: https://cran.r-project.org/web/packages/ollamar/vignettes/ollamar.html
 # vignette uses `class` for defining parameter types, but JSON scemas use `type`
@@ -82,6 +92,18 @@ available_tools <- function() {
 
 
 # %% invoke generic ----
+#' Invoke Method
+#'
+#' Generic method for invoking LLMs and agents
+#'
+#' @param x An object of class LLM, ReAgent, or ReAct
+#' @param query Character: The query or prompt to pass to the model or agent
+#' @param ... Additional arguments passed to specific methods
+#'
+#' @return An AIResponse object
+#'
+#' @author EDG
+#' @export
 invoke <- new_generic("invoke", "x")
 
 
@@ -205,3 +227,9 @@ method(print, AIResponse) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type))
   invisible(x)
 } # kaimana::print.AIResponse
+
+
+#as.list.AIResponse ----
+method(as.list, AIResponse) <- function(x, ...) {
+  x@response
+} # kaimana::as.list.AIResponse
