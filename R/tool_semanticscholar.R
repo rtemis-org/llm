@@ -31,40 +31,113 @@
 #     Filter for papers published during or after the year 2023 by using the “2023–” syntax.
 
 # These query parameters are appended to the end of the URL, so the complete URL looks like this: http://api.semanticscholar.org/graph/v1/paper/search/bulk?query="generative ai"&fields=title,url,publicationTypes,publicationDate,openAccessPdf&year=2023-
+
+# Available fields, based on https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data/operation/get_graph_paper_bulk_search
+# Response Schema, under "data" key
+# available_fields <-
+#   c(
+#     "paperId",
+#     "corpusId",
+#     "externalIds",
+#     "url",
+#     "title",
+#     "abstract",
+#     "venue",
+#     "publicationVenue",
+#     "year",
+#     "referenceCount",
+#     "citationCount",
+#     "influentialCitationCount",
+#     "isOpenAccess",
+#     "openAccessPdf",
+#     "fieldsOfStudy",
+#     "s2FieldsOfStudy",
+#     "publicationTypes",
+#     "publicationDate",
+#     "journal",
+#     "citationStyles",
+#     "authors"
+#   )
+
 # %% query_semanticscholar() ----
+#' Query Semantic Scholar API
+#'
+#' @param query Character: The search query.
+#' @param fields Character Vector: The fields to return. See References for available fields.
+#' @param year Character: Year filter in the format "YYYY-" or "YYYY-YYYY".
+#' @param endpoint_url Character: The Semantic Scholar API endpoint URL.
+#' @param output_format Character: "json" or "data.table". The output format.
+#'
+#' @return Character with JSON response or data.table
+#' @author EDG
+#'
+#' @details
+#'
+#' Available fields, based on https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data/operation/get_graph_paper_bulk_search
+#' Response Schema, under "data" key
+#' \itemize{
+#'   \item{paperId}
+#'   \item{corpusId}
+#'   \item{externalIds}
+#'   \item{url}
+#'   \item{title}
+#'   \item{abstract}
+#'   \item{venue}
+#'   \item{publicationVenue}
+#'   \item{year}
+#'   \item{referenceCount}
+#'   \item{citationCount}
+#'   \item{influentialCitationCount}
+#'   \item{isOpenAccess}
+#'   \item{openAccessPdf}
+#'   \item{fieldsOfStudy}
+#'   \item{s2FieldsOfStudy}
+#'   \item{publicationTypes}
+#'   \item{publicationDate}
+#'   \item{journal}
+#'   \item{citationStyles}
+#'   \item{authors}
+#' }
+#'
+#' @export
 query_semanticscholar <- function(
   query,
   fields = c(
     "title",
+    "year",
+    "abstract",
     "url",
     "publicationTypes",
     "publicationDate",
     "openAccessPdf"
   ),
   year = "2000-",
-  endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search/bulk"
+  endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search/bulk",
+  output_format = c("json", "data.table")
 ) {
-  # Validate query
+  output_format <- match.arg(output_format)
+  # --- Validate query ---
   if (!is.character(query) || length(query) != 1L) {
-    stop("query must be a single character string")
+    stop("Query must be a single character string.")
   }
   query <- trimws(query)
   if (nchar(query) == 0L) {
-    stop("query must be a non-empty string")
+    stop("Query must be a non-empty string.")
   }
   # Validate fields
   if (!is.character(fields) || length(fields) < 1L) {
-    stop("fields must be a character vector of field names")
+    stop("Fields must be a character vector of field names.")
   }
   # Validate year
   if (!is.character(year) || length(year) != 1L) {
-    stop("year must be a single character string")
+    stop("Year must be a single character string.")
   }
   year <- trimws(year)
   if (nchar(year) == 0L) {
-    stop("year must be a non-empty string")
+    stop("Year must be a non-empty string.")
   }
-  # Prepare request using httr2
+
+  # --- Prepare request using httr2 ---
   req <- httr2::request(endpoint_url)
   req <- httr2::req_url_query(
     req,
@@ -74,15 +147,20 @@ query_semanticscholar <- function(
   )
   # Add user agent
   req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
-  # Perform request
+
+  # --- Perform request ---
   res <- httr2::req_perform(req)
   # Check for HTTP errors
   httr2::resp_check_status(res)
   # Parse response
-  res_json_raw <- httr2::resp_body_string(res)
-  # Convert to list
-  res_list <- jsonlite::fromJSON(res_json_raw, simplifyVector = TRUE)
-  # Convert to data.table
-  dat <- data.table::as.data.table(res_list$data)
-  return(dat)
+  out <- httr2::resp_body_string(res)
+
+  if (output_format[1L] == "data.table") {
+    # Convert to list
+    out <- jsonlite::fromJSON(out, simplifyVector = TRUE)
+    # Convert to data.table
+    out <- data.table::as.data.table(out$data)
+  }
+
+  out
 } # /query_semanticscholar
