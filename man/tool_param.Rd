@@ -2,7 +2,7 @@
 % Please edit documentation in R/02_S7_Tool.R
 \name{tool_param}
 \alias{tool_param}
-\title{define_tool}
+\title{tool_param}
 \usage{
 tool_param(name, type, description, required = FALSE)
 }
