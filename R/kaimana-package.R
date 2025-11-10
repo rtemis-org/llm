@@ -16,5 +16,6 @@
 #' @importFrom utils sessionInfo
 #' @importFrom rtemis fmt highlight repr get_output_type check_inherits
 #' @importFrom rtemis msg msg0 check_dependencies repr_S7name
+#' @importFrom rlang %||%
 "_PACKAGE"
 NULL
