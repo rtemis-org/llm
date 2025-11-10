@@ -25,7 +25,7 @@ query_duckduckgo_ia <- function(
   if (!is.character(query) || length(query) != 1L) {
     stop("query must be a single character string")
   }
-  # query <- trimws(query)
+  query <- trimws(query)
   if (nchar(query) == 0L) {
     stop("query must be a non-empty string")
   }

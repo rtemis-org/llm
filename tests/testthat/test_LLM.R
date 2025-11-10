@@ -28,17 +28,12 @@ test_that("OllamaConfig class works", {
 
 
 # %% LLM Class ----
-test_that("Ollama class works", {
-  llm <- Ollama(
-    config = OllamaConfig(
-      model_name = "qwen3:8b",
-      temperature = 0.7,
-      base_url = "http://localhost:11434"
-    ),
+test_that("LLM class works", {
+  llm <- LLM(
     system_prompt = "You are a meticulous research assistant."
   )
-  testthat::expect_true(S7_inherits(llm, Ollama))
-}) # /Ollama
+  testthat::expect_true(S7_inherits(llm, LLM))
+}) # /LLM
 
 
 # %% Ollama Class ----

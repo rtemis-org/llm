@@ -33,7 +33,7 @@ Agent <- new_class(
   ),
   constructor = function(
     llmconfig,
-    system_prompt = SYSTEM_PROMPT_DEFAULT,
+    system_prompt = NULL,
     use_memory = TRUE,
     tools = NULL,
     name = NULL
@@ -79,7 +79,7 @@ Agent <- new_class(
 #' @export
 create_agent <- function(
   llmconfig,
-  system_prompt = NULL,
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
   use_memory = TRUE,
   tools = NULL,
   name = NULL

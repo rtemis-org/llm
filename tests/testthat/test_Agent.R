@@ -38,8 +38,6 @@ tool_addition <- create_tool(
   )
 )
 
-tes
-
 tool_subtraction <- create_tool(
   name = "subtraction",
   description = "Performs arithmetic subtraction of two numbers.",
@@ -64,17 +62,17 @@ tools <- list(
   tool_subtraction
 )
 
-
-# %% Agent Class ----
-test_that("Agent class works", {
-  agent <- Agent(
-    llm = create_Ollama(
+# %% create_agent() ----
+test_that("create_agent() works", {
+  agent <- create_agent(
+    llmconfig = config_Ollama(
       model_name = "qwen3:8b",
       temperature = 0.3,
-      base_url = "http://localhost:11434",
-      system_prompt = "You are a meticulous research assistant."
+      base_url = "http://localhost:11434"
     ),
-    tools = tools
+    system_prompt = "You are a meticulous research assistant.",
+    tools = tools,
+    name = "KMN"
   )
   testthat::expect_true(S7_inherits(agent, Agent))
-}) # /Agent
+}) # /create_agent()
