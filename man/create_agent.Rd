@@ -6,7 +6,7 @@
 \usage{
 create_agent(
   llmconfig,
-  system_prompt = NULL,
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
   use_memory = TRUE,
   tools = NULL,
   name = NULL
