@@ -307,39 +307,3 @@ method(generate, Ollama) <- function(x, prompt, tools = NULL, verbosity = 1L) {
   }
   as_OllamaMessage(httr2::resp_body_json(resp))
 } # /kaimana::generate.Ollama
-
-
-# %% invoke.LLM() ----
-# invoke method for LLM ----
-method(invoke, LLM) <- function(
-  x,
-  prompt,
-  temperature = NULL,
-  output_schema = NULL
-) {
-  ollama_check_model(x@model_name)
-  if (is.null(temperature)) {
-    temperature <- x@temperature
-  }
-  format <- if (!is.null(output_schema)) {
-    output_schema
-  } else if (!is.null(x@output_schema)) {
-    x@output_schema
-  } else {
-    list()
-  }
-  resp <- ollamar::chat(
-    model = x@model_name,
-    messages = ollamar::create_messages(
-      ollamar::create_message(x@system_prompt, role = "system"),
-      ollamar::create_message(prompt, role = "user")
-    ),
-    format = format
-  )
-  AIResponse(
-    ollamar::create_message(
-      ollamar::resp_process(resp, output = "text"),
-      role = "assistant"
-    )
-  )
-} # /invoke.LLM
