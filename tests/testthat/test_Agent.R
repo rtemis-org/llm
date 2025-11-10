@@ -19,43 +19,49 @@ test_that("Agent class works", {
 
 
 # %% tool list
-tools <- list(
-  create_tool(
-    name = "addition",
-    description = "Performs arithmetic addition of two numbers.",
-    parameters = list(
-      tool_param(
-        name = "x",
-        type = "number",
-        description = "The first number to add",
-        required = TRUE
-      ),
-      tool_param(
-        name = "y",
-        type = "number",
-        description = "The second number to add",
-        required = TRUE
-      )
-    )
-  ),
-  create_tool(
-    name = "subtraction",
-    description = "Performs arithmetic subtraction of two numbers.",
-    parameters = list(
-      tool_param(
-        name = "x",
-        type = "number",
-        description = "The number to subtract from",
-        required = TRUE
-      ),
-      tool_param(
-        name = "y",
-        type = "number",
-        description = "The number to subtract",
-        required = TRUE
-      )
+tool_addition <- create_tool(
+  name = "addition",
+  description = "Performs arithmetic addition of two numbers.",
+  parameters = list(
+    tool_param(
+      name = "x",
+      type = "number",
+      description = "The first number to add",
+      required = TRUE
+    ),
+    tool_param(
+      name = "y",
+      type = "number",
+      description = "The second number to add",
+      required = TRUE
     )
   )
+)
+
+tes
+
+tool_subtraction <- create_tool(
+  name = "subtraction",
+  description = "Performs arithmetic subtraction of two numbers.",
+  parameters = list(
+    tool_param(
+      name = "x",
+      type = "number",
+      description = "The number to subtract from",
+      required = TRUE
+    ),
+    tool_param(
+      name = "y",
+      type = "number",
+      description = "The number to subtract",
+      required = TRUE
+    )
+  )
+)
+
+tools <- list(
+  tool_addition,
+  tool_subtraction
 )
 
 
