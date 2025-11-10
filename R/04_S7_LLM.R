@@ -56,6 +56,25 @@ LLMConfig <- new_class(
 ) # /kaimana::LLMConfig
 
 
+# %% as_list.LLMConfig ----
+#' as_list method for LLMConfig
+#'
+#' @param x LLMConfig object
+#'
+#' @return List representation of LLMConfig
+#'
+#' @author EDG
+#' @noRd
+method(as_list, LLMConfig) <- function(x) {
+  list(
+    model_name = x@model_name,
+    temperature = x@temperature,
+    backend = x@backend,
+    base_url = x@base_url
+  )
+} # /as_list.LLMConfig
+
+
 # %% OllamaConfig Class ----
 #' @title OllamaConfig Class
 #'
@@ -85,23 +104,43 @@ OllamaConfig <- new_class(
 ) # /kaimana::OllamaConfig
 
 
-# %% repr.OllamaConfig ----
-# repr method for OllamaConfig ----
-method(repr, OllamaConfig) <- function(x, pad = 0L, output_type = NULL) {
+# %% repr.LLMConfig ----
+# repr method for LLMConfig ----
+method(repr, LLMConfig) <- function(x, pad = 0L, output_type = NULL) {
   output_type <- get_output_type(output_type)
   paste0(
-    repr_S7name("OllamaConfig", pad = pad, output_type = output_type),
-    fmt("Model Name: ", bold = TRUE, output_type = output_type),
-    highlight(x@model_name, output_type = output_type),
-    "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
-    highlight(x@temperature, output_type = output_type),
-    "\n",
-    fmt("Base URL: ", bold = TRUE, output_type = output_type),
-    highlight(x@base_url, output_type = output_type),
+    repr_S7name(
+      sub(".*::", "", class(x)[1]),
+      pad = pad,
+      output_type = output_type
+    ),
+    repr_ls(as_list(x), pad = pad, output_type = output_type),
+    # fmt("Model Name: ", bold = FALSE, pad = pad, output_type = output_type),
+    # fmt(
+    #   x@model_name,
+    #   col = highlight_col,
+    #   output_type = output_type
+    # ),
+    # "\n",
+    # fmt("Temperature: ", bold = FALSE, pad = pad, output_type = output_type),
+    # fmt(
+    #   x@temperature,
+    #   col = highlight_col,
+    #   output_type = output_type
+    # ),
+    # "\n",
+    # fmt("Base URL: ", bold = FALSE, pad = pad, output_type = output_type),
+    # fmt(x@base_url, col = highlight_col, output_type = output_type),
     "\n"
   )
-} # /repr.OllamaConfig
+} # /repr.LLMConfig
+
+
+# %% print.LLMConfig ----
+# Print method for LLMConfig ----
+method(print, LLMConfig) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /print.LLMConfig
 
 
 # %% config_Ollama() ----
@@ -293,7 +332,7 @@ method(generate, Ollama) <- function(x, prompt, tools = NULL, verbosity = 1L) {
   )
   if (verbosity > 0) {
     output_type <- get_output_type()
-    cat(repr_bracket(x@config@model_name), "working...")
+    msg(repr_bracket(x@config@model_name), "working...")
   }
   # Perform request
   resp <- httr2::request(paste0(x@config@base_url, "/api/generate")) |>
@@ -303,7 +342,7 @@ method(generate, Ollama) <- function(x, prompt, tools = NULL, verbosity = 1L) {
   httr2::resp_check_status(resp)
   if (verbosity > 0) {
     # Replace working message with done
-    cat("\r", repr_bracket(x@config@model_name), "done.    \n")
+    msg(repr_bracket(x@config@model_name), "done.")
   }
   as_OllamaMessage(httr2::resp_body_json(resp))
 } # /kaimana::generate.Ollama
