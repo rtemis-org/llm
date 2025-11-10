@@ -4,13 +4,13 @@
 \alias{ollama_check_model}
 \title{Check Ollama Model is Available}
 \usage{
-ollama_check_model(model)
+ollama_check_model(x)
 }
 \arguments{
-\item{model}{Character: Name of model.}
+\item{x}{Character: Name of model.}
 }
 \value{
-Logical: TRUE if model is available, FALSE otherwise.
+NULL, invisibly if model is available; otherwise throws an error.
 }
 \description{
 Check Ollama Model is Available

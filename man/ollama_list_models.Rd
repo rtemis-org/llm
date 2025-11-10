@@ -4,7 +4,7 @@
 \alias{ollama_list_models}
 \title{List Ollama Models}
 \usage{
-ollama_list_models()
+ollama_list_models(base_url = OLLAMA_URL_DEFAULT)
 }
 \value{
 Character vector: Model names.
