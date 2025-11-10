@@ -4,6 +4,7 @@
 
 # References:
 # https://www.semanticscholar.org/product/api/tutorial
+# https://api.semanticscholar.org/api-docs/#tag/Paper-Data/operation/get_graph_paper_relevance_search
 
 # Docs:
 # Set the Query Parameters
@@ -32,7 +33,7 @@
 
 # These query parameters are appended to the end of the URL, so the complete URL looks like this: http://api.semanticscholar.org/graph/v1/paper/search/bulk?query="generative ai"&fields=title,url,publicationTypes,publicationDate,openAccessPdf&year=2023-
 
-# Available fields, based on https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data/operation/get_graph_paper_bulk_search
+# Available fields, based on https://api.semanticscholar.org/api-docs/#tag/Paper-Data/operation/get_graph_paper_relevance_search
 # Response Schema, under "data" key
 # available_fields <-
 #   c(
@@ -112,7 +113,8 @@ query_semanticscholar <- function(
     "openAccessPdf"
   ),
   year = "2000-",
-  endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search/bulk",
+  limit = 5L,
+  endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search",
   output_format = c("json", "data.table")
 ) {
   output_format <- match.arg(output_format)
@@ -143,7 +145,8 @@ query_semanticscholar <- function(
     req,
     query = query,
     fields = paste(fields, collapse = ","),
-    year = year
+    year = year,
+    limit = limit
   )
   # Add user agent
   req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
@@ -164,3 +167,24 @@ query_semanticscholar <- function(
 
   out
 } # /query_semanticscholar
+
+
+# %% tool_semanticscholar ----
+tool_semanticscholar <- create_tool(
+  name = "query_semanticscholar",
+  description = "Search Semantic Scholar for research papers and return structured results",
+  parameters = list(
+    tool_param(
+      name = "query",
+      type = "string",
+      description = "The search query. Best to use individual words or terms.",
+      required = TRUE
+    ),
+    tool_param(
+      name = "year",
+      type = "string",
+      description = "Year filter in the format 'YYYY-' or 'YYYY-YYYY'.",
+      required = FALSE
+    )
+  )
+) # /kaimana::tool_semanticscholar
