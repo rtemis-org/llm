@@ -48,4 +48,4 @@ highlight_col <- rtemis_teal
 col_user <- rtemis_teal
 col_thinking <- genlib_orange
 col_tool <- kaimana_blue
-col_assistant <- lmd_burgundy
+col_llm <- lmd_burgundy
