@@ -26,8 +26,8 @@ ToolParameter <- new_class(
 ) # /kaimana::ToolParameter
 
 
-# %% define_create_tool() ----
-#' define_tool
+# %% tool_param() ----
+#' tool_param
 #'
 #' Define a tool parameter schema
 #'
@@ -96,6 +96,7 @@ Tool <- new_class(
 #' [tool_param]
 #'
 #' @return Tool object
+#'
 #' @author EDG
 #' @export
 create_tool <- function(
