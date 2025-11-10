@@ -2,6 +2,9 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+# %% Constants ----
+DUCKDUCKGO_URL <- "https://api.duckduckgo.com/"
+
 #' Query DuckDuckGo Instant Answer API
 #'
 #' @param query Character: Search query.
@@ -22,14 +25,14 @@ query_duckduckgo_ia <- function(
   if (!is.character(query) || length(query) != 1L) {
     stop("query must be a single character string")
   }
-  query <- trimws(query)
+  # query <- trimws(query)
   if (nchar(query) == 0L) {
     stop("query must be a non-empty string")
   }
 
   # Query using httr2 from DuckDuckGo Instant Answer API:
   # https://api.duckduckgo.com/?q={query}&format=json
-  req <- httr2::request("https://api.duckduckgo.com/")
+  req <- httr2::request(DUCKDUCKGO_URL)
   req <- if (is.null(ia)) {
     httr2::req_url_query(
       req,
@@ -107,14 +110,13 @@ query_duckduckgo <- function(
 
   # Query using httr2 from DuckDuckGo Instant Answer API:
   # https://api.duckduckgo.com/?q={query}&format=json
-  req <- httr2::request("https://duckduckgo.com/")
-  req <- httr2::req_url_query(
-    req,
-    q = query,
-    ia = "web"
-  )
-  # Add user agent
-  req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
+  req <- httr2::request("https://duckduckgo.com/") |>
+    httr2::req_url_query(
+      q = query,
+      ia = "web"
+    ) |>
+    # Add user agent
+    httr2::req_user_agent("Kaimana (kaimana.rtemis.org)")
   # Perform request
   res <- httr2::req_perform(req)
   # Check for HTTP errors
@@ -144,3 +146,22 @@ query_duckduckgo <- function(
   }
   dat
 } # /query_duckduckgo_ia
+
+
+# %% tool_duckduckgo_ia ----
+tool_duckduckgo_ia <- create_tool(
+  name = "query_duckduckgo_ia",
+  description = paste(
+    "Search DuckDuckGo Instant Answer API. ",
+    "Use single-word queries for best results.",
+    "Some queries may not return any results."
+  ),
+  parameters = list(
+    tool_param(
+      name = "query",
+      type = "string",
+      description = "Search query",
+      required = TRUE
+    )
+  )
+) # /tool_duckduckgo_ia
