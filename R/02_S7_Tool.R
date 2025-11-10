@@ -112,33 +112,6 @@ create_tool <- function(
 } # /kaimana::tool
 
 
-# Do not use Toolset, instead use a list of Tool objects directly in the Agent
-
-# %% Toolset Class ----
-#' @title Toolset
-#'
-#' @description
-#' Class for tool parameters schema
-#'
-#' @field tools List of Tool objects
-#'
-#' @author EDG
-#' @noRd
-Toolset <- new_class(
-  "Toolset",
-  properties = list(
-    tools = class_list
-  ),
-  validator = function(self) {
-    for (tool in self@tools) {
-      if (!S7_inherits(tool, Tool)) {
-        cli::cli_abort("All elements of 'tools' must be Tool objects.")
-      }
-    }
-  }
-) # /kaimana::Toolset
-
-
 # %% as_list.Tool ----
 #' Convert Tool object to named R list
 #'
