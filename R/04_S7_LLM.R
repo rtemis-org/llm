@@ -114,24 +114,7 @@ method(repr, LLMConfig) <- function(x, pad = 0L, output_type = NULL) {
       pad = pad,
       output_type = output_type
     ),
-    repr_ls(as_list(x), pad = pad, output_type = output_type),
-    # fmt("Model Name: ", bold = FALSE, pad = pad, output_type = output_type),
-    # fmt(
-    #   x@model_name,
-    #   col = highlight_col,
-    #   output_type = output_type
-    # ),
-    # "\n",
-    # fmt("Temperature: ", bold = FALSE, pad = pad, output_type = output_type),
-    # fmt(
-    #   x@temperature,
-    #   col = highlight_col,
-    #   output_type = output_type
-    # ),
-    # "\n",
-    # fmt("Base URL: ", bold = FALSE, pad = pad, output_type = output_type),
-    # fmt(x@base_url, col = highlight_col, output_type = output_type),
-    "\n"
+    repr_ls(as_list(x), pad = pad, output_type = output_type)
   )
 } # /repr.LLMConfig
 
@@ -313,11 +296,11 @@ method(print, LLM) <- function(x, output_type = NULL, ...) {
 #' @param prompt Character: The prompt to send to the model.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return AIResponse object
+#' @return OllamaMessage object
 #' @author EDG
 #'
 #' @noRd
-method(generate, Ollama) <- function(x, prompt, tools = NULL, verbosity = 1L) {
+method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
   # Check input
   check_inherits(prompt, "character")
   # Request
