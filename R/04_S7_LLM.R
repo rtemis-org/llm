@@ -9,7 +9,7 @@
 # %% Constants ----
 TEMPERATURE_DEFAULT <- 0.3
 SYSTEM_PROMPT_DEFAULT <-
-  "You are a meticulous research assistant. Your response are always grounded in facts."
+  "You are a meticulous research assistant. Your responses are always grounded in facts."
 OLLAMA_URL_DEFAULT <- "http://localhost:11434"
 
 
