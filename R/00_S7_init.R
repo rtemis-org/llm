@@ -2,6 +2,51 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+# --- Generics -------------------------------------------------------------------------------------
+# %% generate generic ----
+#' Generate Method
+#'
+#' Generic method for generating text or structured output from LLMs and Agents
+#'
+#' @param x An object of class LLM or Agent.
+#' @param prompt Character: The prompt or query to pass to the model or agent.
+#'
+#' @return An AIResponse object.
+#'
+#' @author EDG
+#' @export
+generate <- new_generic("generate", "x")
+
+
+# %% as_Message generic ----
+#' Convert to Message
+#'
+#' Generic method to convert various objects to kaimana Message objects
+#'
+#' @param x An object to convert
+#'
+#' @return A Message object
+#'
+#' @author EDG
+#' @export
+as_Message <- new_generic("as_Message", "x")
+
+
+# %% as_OllamaMessage generic ----
+#' Convert to OllamaMessage
+#'
+#' Generic method to convert various objects to kaimana OllamaMessage objects
+#'
+#' @param x An object to convert
+#'
+#' @return An OllamaMessage object
+#'
+#' @author EDG
+#' @export
+as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
+
+
+# %% get_content generic ----
 #' Get content
 #'
 #' @param x An object of class AIResponse or ReasoningResponse
@@ -11,6 +56,37 @@
 #' @author EDG
 #' @export
 get_content <- new_generic("get_content", "x")
+
+
+# %% invoke generic ----
+#' Invoke Method
+#'
+#' Generic method for invoking LLMs and agents
+#'
+#' @param x An object of class LLM, ReAgent, or ReAct
+#' @param query Character: The query or prompt to pass to the model or agent
+#' @param ... Additional arguments passed to specific methods
+#'
+#' @return An AIResponse object
+#'
+#' @author EDG
+#' @export
+invoke <- new_generic("invoke", "x")
+
+
+# %% as_list generic ----
+#' Convert to R list
+#'
+#' Generic method to convert various objects to R lists
+#'
+#' @param x An object to convert
+#'
+#' @return A named R list
+#'
+#' @author EDG
+#' @export
+as_list <- new_generic("as_list", "x")
+
 
 # References
 # ollamar: https://cran.r-project.org/web/packages/ollamar/vignettes/ollamar.html
@@ -77,7 +153,7 @@ tool_duckduckgo <- list(
 ) # /kaimana::tool_duckduckgo
 
 # Tool list ----
-react_tools <- list(
+agent_tools <- list(
   wikipedia = tool_wikipedia
 )
 
@@ -87,24 +163,8 @@ react_tools <- list(
 #' @author E.D. Gennatas
 #' @export
 available_tools <- function() {
-  names(react_tools)
+  names(agent_tools)
 } # /kaimana::available_tools
-
-
-# %% invoke generic ----
-#' Invoke Method
-#'
-#' Generic method for invoking LLMs and agents
-#'
-#' @param x An object of class LLM, ReAgent, or ReAct
-#' @param query Character: The query or prompt to pass to the model or agent
-#' @param ... Additional arguments passed to specific methods
-#'
-#' @return An AIResponse object
-#'
-#' @author EDG
-#' @export
-invoke <- new_generic("invoke", "x")
 
 
 # %% AIThinking Class ----
@@ -131,105 +191,3 @@ AIThinking <- new_class(
     )
   }
 ) # kaimana::AIThinking
-
-
-# %% AIResponse Class ----
-#' @title AIResponse Class
-#'
-#' @description
-#' Class for AI responses that can include thinking steps, tool calls, structured output, and free
-#' text.
-#'
-#' @field response List of named lists including thinking, tool calls, structured output, and text output.
-#'
-#' @author EDG
-AIResponse <- new_class(
-  "AIResponse",
-  properties = list(
-    response = class_list
-  )
-) # kaimana::AIResponse
-
-# repr method for AIResponse ----
-method(repr, AIResponse) <- function(x, output_type = NULL) {
-  if (is.null(output_type)) {
-    output_type <- get_output_type()
-  }
-  # Get each message in the response
-  out <- ""
-  for (msg1 in x@response) {
-    role <- msg1[["role"]]
-    content <- msg1[["content"]]
-
-    if (role == "system") {
-      out <- paste0(
-        out,
-        fmt("System\n", bold = TRUE),
-        content,
-        "\n"
-      )
-    } # /system
-
-    if (role == "user") {
-      out <- paste0(
-        out,
-        fmt("User\n", col = col_user, bold = TRUE),
-        content,
-        "\n"
-      )
-    } # /user
-
-    if (role == "assistant") {
-      # If there are <think> </think> tags, extract thinking steps
-      if (grepl("<think>", content)) {
-        thinking <- gsub(".*<think>(.*)</think>.*", "\\1", content)
-        response <- gsub(".*</think>(.*)", "\\1", content)
-        out <- paste0(
-          out,
-          fmt("Thinking\n", col = col_thinking, bold = TRUE),
-          trimws(thinking),
-          "\n"
-        )
-      } else {
-        response <- content
-      }
-      assistant_name <- if (!is.null(msg1[["name"]])) {
-        msg1[["name"]]
-      } else {
-        "Assistant"
-      }
-      out <- paste0(
-        out,
-        fmt(paste0(assistant_name, "\n"), col = col_assistant, bold = TRUE),
-        trimws(response),
-        "\n"
-      )
-    } # /assistant
-
-    if (role == "tool") {
-      tool_name <- msg1[["name"]]
-      out <- paste0(
-        out,
-        fmt("Tool: ", col = col_tool, bold = TRUE),
-        fmt(tool_name, col = col_tool, bold = TRUE),
-        "\n",
-        content,
-        "\n"
-      )
-    } # /tool
-  } # /for (msg in x@response)
-  out
-} # /kaimana::repr.AIResponse
-
-
-# Print AIResponse ----
-method(print, AIResponse) <- function(x, output_type = NULL, ...) {
-  cat(repr(x, output_type = output_type))
-  invisible(x)
-} # kaimana::print.AIResponse
-
-
-#as.list.AIResponse ----
-method(as.list, AIResponse) <- function(x, ...) {
-  x@response
-} # kaimana::as.list.AIResponse
