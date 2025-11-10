@@ -168,7 +168,7 @@ method(print, Agent) <- function(x, output_type = NULL, ...) {
 #' @param echo Logical: Whether to echo the prompt and response.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return AgentMessage object
+#' @return List with agent response.
 #'
 #' @details
 #' Memory: if agent was initialized with use_memory = TRUE, the conversation history will be
@@ -273,6 +273,16 @@ method(generate, Agent) <- function(
   }
   # Initial response
   res <- httr2::resp_body_json(resp)
+
+  # Echo response
+  if (echo) {
+    if (!is.null(res[["message"]][["thinking"]])) {
+      cat(repr_bracket(x@name %||% "Agent"), "reasoning:\n")
+      cat(res[["message"]][["thinking"]], "\n")
+    }
+    cat(repr_bracket(x@name %||% "Agent"), "response:\n")
+    cat(res[["message"]][["content"]], "\n")
+  }
 
   # Update state
   if (update_state) {
