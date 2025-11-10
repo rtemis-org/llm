@@ -80,8 +80,8 @@ query_wikipedia <- function(
   exintro_val <- if (section_mode == "intro") TRUE else FALSE
 
   # Create request to get page content for the found titles
-  content_req <- request(base_url) |>
-    req_url_query(
+  content_req <- httr2::request(base_url) |>
+    httr2::req_url_query(
       action = "query",
       format = "json",
       prop = "extracts",
@@ -93,7 +93,7 @@ query_wikipedia <- function(
     )
 
   # Perform the request
-  content_resp <- req_perform(content_req)
+  content_resp <- httr2::req_perform(content_req)
 
   # Check for HTTP errors
   httr2::resp_check_status(content_resp)
