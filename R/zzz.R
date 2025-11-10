@@ -15,6 +15,7 @@ kaimana_version <- packageVersion("kaimana")
 # rtemis internal functions
 printls <- getFromNamespace("printls", "rtemis")
 printdf <- getFromNamespace("printdf", "rtemis")
+clean_int <- getFromNamespace("clean_int", "rtemis")
 
 # References
 # Unicode emojis: https://www.unicode.org/emoji/charts/full-emoji-list.html
