@@ -101,19 +101,41 @@ method(repr, Agent) <- function(x, output_type = NULL) {
   }
   out <- paste0(
     repr_S7name("Agent", output_type = output_type),
+    repr(x@llmconfig, pad = 2L, output_type = output_type),
+    fmt("System Prompt: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt(
+      paste0(
+        substr(x@system_prompt, 1, 60),
+        if (nchar(x@system_prompt) > 60) "..." else ""
+      ),
+      output_type = output_type
+    ),
     "\n",
-    repr(x@llmconfig, output_type = output_type),
+    fmt("       Memory: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt(
+      if (x@use_memory) "Enabled" else "Disabled",
+      output_type = output_type
+    ),
+    "\n",
     if (!is.null(x@tools)) {
       paste0(
-        "\n",
-        fmt("Tools:\n", bold = TRUE, output_type = output_type),
+        fmt(
+          "        Tools:\n",
+          bold = TRUE,
+          pad = 2L,
+          output_type = output_type
+        ),
         paste0(
           sapply(
             x@tools,
             function(tool) {
               paste0(
-                "- ",
-                fmt(tool@name, bold = TRUE, output_type = output_type),
+                "           - ",
+                fmt(
+                  tool@name,
+                  bold = TRUE,
+                  output_type = output_type
+                ),
                 ": ",
                 tool@description
               )
