@@ -72,7 +72,7 @@ method(`[[`, AIMessage) <- function(x, name) {
 # repr AIMessage ----
 method(repr, AIMessage) <- function(x, output_type = NULL) {
   output_type <- get_output_type(output_type)
-  show_ls(x, output_type = output_type)
+  repr_ls(x, output_type = output_type)
 } # kaimana::repr.AIMessage
 
 # Print AIMessage ----
