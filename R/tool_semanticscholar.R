@@ -172,12 +172,18 @@ query_semanticscholar <- function(
 # %% tool_semanticscholar ----
 tool_semanticscholar <- create_tool(
   name = "query_semanticscholar",
-  description = "Search Semantic Scholar for research papers and return structured results",
+  description = paste(
+    "Search Semantic Scholar for academic papers across science, technology, medicine,",
+    "social sciences, and humanities."
+  ),
   parameters = list(
     tool_param(
       name = "query",
       type = "string",
-      description = "The search query. Best to use individual words or terms.",
+      description = paste(
+        "The search query. Use clear, relevant keywords or phrases.",
+        "Use double quotes for exact phrase matching."
+      ),
       required = TRUE
     ),
     tool_param(
