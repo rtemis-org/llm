@@ -13,6 +13,7 @@ SYSTEM_PROMPT_DEFAULT <-
 OLLAMA_URL_DEFAULT <- "http://localhost:11434"
 
 
+# --- Internal API ---------------------------------------------------------------------------------
 # %% LLMConfig Superclass ----
 #' @title LLMConfig
 #'
@@ -114,7 +115,12 @@ method(repr, LLMConfig) <- function(x, pad = 0L, output_type = NULL) {
       pad = pad,
       output_type = output_type
     ),
-    repr_ls(as_list(x), pad = pad, output_type = output_type)
+    repr_ls(
+      as_list(x),
+      pad = pad,
+      print_class = FALSE,
+      output_type = output_type
+    )
   )
 } # /repr.LLMConfig
 
@@ -124,30 +130,6 @@ method(repr, LLMConfig) <- function(x, pad = 0L, output_type = NULL) {
 method(print, LLMConfig) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /print.LLMConfig
-
-
-# %% config_Ollama() ----
-#' Create an OllamaConfig Object
-#'
-#' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
-#' @param temperature Numeric: The temperature for the model.
-#' @param base_url Character: Base URL of Ollama server.
-#'
-#' @return OllamaConfig object.
-#'
-#' @author EDG
-#' @export
-config_Ollama <- function(
-  model_name,
-  temperature = TEMPERATURE_DEFAULT,
-  base_url = OLLAMA_URL_DEFAULT
-) {
-  OllamaConfig(
-    model_name = model_name,
-    temperature = temperature,
-    base_url = base_url
-  )
-} # /config_Ollama
 
 
 # %% LLM Class ----
@@ -172,6 +154,45 @@ LLM <- new_class(
     system_prompt = class_character
   )
 ) # kaimana::LLM
+
+
+# %% rerpr.LLM() ----
+# repr method for LLM ----
+method(repr, LLM) <- function(x, output_type = NULL) {
+  output_type <- get_output_type(output_type)
+  paste0(
+    repr_S7name("LLM", output_type = output_type),
+    if (!is.null(x@name)) {
+      paste(
+        fmt("Name: ", bold = TRUE, output_type = output_type),
+        highlight(x@name, output_type = output_type),
+        "\n"
+      )
+    },
+    fmt("Model: ", bold = TRUE, output_type = output_type),
+    highlight(x@config@model_name, output_type = output_type),
+    "\n",
+    fmt("System Prompt: ", bold = TRUE, output_type = output_type),
+    highlight(x@system_prompt, output_type = output_type),
+    "\n",
+    fmt("Temperature: ", bold = TRUE, output_type = output_type),
+    highlight(x@config@temperature, output_type = output_type),
+    "\n",
+    if (!is.null(x@output_schema)) {
+      paste0(
+        fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
+        repr_ls(x@output_schema, pad = 2L, output_type = output_type)
+      )
+    }
+  )
+} # /repr.LLM
+
+
+# %% print.LLM ----
+# Print method for LLM ----
+method(print, LLM) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /print.LLM
 
 
 # %% Ollama Class ----
@@ -207,86 +228,6 @@ Ollama <- new_class(
     )
   }
 ) # /kaimana::Ollama
-
-
-# %% create_Ollama() ----
-#' Create an Ollama Object
-#'
-#' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
-#' @param system_prompt Character: The system prompt to use.
-#' @param temperature Numeric: The temperature for the model.
-#' @param output_schema List: An optional output schema.
-#' @param name Character or NULL: An optional name for the Ollama object.
-#' @param base_url Character: Base URL of Ollama server.
-#'
-#' @return Ollama object.
-#'
-#' @author EDG
-#' @export
-create_Ollama <- function(
-  model_name,
-  system_prompt = SYSTEM_PROMPT_DEFAULT,
-  temperature = TEMPERATURE_DEFAULT,
-  output_schema = NULL,
-  name = NULL,
-  base_url = OLLAMA_URL_DEFAULT
-) {
-  ollama_check_model(model_name)
-  Ollama(
-    name = name,
-    config = OllamaConfig(
-      model_name = model_name,
-      temperature = temperature,
-      base_url = base_url
-    ),
-    system_prompt = system_prompt,
-    output_schema = output_schema
-  )
-} # /create_Ollama
-
-
-# %% rerpr.LLM() ----
-# repr method for LLM ----
-method(repr, LLM) <- function(x, output_type = NULL) {
-  output_type <- get_output_type(output_type)
-  paste0(
-    repr_S7name("LLM", output_type = output_type),
-    if (!is.null(x@name)) {
-      paste(
-        fmt("Name: ", bold = TRUE, output_type = output_type),
-        highlight(x@name, output_type = output_type),
-        "\n"
-      )
-    },
-    fmt("Model: ", bold = TRUE, output_type = output_type),
-    highlight(x@config@model_name, output_type = output_type),
-    "\n",
-    fmt("System Prompt: ", bold = TRUE, output_type = output_type),
-    highlight(x@system_prompt, output_type = output_type),
-    "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
-    highlight(x@config@temperature, output_type = output_type),
-    "\n",
-    if (!is.null(x@output_schema)) {
-      paste0(
-        fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
-        highlight(
-          # => Replace with repr_ls
-          paste(capture.output(str(x@output_schema)), collapse = "\n"),
-          output_type = output_type
-        ),
-        "\n"
-      )
-    }
-  )
-} # /repr.LLM
-
-
-# %% print.LLM ----
-# Print method for LLM ----
-method(print, LLM) <- function(x, output_type = NULL, ...) {
-  cat(repr(x, output_type = output_type), "\n")
-} # /print.LLM
 
 
 # %% generate.Ollama() ----
@@ -329,3 +270,63 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
   }
   as_OllamaMessage(httr2::resp_body_json(resp))
 } # /kaimana::generate.Ollama
+
+
+# --- Public API ---------------------------------------------------------------------------------
+# %% config_Ollama() ----
+#' Create an OllamaConfig Object
+#'
+#' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
+#' @param temperature Numeric: The temperature for the model.
+#' @param base_url Character: Base URL of Ollama server.
+#'
+#' @return OllamaConfig object.
+#'
+#' @author EDG
+#' @export
+config_Ollama <- function(
+  model_name,
+  temperature = TEMPERATURE_DEFAULT,
+  base_url = OLLAMA_URL_DEFAULT
+) {
+  OllamaConfig(
+    model_name = model_name,
+    temperature = temperature,
+    base_url = base_url
+  )
+} # /config_Ollama
+
+# %% create_Ollama() ----
+#' Create an Ollama Object
+#'
+#' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
+#' @param system_prompt Character: The system prompt to use.
+#' @param temperature Numeric: The temperature for the model.
+#' @param output_schema List: An optional output schema.
+#' @param name Character or NULL: An optional name for the Ollama object.
+#' @param base_url Character: Base URL of Ollama server.
+#'
+#' @return Ollama object.
+#'
+#' @author EDG
+#' @export
+create_Ollama <- function(
+  model_name,
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
+  temperature = TEMPERATURE_DEFAULT,
+  output_schema = NULL,
+  name = NULL,
+  base_url = OLLAMA_URL_DEFAULT
+) {
+  ollama_check_model(model_name)
+  Ollama(
+    name = name,
+    config = OllamaConfig(
+      model_name = model_name,
+      temperature = temperature,
+      base_url = base_url
+    ),
+    system_prompt = system_prompt,
+    output_schema = output_schema
+  )
+} # /create_Ollama
