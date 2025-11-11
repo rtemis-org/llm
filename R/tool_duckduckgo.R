@@ -150,7 +150,8 @@ query_duckduckgo <- function(
 
 # %% tool_duckduckgo_ia ----
 tool_duckduckgo_ia <- create_tool(
-  name = "query_duckduckgo_ia",
+  name = "DuckDuckGo Instant Answer Search",
+  function_name = "query_duckduckgo_ia",
   description = paste(
     "Search DuckDuckGo Instant Answer API. ",
     "Use single-word queries for best results.",

@@ -162,7 +162,7 @@ query_semanticscholar <- function(
     # Convert to list
     out <- jsonlite::fromJSON(out, simplifyVector = TRUE)
     # Convert to data.table
-    out <- data.table::as.data.table(out$data)
+    out <- data.table::as.data.table(out[["data"]])
   }
 
   out
@@ -171,7 +171,8 @@ query_semanticscholar <- function(
 
 # %% tool_semanticscholar ----
 tool_semanticscholar <- create_tool(
-  name = "query_semanticscholar",
+  name = "Semantic Scholar Search",
+  function_name = "query_semanticscholar",
   description = paste(
     "Search Semantic Scholar for academic papers across science, technology, medicine,",
     "social sciences, and humanities."

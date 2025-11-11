@@ -123,7 +123,8 @@ query_wikipedia <- function(
 
 # %% tool_wikipedia ----
 tool_wikipedia <- create_tool(
-  name = "query_wikipedia",
+  name = "Wikipedia Search",
+  function_name = "query_wikipedia",
   description = "Search Wikipedia for articles and return their introduction content",
   parameters = list(
     tool_param(
