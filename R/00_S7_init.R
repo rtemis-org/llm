@@ -11,7 +11,7 @@
 #' @param x An object of class LLM or Agent.
 #' @param prompt Character: The prompt or query to pass to the model or agent.
 #'
-#' @return An AIResponse object.
+#' @return `Message` object or list.
 #'
 #' @author EDG
 #' @export
