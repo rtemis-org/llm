@@ -113,32 +113,23 @@ method(repr, Agent) <- function(x, output_type = NULL) {
       output_type = output_type
     ),
     "\n",
-    if (!is.null(x@tools)) {
+    fmt("        Tools: ", bold = TRUE, pad = 2L, output_type = output_type),
+    if (is.null(x@tools)) {
+      "(None)\n"
+    } else {
       paste0(
-        fmt(
-          "        Tools:\n",
-          bold = TRUE,
-          pad = 2L,
-          output_type = output_type
+        sapply(
+          x@tools,
+          function(tool) {
+            paste0(
+              "           - ",
+              fmt(tool@function_name, bold = TRUE, output_type = output_type),
+              ": ",
+              tool@description
+            )
+          }
         ),
-        paste0(
-          sapply(
-            x@tools,
-            function(tool) {
-              paste0(
-                "           - ",
-                fmt(
-                  tool@function_name,
-                  bold = TRUE,
-                  output_type = output_type
-                ),
-                ": ",
-                tool@description
-              )
-            }
-          ),
-          collapse = "\n"
-        )
+        collapse = "\n"
       )
     }, # / if tools
     if (!is.null(x@output_schema)) {
@@ -148,7 +139,7 @@ method(repr, Agent) <- function(x, output_type = NULL) {
       )
     },
     # llmconfig
-    fmt("    llmconfig:\n", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt("   LLM Config:\n", bold = TRUE, pad = 2L, output_type = output_type),
     repr(x@llmconfig, pad = 17L, output_type = output_type)
   ) #/ paste0
 } # /kaimana::repr.Agent
@@ -284,10 +275,10 @@ method(generate, Agent) <- function(
   # Echo response
   if (echo) {
     if (!is.null(res[["message"]][["thinking"]])) {
-      cat(repr_bracket(x@name %||% "Agent"), "reasoning:\n")
+      cat(repr_bracket(x@name %||% "Agent"), fmt("reasoning\n", bold = TRUE))
       cat(res[["message"]][["thinking"]], "\n")
     }
-    cat(repr_bracket(x@name %||% "Agent"), "response:\n")
+    cat(repr_bracket(x@name %||% "Agent"), fmt("response\n", bold = TRUE))
     cat(res[["message"]][["content"]], "\n")
   }
 
