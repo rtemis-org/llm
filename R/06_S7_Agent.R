@@ -56,8 +56,15 @@ Agent <- new_class(
   validator = function(self) {
     if (!is.null(self@tools)) {
       for (tool in self@tools) {
+        # Check that each tool is a Tool object
         if (!S7_inherits(tool, Tool)) {
           cli::cli_abort("All elements of 'tools' must be Tool objects.")
+        }
+        # Check that tool is part of allowed tools in tool_DB
+        if (!tool@name %in% names(tool_DB)) {
+          cli::cli_abort(
+            "Tool '{tool@name}' is not part of the allowed tool set."
+          )
         }
       }
     }
@@ -132,7 +139,7 @@ method(repr, Agent) <- function(x, output_type = NULL) {
               paste0(
                 "           - ",
                 fmt(
-                  tool@name,
+                  tool@function_name,
                   bold = TRUE,
                   output_type = output_type
                 ),
@@ -312,6 +319,30 @@ method(generate, Agent) <- function(
       names = tool_names
     )
     for (i in seq_along(tool_responses)) {
+      # Check that tool exists in agent's tool list and in allowed tool_DB
+      if (
+        is.null(x@tools) ||
+          !(tool_names[i] %in% sapply(x@tools, function(t) t@function_name)) ||
+          !(tool_names[i] %in% tool_DB[["name"]])
+      ) {
+        # Report security incident
+        report_agent_unauthorized_tool(
+          agent = x,
+          issue = "Unauthorized tool request",
+          tool_requested = tool_names[i]
+        )
+        cli::cli_alert_danger(
+          "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
+          "This incident has been reported."
+        )
+        return(paste(
+          "You tried to use a tool outside your prescribed tool set.",
+          "This incident has been reported."
+        ))
+      }
+      # Validate tool function: Throws error if hash does not match
+      validate_function(tool_names[i])
+      # Call tool
       if (verbosity > 0L) {
         msg("Invoking tool:", highlight(tool_names[i]))
       }
@@ -320,7 +351,7 @@ method(generate, Agent) <- function(
       if (verbosity > 0L) {
         msg("Tool", highlight(tool_names[i]), "returned response.")
       }
-    }
+    } # /for each tool
     tool_response_prompt <- paste0(
       "The following tool responses were obtained:\n",
       paste0(
