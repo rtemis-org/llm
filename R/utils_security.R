@@ -86,7 +86,7 @@ validate_function <- function(tool_name, ...) {
   ns <- asNamespace("kaimana")
 
   # --- Step 1: Check allowed tool names ---
-  if (!tool_name %in% tool_DB$name) {
+  if (!tool_name %in% tool_DB[["name"]]) {
     stop(sprintf("Unauthorized tool call: %s", tool_name))
   }
 
