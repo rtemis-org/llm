@@ -7,13 +7,13 @@
 tool_param(name, type, description, required = FALSE)
 }
 \arguments{
-\item{name}{Character: The name of the parameter}
+\item{name}{Character: The name of the parameter.}
 
-\item{type}{Character: The type of the parameter}
+\item{type}{Character: The type of the parameter.}
 
-\item{description}{Character: The description of the parameter}
+\item{description}{Character: The description of the parameter.}
 
-\item{required}{Logical: Whether the parameter is required}
+\item{required}{Logical: Whether the parameter is required.}
 }
 \value{
 ToolParameter object

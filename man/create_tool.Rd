@@ -2,17 +2,19 @@
 % Please edit documentation in R/02_S7_Tool.R
 \name{create_tool}
 \alias{create_tool}
-\title{tool}
+\title{create_tool}
 \usage{
-create_tool(name, description, parameters = list())
+create_tool(name, function_name, description, parameters = list())
 }
 \arguments{
-\item{name}{Character: The name of the tool}
+\item{name}{Character: The name of the tool, e.g. "Wikipedia Search".}
 
-\item{description}{Character: The description of the tool}
+\item{function_name}{Character: The name of the function to call, e.g. "query_wikipedia".}
 
-\item{parameters}{List of ToolParameter: The parameters of the tool, each  defined using
-\link{tool_param}}
+\item{description}{Character: The description of the tool.}
+
+\item{parameters}{List of \code{ToolParameter}: The parameters of the tool, each  defined using
+\link{tool_param}.}
 }
 \value{
 Tool object
