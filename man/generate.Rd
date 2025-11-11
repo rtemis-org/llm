@@ -12,7 +12,7 @@ generate(x, ...)
 \item{prompt}{Character: The prompt or query to pass to the model or agent.}
 }
 \value{
-An AIResponse object.
+\code{Message} object or list.
 }
 \description{
 Generic method for generating text or structured output from LLMs and Agents
