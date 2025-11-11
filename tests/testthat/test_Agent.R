@@ -62,6 +62,7 @@ tools <- list(
   tool_subtraction
 )
 
+
 # %% create_agent() ----
 test_that("create_agent() works", {
   agent <- create_agent(
@@ -71,7 +72,7 @@ test_that("create_agent() works", {
       base_url = "http://localhost:11434"
     ),
     system_prompt = "You are a meticulous research assistant.",
-    tools = tools,
+    tools = list(tool_wikipedia, tool_semanticscholar),
     name = "KMN"
   )
   testthat::expect_true(S7_inherits(agent, Agent))
