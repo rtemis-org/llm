@@ -6,6 +6,7 @@
 # https://docs.ollama.com/api/chat
 # https://docs.ollama.com/capabilities/tool-calling#tool-calling
 
+# --- Internal API ---------------------------------------------------------------------------------
 # %% Agent Class ----
 #' @title agent
 #'
@@ -29,6 +30,7 @@ Agent <- new_class(
     system_prompt = new_union(NULL | class_character),
     use_memory = class_logical,
     tools = new_union(NULL | class_list),
+    output_schema = new_union(NULL | class_list),
     name = new_union(NULL | class_character)
   ),
   constructor = function(
@@ -36,6 +38,7 @@ Agent <- new_class(
     system_prompt = NULL,
     use_memory = TRUE,
     tools = NULL,
+    output_schema = NULL,
     name = NULL
   ) {
     state <- new.env(parent = emptyenv())
@@ -50,6 +53,7 @@ Agent <- new_class(
       system_prompt = system_prompt,
       use_memory = use_memory,
       tools = tools,
+      output_schema = output_schema,
       name = name
     )
   },
@@ -72,35 +76,6 @@ Agent <- new_class(
 ) # /kaimana::Agent
 
 
-# %% create_agent() ----
-#' Create an Agent
-#'
-#' @param llmconfig LLMConfig: The LLMConfig to use.
-#' @param system_prompt Optional character: The system prompt to use.
-#' @param use_memory Logical: Whether to use conversation memory.
-#' @param tools Optional list of Tool objects: The tools available to the agent.
-#' @param name Optional character: The name of the agent.
-#'
-#' @return Agent object
-#' @author EDG
-#' @export
-create_agent <- function(
-  llmconfig,
-  system_prompt = SYSTEM_PROMPT_DEFAULT,
-  use_memory = TRUE,
-  tools = NULL,
-  name = NULL
-) {
-  Agent(
-    llmconfig = llmconfig,
-    system_prompt = system_prompt,
-    use_memory = use_memory,
-    tools = tools,
-    name = name
-  )
-} # /kaimana::agent
-
-
 # %% repr.Agent ----
 method(repr, Agent) <- function(x, output_type = NULL) {
   if (is.null(output_type)) {
@@ -108,15 +83,29 @@ method(repr, Agent) <- function(x, output_type = NULL) {
   }
   out <- paste0(
     repr_S7name("Agent", output_type = output_type),
-    repr(x@llmconfig, pad = 2L, output_type = output_type),
+    fmt("         Name: ", bold = TRUE, pad = 2L, output_type = output_type),
+    if (is.null(x@name)) {
+      "(Undefined)"
+    } else {
+      x@name
+    },
+    "\n",
     fmt("System Prompt: ", bold = TRUE, pad = 2L, output_type = output_type),
-    fmt(
-      paste0(
-        substr(x@system_prompt, 1, 60),
-        if (nchar(x@system_prompt) > 60) "..." else ""
-      ),
-      output_type = output_type
-    ),
+    if (is.null(x@system_prompt)) {
+      "(Undefined)"
+    } else {
+      fmt(
+        paste0(
+          substr(x@system_prompt, 1, 60),
+          if (nchar(x@system_prompt) > 60) {
+            "..."
+          } else {
+            ""
+          }
+        ),
+        output_type = output_type
+      )
+    },
     "\n",
     fmt("       Memory: ", bold = TRUE, pad = 2L, output_type = output_type),
     fmt(
@@ -151,8 +140,17 @@ method(repr, Agent) <- function(x, output_type = NULL) {
           collapse = "\n"
         )
       )
-    }
-  )
+    }, # / if tools
+    if (!is.null(x@output_schema)) {
+      paste0(
+        fmt(" Output Schema: \n", bold = TRUE, output_type = output_type),
+        repr_ls(x@output_schema, pad = 2L, output_type = output_type)
+      )
+    },
+    # llmconfig
+    fmt("    llmconfig:\n", bold = TRUE, pad = 2L, output_type = output_type),
+    repr(x@llmconfig, pad = 17L, output_type = output_type)
+  ) #/ paste0
 } # /kaimana::repr.Agent
 
 
@@ -242,7 +240,7 @@ method(generate, Agent) <- function(
     }
   }
 
-  # Request
+  # {Request Body}
   request_body <- list(
     model = x@llmconfig@model_name,
     messages = messages,
@@ -251,12 +249,13 @@ method(generate, Agent) <- function(
       temperature = x@llmconfig@temperature
     )
   )
-  # Output schema
+
+  ## Output schema
   if (!is.null(output_schema)) {
     request_body[["format"]] <- output_schema
   }
 
-  # Tools
+  ## Tools
   if (!is.null(x@tools) && use_tools) {
     request_body[["tools"]] <- lapply(x@tools, as_list)
   }
@@ -266,7 +265,7 @@ method(generate, Agent) <- function(
     msg(repr_bracket(x@llmconfig@model_name), "working...")
   }
 
-  # Perform request
+  # {Perform request}
   resp <- httr2::request(paste0(x@llmconfig@base_url, "/api/chat")) |>
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("kaimana-r agent (kaimana.rtemis.org)") |>
@@ -278,6 +277,7 @@ method(generate, Agent) <- function(
     # Replace working message with done
     msg(repr_bracket(x@llmconfig@model_name), "done.")
   }
+
   # Initial response
   res <- httr2::resp_body_json(resp)
 
@@ -297,7 +297,13 @@ method(generate, Agent) <- function(
     x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- res[[
       "message"
     ]]
-  }
+    if (verbosity > 1L) {
+      msg(
+        "Agent state updated. Total messages in memory:",
+        length(x@state[["messages"]])
+      )
+    }
+  } # /update state
 
   # Check for tool calls
   if (!is.null(res[["message"]][["tool_calls"]])) {
@@ -331,14 +337,10 @@ method(generate, Agent) <- function(
           issue = "Unauthorized tool request",
           tool_requested = tool_names[i]
         )
-        cli::cli_alert_danger(
+        cli::cli_abort(
           "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
           "This incident has been reported."
         )
-        return(paste(
-          "You tried to use a tool outside your prescribed tool set.",
-          "This incident has been reported."
-        ))
       }
       # Validate tool function: Throws error if hash does not match
       validate_function(tool_names[i])
@@ -440,3 +442,35 @@ method(generate, Agent) <- function(
   } # /tool calls
   res
 } # /kaimana::generate.Agent
+
+
+# --- Public API -----------------------------------------------------------------------------------
+# %% create_agent() ----
+#' Create an Agent
+#'
+#' @param llmconfig LLMConfig: The LLMConfig to use.
+#' @param system_prompt Optional character: The system prompt to use.
+#' @param use_memory Logical: Whether to use conversation memory.
+#' @param tools Optional list of Tool objects: The tools available to the agent.
+#' @param name Optional character: The name of the agent.
+#'
+#' @return Agent object
+#' @author EDG
+#' @export
+create_agent <- function(
+  llmconfig,
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
+  use_memory = TRUE,
+  tools = NULL,
+  output_schema = NULL,
+  name = NULL
+) {
+  Agent(
+    llmconfig = llmconfig,
+    system_prompt = system_prompt,
+    use_memory = use_memory,
+    tools = tools,
+    output_schema = output_schema,
+    name = name
+  )
+} # /kaimana::agent
