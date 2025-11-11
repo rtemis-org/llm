@@ -8,10 +8,10 @@
 #' @description
 #' Class for a single tool parameter schema
 #'
-#' @field name Character: The name of the parameter
-#' @field type Character: The type of the parameter
-#' @field description Character: The description of the parameter
-#' @field required Logical: Whether the parameter is required
+#' @field name Character: The name of the parameter.
+#' @field type Character: The type of the parameter.
+#' @field description Character: The description of the parameter.
+#' @field required Logical: Whether the parameter is required.
 #'
 #' @author EDG
 #' @noRd
@@ -31,10 +31,10 @@ ToolParameter <- new_class(
 #'
 #' Define a tool parameter schema
 #'
-#' @param name Character: The name of the parameter
-#' @param type Character: The type of the parameter
-#' @param description Character: The description of the parameter
-#' @param required Logical: Whether the parameter is required
+#' @param name Character: The name of the parameter.
+#' @param type Character: The type of the parameter.
+#' @param description Character: The description of the parameter.
+#' @param required Logical: Whether the parameter is required.
 #'
 #' @return ToolParameter object
 #' @author EDG
@@ -60,9 +60,10 @@ tool_param <- function(
 #' @description
 #' Class for a tool that can be used by an agent
 #'
-#' @field name Character: The name of the tool
-#' @field description Character: The description of the tool
-#' @field parameters List of ToolParameter: The parameters of the tool
+#' @field name Character: The name of the tool.
+#' @field function_name Character: The name of the function to call.
+#' @field description Character: The description of the tool.
+#' @field parameters List of ToolParameter: The parameters of the tool.
 #'
 #' @author EDG
 #' @noRd
@@ -70,6 +71,7 @@ Tool <- new_class(
   "Tool",
   properties = list(
     name = class_character,
+    function_name = class_character,
     description = class_character,
     parameters = class_list
   ),
@@ -86,14 +88,15 @@ Tool <- new_class(
 
 
 # %% create_tool() ----
-#' tool
+#' create_tool
 #'
 #' Define a tool for an agent
 #'
-#' @param name Character: The name of the tool
-#' @param description Character: The description of the tool
-#' @param parameters List of ToolParameter: The parameters of the tool, each  defined using
-#' [tool_param]
+#' @param name Character: The name of the tool, e.g. "Wikipedia Search".
+#' @param function_name Character: The name of the function to call, e.g. "query_wikipedia".
+#' @param description Character: The description of the tool.
+#' @param parameters List of `ToolParameter`: The parameters of the tool, each  defined using
+#' [tool_param].
 #'
 #' @return Tool object
 #'
@@ -101,11 +104,13 @@ Tool <- new_class(
 #' @export
 create_tool <- function(
   name,
+  function_name,
   description,
   parameters = list()
 ) {
   Tool(
     name = name,
+    function_name = function_name,
     description = description,
     parameters = parameters
   )
@@ -115,9 +120,9 @@ create_tool <- function(
 # %% as_list.Tool ----
 #' Convert Tool object to named R list
 #'
-#' Prepare Tool for use in httr2 API call
+#' Prepare `Tool` definition for use in `httr2` API call
 #'
-#' @param x Tool object
+#' @param x `Tool` object.
 #'
 #' @return list
 #'
