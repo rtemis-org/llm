@@ -1,0 +1,47 @@
+# make_sysdata.R
+# ::kaimana::
+# 2025 EDG rtemis.org
+
+# %% Constants ----
+AVAILABLE_TOOLS <- c(
+  "query_wikipedia",
+  "query_semanticscholar",
+  "query_duckduckgo_ia"
+)
+HASH_ALGO <- "sha256"
+
+# Import your package namespace manually to access the functions
+pkg_env <- asNamespace("kaimana")
+
+# # Define hash function (e.g. using serialize for integrity)
+# hash_function <- function(f) {
+#   f_env_stripped <- f
+#   environment(f_env_stripped) <- baseenv()
+#   digest(serialize(f_env_stripped, NULL), algo = "sha256")
+# }
+
+# # List of allowed tools (can auto-detect from a tagged object or manual list)
+# allowed_functions <- c("safe_sum", "extract_pdf_text")
+
+# %% Build the tool_DB
+tool_DB <- data.frame(
+  name = AVAILABLE_TOOLS,
+  hash = vapply(
+    AVAILABLE_TOOLS,
+    function(nm) .hash_function(get(nm, envir = pkg_env)),
+    FUN.VALUE = character(1)
+  ),
+  stringsAsFactors = FALSE
+)
+
+# tool_DB <- lapply(TOOLS, function(x) {
+#   list(
+#     name = x@name,
+#     function_name = x@function_name,
+#     # hash the function named x@function_name
+#     hash = hash_function(get(x@function_name))
+#   )
+# })
+
+# Save to sysdata.rda in your R/ directory
+usethis::use_data(tool_DB, internal = TRUE, overwrite = TRUE)
