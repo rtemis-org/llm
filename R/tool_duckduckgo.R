@@ -121,7 +121,7 @@ query_duckduckgo <- function(
   res <- httr2::req_perform(req)
   # Check for HTTP errors
   httr2::resp_check_status(res)
-  # Parse response (resp_body_json fails here)
+  # Parse response to JSON (resp_body_json fails here)
   res_raw <- httr2::resp_body_string(res)
   # Scrape the results from the HTML using rvest
   scraped <- rvest::read_html(res_raw)
