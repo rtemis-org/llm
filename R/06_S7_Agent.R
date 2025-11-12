@@ -14,8 +14,7 @@
 #' Class for agents that support reasoning, tool use, structured output, and state management.
 #'
 #' @field llmconfig LLMConfig: The LLMConfig to use.
-#' @field state Optional environment: The state of the agent. If NULL, the agent is stateless, i.e.
-#' there is no conversation memory and each generate() call is independent.
+#' @field state AgentState: The state of the agent contains the message history and metadata.
 #' @field system_prompt Optional character: The system prompt to use.
 #' @field tools Optional list of Tool objects: The tools available to the agent.
 #' @field name Optional character: The name of the agent.
@@ -26,7 +25,7 @@ Agent <- new_class(
   "Agent",
   properties = list(
     llmconfig = LLMConfig,
-    state = class_environment,
+    state = AgentState,
     system_prompt = new_union(NULL | class_character),
     use_memory = class_logical,
     tools = new_union(NULL | class_list),
@@ -35,17 +34,23 @@ Agent <- new_class(
   ),
   constructor = function(
     llmconfig,
+    state = InMemoryAgentState(),
     system_prompt = NULL,
     use_memory = TRUE,
     tools = NULL,
     output_schema = NULL,
     name = NULL
   ) {
-    state <- new.env(parent = emptyenv())
     # Initialize messages with system prompt within state environment
-    state[["messages"]] <- list(
-      list(role = "system", content = system_prompt)
-    )
+    if (!is.null(system_prompt)) {
+      append_message(
+        state,
+        SystemMessage(
+          name = name,
+          content = system_prompt
+        )
+      )
+    }
     new_object(
       S7_object(),
       llmconfig = llmconfig,
@@ -65,9 +70,9 @@ Agent <- new_class(
           cli::cli_abort("All elements of 'tools' must be Tool objects.")
         }
         # Check that tool is part of allowed tools in tool_DB
-        if (!tool@name %in% names(tool_DB)) {
+        if (!tool@function_name %in% tool_DB[["function_name"]]) {
           cli::cli_abort(
-            "Tool '{tool@name}' is not part of the allowed tool set."
+            "Tool '{tool@function_name}' is not part of the allowed tool set."
           )
         }
       }
@@ -77,20 +82,20 @@ Agent <- new_class(
 
 
 # %% repr.Agent ----
-method(repr, Agent) <- function(x, output_type = NULL) {
+method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
   }
   out <- paste0(
     repr_S7name("Agent", output_type = output_type),
-    fmt("         Name: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt("         Name: ", bold = TRUE, pad = pad, output_type = output_type),
     if (is.null(x@name)) {
       "(Undefined)"
     } else {
       x@name
     },
     "\n",
-    fmt("System Prompt: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt("System Prompt: ", bold = TRUE, pad = pad, output_type = output_type),
     if (is.null(x@system_prompt)) {
       "(Undefined)"
     } else {
@@ -107,40 +112,42 @@ method(repr, Agent) <- function(x, output_type = NULL) {
       )
     },
     "\n",
-    fmt("       Memory: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt("       Memory: ", bold = TRUE, pad = pad, output_type = output_type),
     fmt(
       if (x@use_memory) "Enabled" else "Disabled",
       output_type = output_type
     ),
     "\n",
-    fmt("        Tools: ", bold = TRUE, pad = 2L, output_type = output_type),
+    fmt("        Tools: ", bold = TRUE, pad = pad, output_type = output_type),
     if (is.null(x@tools)) {
       "(None)\n"
     } else {
       paste0(
+        "\n",
         sapply(
           x@tools,
           function(tool) {
             paste0(
-              "           - ",
+              "               - ",
               fmt(tool@function_name, bold = TRUE, output_type = output_type),
               ": ",
               tool@description
             )
           }
         ),
+        "\n",
         collapse = "\n"
       )
     }, # / if tools
     if (!is.null(x@output_schema)) {
       paste0(
         fmt(" Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(x@output_schema, pad = 2L, output_type = output_type)
+        repr_ls(x@output_schema, pad = pad, output_type = output_type)
       )
     },
     # llmconfig
-    fmt("   LLM Config:\n", bold = TRUE, pad = 2L, output_type = output_type),
-    repr(x@llmconfig, pad = 17L, output_type = output_type)
+    fmt("   LLM Config:\n", bold = TRUE, pad = pad, output_type = output_type),
+    repr(x@llmconfig, pad = 15L, output_type = output_type)
   ) #/ paste0
 } # /kaimana::repr.Agent
 
@@ -149,6 +156,84 @@ method(repr, Agent) <- function(x, output_type = NULL) {
 method(print, Agent) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.Agent
+
+
+# %% create_llm_message.Ollama ----
+# Needs to follow Agent definition
+#' create_llm_message method for Agent with Ollama backend
+#'
+#' @param x Agent object
+#' @param content Character: The content of the message.
+#' @param reasoning Optional character: The reasoning trace.
+#' @param tool_calls Optional list: Tool call information.
+#'
+#' @return An OllamaMessage object.
+#'
+#' @author EDG
+#' @noRd
+method(create_llm_message, Agent) <- function(
+  x,
+  content,
+  reasoning = NULL,
+  tool_calls = NULL
+) {
+  OllamaMessage(
+    name = x@name,
+    content = content,
+    metadata = list(),
+    model_name = x@llmconfig@model_name,
+    reasoning = reasoning,
+    tool_calls = tool_calls
+  )
+} # /kaimana::create_llm_message.Ollama
+
+
+# %% get_messages.Agent ----
+#' Get messages from Agent
+#'
+#' Get list of Message objects from the Agent's state
+#'
+#' @param x Agent object
+#'
+#' @return List of Message objects
+#'
+#' @author EDG
+#' @noRd
+method(get_messages, Agent) <- function(x) {
+  get_messages(x@state)
+} # /kaimana::get_messages.Agent
+
+
+# --- Public API -----------------------------------------------------------------------------------
+# %% create_agent() ----
+#' Create an Agent
+#'
+#' @param llmconfig LLMConfig: The LLMConfig to use.
+#' @param system_prompt Optional character: The system prompt to use.
+#' @param use_memory Logical: Whether to use conversation memory.
+#' @param tools Optional list of Tool objects: The tools available to the agent.
+#' @param name Optional character: The name of the agent.
+#'
+#' @return Agent object
+#' @author EDG
+#' @export
+create_agent <- function(
+  llmconfig,
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
+  use_memory = TRUE,
+  tools = NULL,
+  output_schema = NULL,
+  name = NULL
+) {
+  Agent(
+    llmconfig = llmconfig,
+    system_prompt = system_prompt,
+    use_memory = use_memory,
+    tools = tools,
+    output_schema = output_schema,
+    name = name
+  )
+} # /kaimana::create_agent
 
 
 # %% generate.Agent() ----
@@ -187,66 +272,44 @@ method(generate, Agent) <- function(
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
-  # State management
-  if (update_state) {
-    if (is.null(image_path)) {
-      # Append prompt to messages
-      x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- list(
-        role = "user",
-        content = prompt
+  # If not updating state, create a temporary InMemoryAgentState for this interaction only
+  if (!update_state) {
+    .tempState <- InMemoryAgentState()
+    # Append system prompt
+    append_message(
+      .tempState,
+      SystemMessage(
+        name = x@name,
+        content = x@system_prompt
       )
-    } else {
-      # Append prompt + images to messages
-      x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- list(
-        role = "user",
-        content = prompt,
-        images = image_path
-      )
-    }
-    messages <- x@state[["messages"]]
-  } else {
-    if (is.null(image_path)) {
-      messages <- list(
-        list(
-          role = "system",
-          content = x@system_prompt
-        ),
-        list(
-          role = "user",
-          content = prompt
-        )
-      )
-    } else {
-      messages <- list(
-        list(
-          role = "system",
-          content = x@system_prompt
-        ),
-        list(
-          role = "user",
-          content = prompt,
-          images = image_path
-        )
-      )
-    }
+    )
   }
+  running_state <- if (update_state) x@state else .tempState
+  # {++} State: Append initial InputMessage
+  append_message(
+    running_state,
+    InputMessage(
+      content = prompt,
+      image_path = image_path
+    )
+  )
 
-  # {Request Body}
+  # {Initial Request Body}
   request_body <- list(
     model = x@llmconfig@model_name,
-    messages = messages,
+    messages = get_message_list(running_state),
     stream = FALSE,
     options = list(
       temperature = x@llmconfig@temperature
     )
   )
 
-  ## Output schema
+  ## Add Output schema
   if (!is.null(output_schema)) {
     request_body[["format"]] <- output_schema
   }
 
-  ## Tools
+  ## Add Tools
   if (!is.null(x@tools) && use_tools) {
     request_body[["tools"]] <- lapply(x@tools, as_list)
   }
@@ -256,7 +319,7 @@ method(generate, Agent) <- function(
     msg(repr_bracket(x@llmconfig@model_name), "working...")
   }
 
-  # {Perform request}
+  # {>>} Perform initial request
   resp <- httr2::request(paste0(x@llmconfig@base_url, "/api/chat")) |>
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("kaimana-r agent (kaimana.rtemis.org)") |>
@@ -269,7 +332,7 @@ method(generate, Agent) <- function(
     msg(repr_bracket(x@llmconfig@model_name), "done.")
   }
 
-  # Initial response
+  # {<<} Initial response
   res <- httr2::resp_body_json(resp)
 
   # Echo response
@@ -282,21 +345,19 @@ method(generate, Agent) <- function(
     cat(res[["message"]][["content"]], "\n")
   }
 
-  # Update state
-  if (update_state) {
-    # Append response to messages
-    x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- res[[
-      "message"
-    ]]
-    if (verbosity > 1L) {
-      msg(
-        "Agent state updated. Total messages in memory:",
-        length(x@state[["messages"]])
-      )
-    }
-  } # /update state
+  # {++} Append initial response
+  append_message(
+    running_state,
+    create_llm_message(
+      x,
+      content = res[["message"]][["content"]],
+      reasoning = res[["message"]][["thinking"]],
+      tool_calls = res[["message"]][["tool_calls"]]
+    ),
+    verbosity = verbosity
+  )
 
-  # Check for tool calls
+  # {?>_} Check for tool calls
   if (!is.null(res[["message"]][["tool_calls"]])) {
     tool_names <- sapply(
       res[["message"]][["tool_calls"]],
@@ -311,18 +372,21 @@ method(generate, Agent) <- function(
       )
     }
 
+    # Initialize tool responses
     tool_responses <- structure(
       vector("list", n_tool_calls),
       names = tool_names
     )
+
+    # Call each tool
     for (i in seq_along(tool_responses)) {
-      # Check that tool exists in agent's tool list and in allowed tool_DB
+      # {/\} Check that tool exists in agent's tool list and in allowed tool_DB
       if (
         is.null(x@tools) ||
           !(tool_names[i] %in% sapply(x@tools, function(t) t@function_name)) ||
-          !(tool_names[i] %in% tool_DB[["name"]])
+          !(tool_names[i] %in% tool_DB[["function_name"]])
       ) {
-        # Report security incident
+        # {!!} Report security incident
         report_agent_unauthorized_tool(
           agent = x,
           issue = "Unauthorized tool request",
@@ -333,18 +397,35 @@ method(generate, Agent) <- function(
           "This incident has been reported."
         )
       }
-      # Validate tool function: Throws error if hash does not match
+      # {/\!} Validate tool function: Throws error if hash does not match
       validate_function(tool_names[i])
-      # Call tool
+
+      # {>_} Call tool
       if (verbosity > 0L) {
         msg("Invoking tool:", highlight(tool_names[i]))
       }
       args <- res[["message"]][["tool_calls"]][[i]][["function"]][["arguments"]]
+      # Tool response should be JSON string or plain text
       tool_responses[[i]] <- do.call(tool_names[i], args)
       if (verbosity > 0L) {
         msg("Tool", highlight(tool_names[i]), "returned response.")
       }
     } # /for each tool
+    #
+
+    # {++} Append ToolMessages to state
+    for (i in seq_along(tool_responses)) {
+      append_message(
+        running_state,
+        ToolMessage(
+          name = tool_names[i],
+          content = tool_responses[[i]]
+        ),
+        verbosity = verbosity
+      )
+    }
+
+    # Prepare AgentMessage with tool responses
     tool_response_prompt <- paste0(
       "The following tool responses were obtained:\n",
       paste0(
@@ -355,11 +436,12 @@ method(generate, Agent) <- function(
               "Tool '",
               tn,
               "' response:\n",
-              jsonlite::toJSON(
-                tool_responses[[tn]],
-                auto_unbox = TRUE,
-                pretty = TRUE
-              ),
+              tool_responses[[tn]],
+              # jsonlite::toJSON(
+              #   tool_responses[[tn]],
+              #   auto_unbox = TRUE,
+              #   pretty = TRUE
+              # ),
               "\n"
             )
           }
@@ -377,27 +459,23 @@ method(generate, Agent) <- function(
       prompt,
       '"\n'
     )
+
+    # {++} Append AgentMessage with tool responses
+    append_message(
+      running_state,
+      AgentMessage(
+        content = tool_response_prompt
+      ),
+      verbosity = verbosity
+    )
+
     # Now, send another prompt to the agent with the tool responses
     if (verbosity > 0L) {
       msg("Sending tool responses back to agent...")
     }
     followup_request_body <- list(
       model = x@llmconfig@model_name,
-      messages = list(
-        list(
-          role = "system",
-          content = x@system_prompt
-        ),
-        list(
-          role = "user",
-          content = prompt
-        ),
-        list(
-          role = "tool",
-          name = "tool_responses",
-          content = tool_response_prompt
-        )
-      ),
+      messages = get_message_list(running_state), # Removes ToolMessages, AgentMessages are sent as role = "user"
       stream = FALSE,
       options = list(
         temperature = x@llmconfig@temperature
@@ -407,6 +485,7 @@ method(generate, Agent) <- function(
     if (!is.null(output_schema)) {
       followup_request_body[["format"]] <- output_schema
     }
+    # {>>} Perform follow-up request
     followup_resp <- httr2::request(paste0(
       x@llmconfig@base_url,
       "/api/chat"
@@ -420,48 +499,20 @@ method(generate, Agent) <- function(
       # Replace working message with done
       msg(repr_bracket(x@llmconfig@model_name), "done.")
     }
+    # {<<} Follow-up response
     out <- httr2::resp_body_json(followup_resp)
 
-    # Update state
-    if (update_state) {
-      # Append response to messages
-      x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- out[[
-        "message"
-      ]]
-    }
-    return(out)
+    # {++} Append response to messages as LLMMessage
+    append_message(
+      running_state,
+      create_llm_message(
+        x,
+        content = out[["message"]][["content"]],
+        reasoning = out[["message"]][["thinking"]],
+        tool_calls = out[["message"]][["tool_calls"]]
+      ),
+      verbosity = verbosity
+    )
   } # /tool calls
-  res
+  get_messages(x)
 } # /kaimana::generate.Agent
-
-
-# --- Public API -----------------------------------------------------------------------------------
-# %% create_agent() ----
-#' Create an Agent
-#'
-#' @param llmconfig LLMConfig: The LLMConfig to use.
-#' @param system_prompt Optional character: The system prompt to use.
-#' @param use_memory Logical: Whether to use conversation memory.
-#' @param tools Optional list of Tool objects: The tools available to the agent.
-#' @param name Optional character: The name of the agent.
-#'
-#' @return Agent object
-#' @author EDG
-#' @export
-create_agent <- function(
-  llmconfig,
-  system_prompt = SYSTEM_PROMPT_DEFAULT,
-  use_memory = TRUE,
-  tools = NULL,
-  output_schema = NULL,
-  name = NULL
-) {
-  Agent(
-    llmconfig = llmconfig,
-    system_prompt = system_prompt,
-    use_memory = use_memory,
-    tools = tools,
-    output_schema = output_schema,
-    name = name
-  )
-} # /kaimana::agent
