@@ -9,6 +9,7 @@ create_agent(
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   use_memory = TRUE,
   tools = NULL,
+  output_schema = NULL,
   name = NULL
 )
 }
