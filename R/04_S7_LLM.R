@@ -261,6 +261,7 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
   # Perform request
   resp <- httr2::request(paste0(x@config@base_url, "/api/generate")) |>
     httr2::req_body_json(request_body) |>
+    httr2::req_user_agent("kaimana-r LLM (kaimana.rtemis.org)") |>
     httr2::req_perform(verbosity = verbosity - 1L)
   # Check for errors
   httr2::resp_check_status(resp)
