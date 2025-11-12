@@ -25,7 +25,7 @@ pkg_env <- asNamespace("kaimana")
 
 # %% Build the tool_DB
 tool_DB <- data.frame(
-  name = AVAILABLE_TOOLS,
+  function_name = AVAILABLE_TOOLS,
   hash = vapply(
     AVAILABLE_TOOLS,
     function(nm) .hash_function(get(nm, envir = pkg_env)),
@@ -33,15 +33,6 @@ tool_DB <- data.frame(
   ),
   stringsAsFactors = FALSE
 )
-
-# tool_DB <- lapply(TOOLS, function(x) {
-#   list(
-#     name = x@name,
-#     function_name = x@function_name,
-#     # hash the function named x@function_name
-#     hash = hash_function(get(x@function_name))
-#   )
-# })
 
 # Save to sysdata.rda in your R/ directory
 usethis::use_data(tool_DB, internal = TRUE, overwrite = TRUE)
