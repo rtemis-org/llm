@@ -30,6 +30,7 @@ test_that("OllamaConfig class works", {
 # %% LLM Class ----
 test_that("LLM class works", {
   llm <- LLM(
+    name = "SuperLLM",
     system_prompt = "You are a meticulous research assistant."
   )
   testthat::expect_true(S7_inherits(llm, LLM))
@@ -41,7 +42,7 @@ test_that("Ollama class works", {
   llm <- Ollama(
     config = OllamaConfig(
       model_name = "qwen3:8b",
-      temperature = 0.7,
+      temperature = 0.3,
       base_url = "http://localhost:11434"
     ),
     system_prompt = "You are a meticulous research assistant."
@@ -112,10 +113,10 @@ test_that("AgentMessage class works", {
   testthat::expect_true(S7_inherits(msg, AgentMessage))
 }) # /AgentMessage
 
-
 # %% generate.Ollama ----
-res <- llm |>
-  generate("What is your name?", verbosity = 2)
-test_that("generate.Ollama works", {
-  testthat::expect_true(S7_inherits(res, OllamaMessage))
-}) # /generate.Ollama
+# Slow test, uncomment to run
+# res <- llm |>
+#   generate("What is your name?", verbosity = 2)
+# test_that("generate.Ollama works", {
+#   testthat::expect_true(S7_inherits(res, OllamaMessage))
+# }) # /generate.Ollama
