@@ -88,6 +88,65 @@ invoke <- new_generic("invoke", "x")
 as_list <- new_generic("as_list", "x")
 
 
+# %% append_message generic ----
+#' Append message
+#'
+#' Generic method to append a `Message` object to an `AgentState`
+#'
+#' @param x An `AgentState` object.
+#' @param message A `Message` object to append.
+#'
+#' @return The updated `AgentState` object.
+#'
+#' @author EDG
+#' @export
+append_message <- new_generic("append_message", "x")
+
+
+# %% get_messages generic ----
+#' Get messages
+#'
+#' Generic method to retrieve messages from `AgentState` objects
+#'
+#' @param x An `AgentState` object.
+#'
+#' @return A list of `Message` objects.
+#'
+#' @author EDG
+#' @export
+get_messages <- new_generic("get_messages", "x")
+
+
+# %% get_message_list generic ----
+#' Get message list
+#'
+#' Generic method to retrieve messages as a list of named lists for LLM APIs
+#'
+#' @param x An `AgentState` object.
+#'
+#' @return A list of named lists representing messages.
+#'
+#' @author EDG
+#' @export
+get_message_list <- new_generic("get_message_list", "x")
+
+
+# %% create_llm_message generic ----
+#' Create agent message
+#'
+#' Generic method to create an agent message for different backends
+#'
+#' @param x An `Agent` object.
+#' @param content Character: The content of the message.
+#' @param reasoning Optional character: The reasoning trace.
+#'
+#' @return An `LLMMessage` object.
+#'
+#' @author EDG
+#' @export
+create_llm_message <- new_generic("create_llm_message", "x")
+
+
 # %% AIThinking Class ----
 #' @title AIThinking Class
 #'
