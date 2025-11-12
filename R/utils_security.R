@@ -86,7 +86,7 @@ validate_function <- function(tool_name, ...) {
   ns <- asNamespace("kaimana")
 
   # --- Step 1: Check allowed tool names ---
-  if (!tool_name %in% tool_DB[["name"]]) {
+  if (!tool_name %in% tool_DB[["function_name"]]) {
     stop(sprintf("Unauthorized tool call: %s", tool_name))
   }
 
@@ -94,7 +94,7 @@ validate_function <- function(tool_name, ...) {
   fn <- get(tool_name, envir = ns, inherits = FALSE)
 
   # --- Step 3: Verify hash (memoized) ---
-  expected_hash <- tool_DB[["hash"]][tool_DB[["name"]] == tool_name]
+  expected_hash <- tool_DB[["hash"]][tool_DB[["function_name"]] == tool_name]
 
   current_hash <- .tool_hash_cache[[tool_name]]
   if (is.null(current_hash)) {
