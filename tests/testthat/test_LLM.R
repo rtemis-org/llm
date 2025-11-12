@@ -102,6 +102,17 @@ test_that("OllamaMessage class works", {
 }) # /OllamaMessage
 
 
+# %% AgentMessage Class ----
+test_that("AgentMessage class works", {
+  msg <- AgentMessage(
+    name = "Agent1",
+    content = "Processing data.",
+    metadata = list(task = "data cleaning")
+  )
+  testthat::expect_true(S7_inherits(msg, AgentMessage))
+}) # /AgentMessage
+
+
 # %% generate.Ollama ----
 res <- llm |>
   generate("What is your name?", verbosity = 2)
