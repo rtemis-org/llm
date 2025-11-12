@@ -249,7 +249,7 @@ create_agent <- function(
 #' @param echo Logical: Whether to echo the prompt and response.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return List with agent response.
+#' @return List of `Message` objects representing the conversation history.
 #'
 #' @details
 #' Memory: if agent was initialized with use_memory = TRUE, the conversation history will be
