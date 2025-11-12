@@ -405,7 +405,9 @@ method(generate, Agent) <- function(
         msg("Invoking tool:", highlight(tool_names[i]))
       }
       args <- res[["message"]][["tool_calls"]][[i]][["function"]][["arguments"]]
-      # Tool response should be JSON string or plain text
+      # Tool response should be JSON string - all tools must support this and "json" should be
+      # the default value. We're forcing it here to be sure.
+      args[["output_type"]] <- "json"
       tool_responses[[i]] <- do.call(tool_names[i], args)
       if (verbosity > 0L) {
         msg("Tool", highlight(tool_names[i]), "returned response.")
@@ -491,7 +493,7 @@ method(generate, Agent) <- function(
       "/api/chat"
     )) |>
       httr2::req_body_json(followup_request_body) |>
-      httr2::req_user_agent("kaimana-r agent (kaimana.rtemis.org)") |>
+      httr2::req_user_agent("kaimana-r Agent (kaimana.rtemis.org)") |>
       httr2::req_perform(verbosity = verbosity - 1L)
     # Check for errors
     httr2::resp_check_status(followup_resp)
