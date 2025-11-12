@@ -4,7 +4,7 @@
 \alias{LLM}
 \title{LLM Class}
 \usage{
-LLM(system_prompt = character(0))
+LLM(name = NULL, system_prompt = character(0))
 }
 \description{
 Class for interacting with LLMs directly.

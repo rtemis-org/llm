@@ -151,6 +151,7 @@ method(print, LLMConfig) <- function(x, output_type = NULL, ...) {
 LLM <- new_class(
   "LLM",
   properties = list(
+    name = new_union(NULL | class_character),
     system_prompt = class_character
   )
 ) # kaimana::LLM
@@ -169,21 +170,9 @@ method(repr, LLM) <- function(x, output_type = NULL) {
         "\n"
       )
     },
-    fmt("Model: ", bold = TRUE, output_type = output_type),
-    highlight(x@config@model_name, output_type = output_type),
-    "\n",
     fmt("System Prompt: ", bold = TRUE, output_type = output_type),
     highlight(x@system_prompt, output_type = output_type),
     "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
-    highlight(x@config@temperature, output_type = output_type),
-    "\n",
-    if (!is.null(x@output_schema)) {
-      paste0(
-        fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(x@output_schema, pad = 2L, output_type = output_type)
-      )
-    }
   )
 } # /repr.LLM
 
@@ -228,6 +217,45 @@ Ollama <- new_class(
     )
   }
 ) # /kaimana::Ollama
+
+
+# %% rerpr.Ollama() ----
+# repr method for Ollama ----
+method(repr, Ollama) <- function(x, output_type = NULL) {
+  output_type <- get_output_type(output_type)
+  paste0(
+    repr_S7name("Ollama", output_type = output_type),
+    if (!is.null(x@name)) {
+      paste(
+        fmt("Name: ", bold = TRUE, output_type = output_type),
+        highlight(x@name, output_type = output_type),
+        "\n"
+      )
+    },
+    fmt("Model: ", bold = TRUE, output_type = output_type),
+    highlight(x@config@model_name, output_type = output_type),
+    "\n",
+    fmt("System Prompt: ", bold = TRUE, output_type = output_type),
+    highlight(x@system_prompt, output_type = output_type),
+    "\n",
+    fmt("Temperature: ", bold = TRUE, output_type = output_type),
+    highlight(x@config@temperature, output_type = output_type),
+    "\n",
+    if (!is.null(x@output_schema)) {
+      paste0(
+        fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
+        repr_ls(x@output_schema, pad = 2L, output_type = output_type)
+      )
+    }
+  )
+} # /repr.Ollama
+
+
+# %% print.Ollama ----
+# Print method for Ollama ----
+method(print, Ollama) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /print.Ollama
 
 
 # %% generate.Ollama() ----
