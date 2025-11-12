@@ -55,7 +55,7 @@ ollama_list_models <- function(
 #' @export
 ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
   models <- .ollama_api_tags(base_url = base_url, output = "list")[["models"]]
-  models <- data.table(do.call(rbind, lapply(models, unlist)))
+  models <- data.table::rbindlist(models, fill = TRUE)
   if (is.null(x)) {
     out <- models
   } else {
