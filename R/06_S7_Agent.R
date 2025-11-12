@@ -393,8 +393,10 @@ method(generate, Agent) <- function(
           tool_requested = tool_names[i]
         )
         cli::cli_abort(
-          "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
-          "This incident has been reported."
+          paste(
+            "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
+            "\nThis incident has been reported."
+          )
         )
       }
       # {/\!} Validate tool function: Throws error if hash does not match
