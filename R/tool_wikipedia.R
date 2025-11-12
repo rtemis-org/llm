@@ -25,7 +25,7 @@
 #' tool.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return Character with JSON response, list, or data.frame.
+#' @return Character with JSON response, list, or data.table.
 #'
 #' @author EDG
 #' @noRd
@@ -34,7 +34,7 @@ query_wikipedia <- function(
   limit = 2L,
   section_mode = c("intro", "all", "raw_json"),
   base_url = "https://en.wikipedia.org/w/api.php",
-  output_type = c("json", "list", "data.frame"),
+  output_type = c("json", "list", "data.table"),
   verbosity = 1L
 ) {
   # Input Validation
@@ -69,7 +69,7 @@ query_wikipedia <- function(
   titles <- resp_list[["query"]][["search"]][["title"]]
   if (verbosity > 0L && length(titles) == 0) {
     msg("No Wikipedia pages found for query: '", query, "'.")
-    return(data.frame(title = character(), content = character()))
+    return(data.table(title = character(), content = character()))
   }
 
   # Join titles with the pipe '|' for the next API call
@@ -99,23 +99,22 @@ query_wikipedia <- function(
   # Check for HTTP errors
   httr2::resp_check_status(content_resp)
 
-  # Convert response to required output type ("json" or "data.frame")
+  # Convert response to required output type ("json" or "data.table")
   out <- if (output_type == "json") {
     httr2::resp_body_string(content_resp)
   } else {
     out <- httr2::resp_body_json(content_resp, simplifyVector = TRUE)
-    if (output_type == "data.frame") {
-      out <- do.call(
-        rbind,
-        lapply(out[["query"]][["pages"]], function(page) {
-          data.frame(
+    if (output_type == "data.table") {
+      out <- data.table::rbindlist(lapply(
+        out[["query"]][["pages"]],
+        function(page) {
+          list(
             pageid = page[["pageid"]],
             title = page[["title"]],
-            content = page[["extract"]],
-            stringsAsFactors = FALSE
+            content = page[["extract"]]
           )
-        })
-      )
+        }
+      ))
     }
   }
   out
