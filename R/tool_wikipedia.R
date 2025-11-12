@@ -21,7 +21,8 @@
 #' @param section_mode Character: "intro", "all", or "raw_json". "intro" returns only the
 #' introduction section, "all" returns the full page text, "raw_json" returns the raw JSON response.
 #' @param base_url Character: The base URL for the Wikipedia API.
-#' @param output Character: "json", "list", or "data.frame". The output format.
+#' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
+#' tool.
 #' @param verbosity Integer: Verbosity level.
 #'
 #' @return Character with JSON response, list, or data.frame.
@@ -33,12 +34,12 @@ query_wikipedia <- function(
   limit = 2L,
   section_mode = c("intro", "all", "raw_json"),
   base_url = "https://en.wikipedia.org/w/api.php",
-  output = c("json", "list", "data.frame"),
+  output_type = c("json", "list", "data.frame"),
   verbosity = 1L
 ) {
   # Input Validation
   section_mode <- match.arg(section_mode)
-  output <- match.arg(output)
+  output_type <- match.arg(output_type)
   limit <- clean_int(limit)
 
   # --- Get Page Titles ----------------------------------------------------------------------------
@@ -98,12 +99,12 @@ query_wikipedia <- function(
   # Check for HTTP errors
   httr2::resp_check_status(content_resp)
 
-  # Convert response to required output ("json" or "data.frame")
-  out <- if (output == "json") {
+  # Convert response to required output type ("json" or "data.frame")
+  out <- if (output_type == "json") {
     httr2::resp_body_string(content_resp)
   } else {
     out <- httr2::resp_body_json(content_resp, simplifyVector = TRUE)
-    if (output == "data.frame") {
+    if (output_type == "data.frame") {
       out <- do.call(
         rbind,
         lapply(out[["query"]][["pages"]], function(page) {

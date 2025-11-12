@@ -8,6 +8,10 @@ DUCKDUCKGO_URL <- "https://api.duckduckgo.com/"
 #' Query DuckDuckGo Instant Answer API
 #'
 #' @param query Character: Search query.
+#' @param ia Character or NULL: Specific Instant Answer to request. If NULL, general search is performed.
+#' @param return_all Logical: If TRUE, return full response as a list. If FALSE, return selected fields.
+#' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
+#' tool.
 #'
 #' @return JSON or data.table with response
 #'
@@ -18,9 +22,9 @@ query_duckduckgo_ia <- function(
   query,
   ia = NULL,
   return_all = FALSE,
-  output = c("json", "data.table")
+  output_type = c("json", "data.table")
 ) {
-  output <- match.arg(output)
+  output_type <- match.arg(output_type)
   # Validate query
   if (!is.character(query) || length(query) != 1L) {
     stop("query must be a single character string")
@@ -76,7 +80,7 @@ query_duckduckgo_ia <- function(
     dat[, Answer_type := res_list[["AnswerType"]]]
   }
   # Convert to JSON
-  if (output == "json") {
+  if (output_type == "json") {
     return(jsonlite::toJSON(dat, pretty = FALSE, auto_unbox = TRUE))
   }
   dat

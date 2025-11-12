@@ -67,7 +67,8 @@
 #' @param fields Character Vector: The fields to return. See References for available fields.
 #' @param year Character: Year filter in the format "YYYY-" or "YYYY-YYYY".
 #' @param endpoint_url Character: The Semantic Scholar API endpoint URL.
-#' @param output_format Character: "json" or "data.table". The output format.
+#' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
+#' tool.
 #'
 #' @return Character with JSON response or data.table
 #' @author EDG
@@ -115,9 +116,9 @@ query_semanticscholar <- function(
   year = "2000-",
   limit = 5L,
   endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search",
-  output_format = c("json", "data.table")
+  output_type = c("json", "data.table")
 ) {
-  output_format <- match.arg(output_format)
+  output_type <- match.arg(output_type)
   # --- Validate query ---
   if (!is.character(query) || length(query) != 1L) {
     stop("Query must be a single character string.")
@@ -158,7 +159,7 @@ query_semanticscholar <- function(
   # Parse response
   out <- httr2::resp_body_string(res)
 
-  if (output_format[1L] == "data.table") {
+  if (output_type[1L] == "data.table") {
     # Convert to list
     out <- jsonlite::fromJSON(out, simplifyVector = TRUE)
     # Convert to data.table
