@@ -410,7 +410,8 @@ method(generate, Agent) <- function(
       # Tool response should be JSON string - all tools must support this and "json" should be
       # the default value. We're forcing it here to be sure.
       args[["output_type"]] <- "json"
-      tool_responses[[i]] <- do.call(tool_names[i], args)
+      fn <- get(tool_names[i], envir = asNamespace("kaimana"))
+      tool_responses[[i]] <- do.call(fn, args)
       if (verbosity > 0L) {
         msg("Tool", highlight(tool_names[i]), "returned response.")
       }
