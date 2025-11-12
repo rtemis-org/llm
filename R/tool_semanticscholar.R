@@ -66,6 +66,7 @@
 #' @param query Character: The search query.
 #' @param fields Character Vector: The fields to return. See References for available fields.
 #' @param year Character: Year filter in the format "YYYY-" or "YYYY-YYYY".
+#' @param limit Integer: Maximum number of results to return.
 #' @param endpoint_url Character: The Semantic Scholar API endpoint URL.
 #' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
 #' tool.

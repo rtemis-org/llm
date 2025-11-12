@@ -21,6 +21,8 @@ query_semanticscholar(
 
 \item{year}{Character: Year filter in the format "YYYY-" or "YYYY-YYYY".}
 
+\item{limit}{Integer: Maximum number of results to return.}
+
 \item{endpoint_url}{Character: The Semantic Scholar API endpoint URL.}
 
 \item{output_type}{Character: "json" or "data.table". This should be "json" when used as an agent
