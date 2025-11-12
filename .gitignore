@@ -54,5 +54,9 @@ docs/
 # translation temp files
 po/*~
 
+# RStudio
+rsconnect/
+.Rproj.user
+
 # Kaimana security log
 kaimana_security_log.jsonl
