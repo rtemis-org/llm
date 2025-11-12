@@ -11,7 +11,7 @@ query_semanticscholar(
   year = "2000-",
   limit = 5L,
   endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search",
-  output_format = c("json", "data.table")
+  output_type = c("json", "data.table")
 )
 }
 \arguments{
@@ -23,7 +23,8 @@ query_semanticscholar(
 
 \item{endpoint_url}{Character: The Semantic Scholar API endpoint URL.}
 
-\item{output_format}{Character: "json" or "data.table". The output format.}
+\item{output_type}{Character: "json" or "data.table". This should be "json" when used as an agent
+tool.}
 }
 \value{
 Character with JSON response or data.table
