@@ -28,7 +28,7 @@
 #' @return Character with JSON response, list, or data.table.
 #'
 #' @author EDG
-#' @noRd
+#' @export
 query_wikipedia <- function(
   query,
   limit = 2L,
