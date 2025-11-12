@@ -42,7 +42,7 @@ method(repr, AIResponse) <- function(x, output_type = NULL) {
     if (role == "user") {
       out <- paste0(
         out,
-        fmt("User\n", col = col_user, bold = TRUE),
+        fmt("User\n", col = col_input, bold = TRUE),
         content,
         "\n"
       )
@@ -55,7 +55,7 @@ method(repr, AIResponse) <- function(x, output_type = NULL) {
         response <- gsub(".*</think>(.*)", "\\1", content)
         out <- paste0(
           out,
-          fmt("Thinking\n", col = col_thinking, bold = TRUE),
+          fmt("Thinking\n", col = col_reasoning, bold = TRUE),
           trimws(thinking),
           "\n"
         )
@@ -69,7 +69,7 @@ method(repr, AIResponse) <- function(x, output_type = NULL) {
       }
       out <- paste0(
         out,
-        fmt(paste0(assistant_name, "\n"), col = col_llm, bold = TRUE),
+        fmt(paste0(assistant_name, "\n"), col = col_agent, bold = TRUE),
         trimws(response),
         "\n"
       )
