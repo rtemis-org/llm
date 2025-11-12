@@ -114,7 +114,7 @@ create_tool <- function(
     description = description,
     parameters = parameters
   )
-} # /kaimana::tool
+} # /kaimana::create_tool
 
 
 # %% as_list.Tool ----
@@ -133,7 +133,7 @@ method(as_list, Tool) <- function(x) {
   list(
     type = "function",
     `function` = list(
-      name = x@name,
+      name = x@function_name,
       description = x@description,
       parameters = list(
         type = "object",
