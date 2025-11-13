@@ -3,8 +3,9 @@
 # 2025 EDG rtemis.org
 
 # References:
-# https://docs.ollama.com/api/chat
-# https://docs.ollama.com/capabilities/tool-calling#tool-calling
+# Chat endpoint: https://docs.ollama.com/api/chat
+# Tool calling: https://docs.ollama.com/capabilities/tool-calling#tool-calling
+# Thinking: https://docs.ollama.com/capabilities/thinking#enable-thinking-in-api-calls
 
 # --- Internal API ---------------------------------------------------------------------------------
 # %% Agent Class ----
@@ -42,6 +43,7 @@ Agent <- new_class(
     system_prompt = NULL,
     use_memory = TRUE,
     tools = NULL,
+    max_tool_rounds = 3L,
     output_schema = NULL,
     name = NULL
   ) {
@@ -210,15 +212,19 @@ method(get_messages, Agent) <- function(x) {
 
 # --- Public API -----------------------------------------------------------------------------------
 # %% create_agent() ----
-#' Create an Agent
+#' Create an `Agent`
 #'
-#' @param llmconfig LLMConfig: The LLMConfig to use.
+#' @param llmconfig `LLMConfig`: The LLM configuration to use.
 #' @param system_prompt Optional character: The system prompt to use.
 #' @param use_memory Logical: Whether to use conversation memory.
 #' @param tools Optional list of Tool objects: The tools available to the agent.
+#' @param max_tool_rounds Integer: Maximum number of tool call rounds per query.
+#' @param output_schema Optional list: The output schema to enforce on the agent's response created
+#' using [schema].
 #' @param name Optional character: The name of the agent.
 #'
-#' @return Agent object
+#' @return `Agent` object
+#'
 #' @author EDG
 #' @export
 create_agent <- function(
@@ -226,6 +232,7 @@ create_agent <- function(
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   use_memory = TRUE,
   tools = NULL,
+  max_tool_rounds = 3L,
   output_schema = NULL,
   name = NULL
 ) {
@@ -339,6 +346,8 @@ method(generate, Agent) <- function(
   # {<<} Initial response
   res <- httr2::resp_body_json(resp)
 
+  # Latest ollama native API return a separate "thinking" field for reasoning traces when
+  # using a model that supports it.
   # Echo response
   if (echo) {
     if (!is.null(res[["message"]][["thinking"]])) {
@@ -470,7 +479,25 @@ method(generate, Agent) <- function(
         tool_response_prompt,
         "\n",
         "Acknowledge the tools used and include citations where applicable.",
-        " Use these tool responses to answer the original query:\n\n",
+        if (x@max_tool_rounds - data.n_completed_tool_rounds > 0L) {
+          paste0(
+            " If you do not have sufficient information, you may use up to ",
+            x@max_tool_rounds - data.n_completed_tool_rounds,
+            " more tool call",
+            ngettext(
+              x@max_tool_rounds - data.n_completed_tool_rounds,
+              " round",
+              " rounds"
+            ),
+            ", if necessary."
+          )
+        } else {
+          paste(
+            "If you do not have sufficient information to answer the original query, say so",
+            "clearly and suggest alternative ways to obtain the information."
+          )
+        },
+        " Remember the original query you are answering:\n\n",
         '"',
         prompt,
         '"\n'
