@@ -88,7 +88,6 @@ method(repr, Message) <- function(x, output_type = NULL) {
 
 
 # %% print.Message ----
-# Print method for Message ----
 method(print, Message) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.Message
@@ -106,7 +105,7 @@ SystemMessage <- new_class(
   "SystemMessage",
   parent = Message,
   constructor = function(
-    name,
+    name = NULL,
     content,
     metadata = NULL
   ) {
@@ -119,6 +118,35 @@ SystemMessage <- new_class(
     )
   }
 ) # /kaimana::SystemMessage
+
+
+# %% repr.SystemMessage ----
+# repr method for SystemMessage
+method(repr, SystemMessage) <- function(x, output_type = NULL) {
+  if (is.null(output_type)) {
+    output_type <- get_output_type()
+  }
+  name <- if (!is.null(x@name)) {
+    paste0(x@name, " ")
+  } else {
+    NULL
+  }
+  paste0(
+    fmt(
+      paste0(".: ", name, "Input :.\n"),
+      # col = col_system,
+      bold = TRUE,
+      output_type = output_type
+    ),
+    x@content
+  )
+} # /kaimana::repr.SystemMessage
+
+
+# %% print.SystemMessage ----
+method(print, SystemMessage) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /kaimana::print.SystemMessage
 
 
 # %% InputMessage Class ----
@@ -136,7 +164,7 @@ InputMessage <- new_class(
     image_path = new_union(NULL | class_character)
   ),
   constructor = function(
-    name = MESSAGE_ROLE_INPUT,
+    name = NULL,
     content,
     image_path = NULL,
     metadata = NULL
@@ -151,6 +179,35 @@ InputMessage <- new_class(
     )
   }
 ) # /kaimana::InputMessage
+
+
+# %% repr.InputMessage ----
+# repr method for InputMessage
+method(repr, InputMessage) <- function(x, output_type = NULL) {
+  if (is.null(output_type)) {
+    output_type <- get_output_type()
+  }
+  name <- if (!is.null(x@name)) {
+    paste0(x@name, " ")
+  } else {
+    NULL
+  }
+  paste0(
+    fmt(
+      paste0(".: ", name, "Input :.\n"),
+      col = col_input,
+      bold = TRUE,
+      output_type = output_type
+    ),
+    x@content
+  )
+} # /kaimana::repr.InputMessage
+
+
+# %% print.InputMessage ----
+method(print, InputMessage) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /kaimana::print.InputMessage
 
 
 # %% LLMMessage Class ----
@@ -189,6 +246,48 @@ LLMMessage <- new_class(
     )
   }
 ) # /kaimana::LLMMessage
+
+
+# %% repr.LLMMessage ----
+method(repr, LLMMessage) <- function(x, output_type = NULL) {
+  if (is.null(output_type)) {
+    output_type <- get_output_type()
+  }
+  name <- if (!is.null(x@name)) {
+    paste0(x@name, " ")
+  } else {
+    NULL
+  }
+  out <- paste0(
+    if (!is.null(x@reasoning)) {
+      paste0(
+        fmt(
+          paste0(".: ", name, "Reasoning :.\n"),
+          col = col_reasoning,
+          bold = TRUE,
+          output_type = output_type
+        ),
+        x@reasoning,
+        "\n"
+      )
+    },
+    paste0(
+      fmt(
+        paste0(".: ", name, "Response :.\n"),
+        col = col_agent,
+        bold = TRUE,
+        output_type = output_type
+      ),
+      x@content
+    )
+  )
+} # /kaimana::repr.LLMMessage
+
+
+# %% print.LLMMessage ----
+method(print, LLMMessage) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /kaimana::print.LLMMessage
 
 
 # %% OllamaMessage ----
@@ -253,14 +352,14 @@ AgentMessage <- new_class(
 ) # /kaimana::AgentMessage
 
 
-# %% repr.LLMMessage ----
-# repr method for LLMMessage
-method(repr, LLMMessage) <- function(x, output_type = NULL) {
+# %% repr.AgentMessage ----
+# repr method for AgentMessage
+method(repr, AgentMessage) <- function(x, output_type = NULL) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
   }
   name <- if (!is.null(x@name)) {
-    paste0(fmt(x@name, bold = TRUE, output_type = output_type), " ")
+    paste0(x@name, " ")
   } else {
     NULL
   }
@@ -269,7 +368,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
       paste0(
         fmt(
           paste0(".: ", name, "Reasoning :.\n"),
-          col = col_reasoning,
+          col = col_agent,
           bold = TRUE,
           output_type = output_type
         ),
@@ -287,14 +386,14 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
       x@content
     )
   )
-} # /kaimana::repr.LLMMessage
+} # /kaimana::repr.AgentMessage
 
 
-# %% print.LLMMessage ----
-# Print method for LLMMessage ----
-method(print, LLMMessage) <- function(x, output_type = NULL, ...) {
+# %% print.AgentMessage ----
+# Print method for AgentMessage ----
+method(print, AgentMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.LLMMessage
+} # /kaimana::print.AgentMessage
 
 
 # %% as_OllamaMessage.list() ----
@@ -352,6 +451,34 @@ ToolMessage <- new_class(
     )
   }
 ) # /kaimana::ToolMessage
+
+
+# %% repr.ToolMessage ----
+method(repr, ToolMessage) <- function(x, output_type = NULL) {
+  if (is.null(output_type)) {
+    output_type <- get_output_type()
+  }
+  name <- if (!is.null(x@name)) {
+    paste0(x@name, " ")
+  } else {
+    NULL
+  }
+  paste0(
+    fmt(
+      paste0(".: ", name, "Tool :.\n"),
+      col = col_tool,
+      bold = TRUE,
+      output_type = output_type
+    ),
+    x@content
+  )
+} # /kaimana::repr.ToolMessage
+
+
+# %% print.ToolMessage ----
+method(print, ToolMessage) <- function(x, output_type = NULL, ...) {
+  cat(repr(x, output_type = output_type), "\n")
+} # /kaimana::print.ToolMessage
 
 
 # %% AgentState Class ----
