@@ -9,10 +9,11 @@ ollama_get_model_info(x = NULL, base_url = OLLAMA_URL_DEFAULT)
 \arguments{
 \item{base_url}{Character: Base URL of Ollama server.}
 
-\item{model}{Character: Name of model. If NULL, all models are returned.}
+\item{model}{Optional character vector: Name of model(s) to get info for. If NULL, all available
+models' info is returned.}
 }
 \value{
-List with model info if \code{x} is defined, data.table with all models' info otherwise.
+data.table
 }
 \description{
 Get Ollama Model Info

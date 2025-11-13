@@ -8,7 +8,8 @@ query_wikipedia(
   query,
   limit = 2L,
   section_mode = c("intro", "all", "raw_json"),
-  base_url = "https://en.wikipedia.org/w/api.php",
+  base_url = "https://{language}.wikipedia.org/w/api.php",
+  language = "en",
   output_type = c("json", "list", "data.table"),
   verbosity = 1L
 )
@@ -22,6 +23,8 @@ query_wikipedia(
 introduction section, "all" returns the full page text, "raw_json" returns the raw JSON response.}
 
 \item{base_url}{Character: The base URL for the Wikipedia API.}
+
+\item{language}{Character: Language code for the Wikipedia to search (e.g., "en" for English).}
 
 \item{output_type}{Character: "json" or "data.table". This should be "json" when used as an agent
 tool.}
