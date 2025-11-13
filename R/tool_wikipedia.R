@@ -21,6 +21,7 @@
 #' @param section_mode Character: "intro", "all", or "raw_json". "intro" returns only the
 #' introduction section, "all" returns the full page text, "raw_json" returns the raw JSON response.
 #' @param base_url Character: The base URL for the Wikipedia API.
+#' @param language Character: Language code for the Wikipedia to search (e.g., "en" for English).
 #' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
 #' tool.
 #' @param verbosity Integer: Verbosity level.
@@ -33,7 +34,8 @@ query_wikipedia <- function(
   query,
   limit = 2L,
   section_mode = c("intro", "all", "raw_json"),
-  base_url = "https://en.wikipedia.org/w/api.php",
+  base_url = "https://{language}.wikipedia.org/w/api.php",
+  language = "en",
   output_type = c("json", "list", "data.table"),
   verbosity = 1L
 ) {
@@ -41,6 +43,7 @@ query_wikipedia <- function(
   section_mode <- match.arg(section_mode)
   output_type <- match.arg(output_type)
   limit <- clean_int(limit)
+  base_url <- gsub("\\{language\\}", language, base_url)
 
   # --- Get Page Titles ----------------------------------------------------------------------------
 
