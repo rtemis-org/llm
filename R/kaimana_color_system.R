@@ -46,7 +46,7 @@ rt_magenta <- rtemis_magenta
 
 highlight_col <- rtemis_teal
 col_input <- rtemis_teal
-col_reasoning <- rtemis_magenta
+col_reasoning <- kaimana_blue
 col_llm <- genlib_orange
-col_tool <- kaimana_blue
+col_tool <- "#00c086"
 col_agent <- lmd_burgundy
