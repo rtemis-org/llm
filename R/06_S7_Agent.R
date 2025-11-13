@@ -16,7 +16,10 @@
 #' @field llmconfig LLMConfig: The LLMConfig to use.
 #' @field state AgentState: The state of the agent contains the message history and metadata.
 #' @field system_prompt Optional character: The system prompt to use.
+#' @field use_memory Logical: Whether to store conversation history in agent state.
 #' @field tools Optional list of Tool objects: The tools available to the agent.
+#' @field max_tool_rounds Integer: Maximum number of tool call rounds per query.
+#' @field output_schema Optional list: The output schema to enforce on the agent's response
 #' @field name Optional character: The name of the agent.
 #'
 #' @author EDG
@@ -29,6 +32,7 @@ Agent <- new_class(
     system_prompt = new_union(NULL | class_character),
     use_memory = class_logical,
     tools = new_union(NULL | class_list),
+    max_tool_rounds = class_integer,
     output_schema = new_union(NULL | class_list),
     name = new_union(NULL | class_character)
   ),
@@ -357,167 +361,178 @@ method(generate, Agent) <- function(
     verbosity = verbosity
   )
 
-  # {?>_} Check for tool calls
-  if (!is.null(res[["message"]][["tool_calls"]])) {
-    tool_names <- sapply(
-      res[["message"]][["tool_calls"]],
-      function(tc) tc[["function"]][["name"]]
-    )
-    n_tool_calls <- length(tool_names)
-    if (verbosity > 0L) {
-      msg(
-        "Agent wants to perform",
-        n_tool_calls,
-        ngettext(n_tool_calls, "tool call.", " tool calls.")
+  data.n_completed_tool_rounds <- 0L
+  while (data.n_completed_tool_rounds < x@max_tool_rounds) {
+    # {?>_} Check for tool calls
+    if (!is.null(res[["message"]][["tool_calls"]])) {
+      tool_names <- sapply(
+        res[["message"]][["tool_calls"]],
+        function(tc) tc[["function"]][["name"]]
       )
-    }
-
-    # Initialize tool responses
-    tool_responses <- structure(
-      vector("list", n_tool_calls),
-      names = tool_names
-    )
-
-    # Call each tool
-    for (i in seq_along(tool_responses)) {
-      # {/\} Check that tool exists in agent's tool list and in allowed tool_DB
-      if (
-        is.null(x@tools) ||
-          !(tool_names[i] %in% sapply(x@tools, function(t) t@function_name)) ||
-          !(tool_names[i] %in% tool_DB[["function_name"]])
-      ) {
-        # {!!} Report security incident
-        report_agent_unauthorized_tool(
-          agent = x,
-          issue = "Unauthorized tool request",
-          tool_requested = tool_names[i]
+      n_tool_calls <- length(tool_names)
+      if (verbosity > 0L) {
+        msg(
+          "Agent wants to perform",
+          n_tool_calls,
+          ngettext(n_tool_calls, "tool call.", " tool calls.")
         )
-        cli::cli_abort(
-          paste(
-            "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
-            "\nThis incident has been reported."
+      }
+
+      # Initialize tool responses
+      tool_responses <- structure(
+        vector("list", n_tool_calls),
+        names = tool_names
+      )
+
+      # Call each tool
+      # (how likely is it that an agent will call multiple tools at once rather than one at a time?)
+      for (i in seq_along(tool_responses)) {
+        data.n_completed_tool_rounds <- data.n_completed_tool_rounds + 1L
+        # {/\} Check that tool exists in agent's tool list and in allowed tool_DB
+        if (
+          is.null(x@tools) ||
+            !(tool_names[i] %in%
+              sapply(x@tools, function(t) t@function_name)) ||
+            !(tool_names[i] %in% tool_DB[["function_name"]])
+        ) {
+          # {!!} Report security incident
+          report_agent_unauthorized_tool(
+            agent = x,
+            issue = "Unauthorized tool request",
+            tool_requested = tool_names[i]
           )
+          cli::cli_abort(
+            paste(
+              "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
+              "\nThis incident has been reported."
+            )
+          )
+        }
+        # {/\!} Validate tool function: Throws error if hash does not match
+        validate_function(tool_names[i])
+
+        # {>_} Call tool
+        if (verbosity > 0L) {
+          msg("Invoking tool:", highlight(tool_names[i]))
+        }
+        args <- res[["message"]][["tool_calls"]][[i]][["function"]][[
+          "arguments"
+        ]]
+        # Tool response should be JSON string - all tools must support this and "json" should be
+        # the default value. We're forcing it here to be sure.
+        args[["output_type"]] <- "json"
+        fn <- get(tool_names[i], envir = asNamespace("kaimana"))
+        tool_responses[[i]] <- do.call(fn, args)
+        if (verbosity > 0L) {
+          msg("Tool", highlight(tool_names[i]), "returned response.")
+        }
+      } # /for each tool
+      #
+
+      # {++} Append ToolMessages to state
+      for (i in seq_along(tool_responses)) {
+        append_message(
+          running_state,
+          ToolMessage(
+            name = tool_names[i],
+            content = tool_responses[[i]]
+          ),
+          verbosity = verbosity
         )
       }
-      # {/\!} Validate tool function: Throws error if hash does not match
-      validate_function(tool_names[i])
 
-      # {>_} Call tool
-      if (verbosity > 0L) {
-        msg("Invoking tool:", highlight(tool_names[i]))
-      }
-      args <- res[["message"]][["tool_calls"]][[i]][["function"]][["arguments"]]
-      # Tool response should be JSON string - all tools must support this and "json" should be
-      # the default value. We're forcing it here to be sure.
-      args[["output_type"]] <- "json"
-      fn <- get(tool_names[i], envir = asNamespace("kaimana"))
-      tool_responses[[i]] <- do.call(fn, args)
-      if (verbosity > 0L) {
-        msg("Tool", highlight(tool_names[i]), "returned response.")
-      }
-    } # /for each tool
-    #
+      # Prepare AgentMessage with tool responses
+      tool_response_prompt <- paste0(
+        "The following tool responses were obtained:\n",
+        paste0(
+          sapply(
+            names(tool_responses),
+            function(tn) {
+              paste0(
+                "Tool '",
+                tn,
+                "' response:\n",
+                tool_responses[[tn]],
+                # jsonlite::toJSON(
+                #   tool_responses[[tn]],
+                #   auto_unbox = TRUE,
+                #   pretty = TRUE
+                # ),
+                "\n"
+              )
+            }
+          ),
+          collapse = "\n"
+        )
+      )
+      # Remind agent of original prompt
+      tool_response_prompt <- paste0(
+        tool_response_prompt,
+        "\n",
+        "Acknowledge the tools used and include citations where applicable.",
+        " Use these tool responses to answer the original query:\n\n",
+        '"',
+        prompt,
+        '"\n'
+      )
 
-    # {++} Append ToolMessages to state
-    for (i in seq_along(tool_responses)) {
+      # {++} Append AgentMessage with tool responses
       append_message(
         running_state,
-        ToolMessage(
-          name = tool_names[i],
-          content = tool_responses[[i]]
+        AgentMessage(
+          content = tool_response_prompt
         ),
         verbosity = verbosity
       )
-    }
 
-    # Prepare AgentMessage with tool responses
-    tool_response_prompt <- paste0(
-      "The following tool responses were obtained:\n",
-      paste0(
-        sapply(
-          names(tool_responses),
-          function(tn) {
-            paste0(
-              "Tool '",
-              tn,
-              "' response:\n",
-              tool_responses[[tn]],
-              # jsonlite::toJSON(
-              #   tool_responses[[tn]],
-              #   auto_unbox = TRUE,
-              #   pretty = TRUE
-              # ),
-              "\n"
-            )
-          }
+      # Now, send another prompt to the agent with the tool responses
+      if (verbosity > 0L) {
+        msg("Sending tool responses back to agent...")
+      }
+      followup_request_body <- list(
+        model = x@llmconfig@model_name,
+        messages = get_message_list(running_state), # Removes ToolMessages, AgentMessages are sent as role = "user"
+        stream = FALSE,
+        options = list(
+          temperature = x@llmconfig@temperature
+        )
+      )
+      # Output schema
+      if (!is.null(output_schema)) {
+        followup_request_body[["format"]] <- output_schema
+      }
+      # {>>} Perform follow-up request
+      followup_resp <- httr2::request(paste0(
+        x@llmconfig@base_url,
+        "/api/chat"
+      )) |>
+        httr2::req_body_json(followup_request_body) |>
+        httr2::req_user_agent("kaimana-r Agent (kaimana.rtemis.org)") |>
+        httr2::req_perform(verbosity = verbosity - 1L)
+      # Check for errors
+      httr2::resp_check_status(followup_resp)
+      if (verbosity > 0) {
+        # Replace working message with done
+        msg(repr_bracket(x@llmconfig@model_name), "done.")
+      }
+      # {<<} Follow-up response
+      res <- httr2::resp_body_json(followup_resp)
+
+      # {++} Append response to messages as LLMMessage
+      append_message(
+        running_state,
+        create_llm_message(
+          x,
+          content = res[["message"]][["content"]],
+          reasoning = res[["message"]][["thinking"]],
+          tool_calls = res[["message"]][["tool_calls"]]
         ),
-        collapse = "\n"
+        verbosity = verbosity
       )
-    )
-    # Remind agent of original prompt
-    tool_response_prompt <- paste0(
-      tool_response_prompt,
-      "\n",
-      "Acknowledge the tools used and include citations where applicable.",
-      " Use these tool responses to answer the original query:\n\n",
-      '"',
-      prompt,
-      '"\n'
-    )
-
-    # {++} Append AgentMessage with tool responses
-    append_message(
-      running_state,
-      AgentMessage(
-        content = tool_response_prompt
-      ),
-      verbosity = verbosity
-    )
-
-    # Now, send another prompt to the agent with the tool responses
-    if (verbosity > 0L) {
-      msg("Sending tool responses back to agent...")
+    } else {
+      # No tool calls, break
+      break
     }
-    followup_request_body <- list(
-      model = x@llmconfig@model_name,
-      messages = get_message_list(running_state), # Removes ToolMessages, AgentMessages are sent as role = "user"
-      stream = FALSE,
-      options = list(
-        temperature = x@llmconfig@temperature
-      )
-    )
-    # Output schema
-    if (!is.null(output_schema)) {
-      followup_request_body[["format"]] <- output_schema
-    }
-    # {>>} Perform follow-up request
-    followup_resp <- httr2::request(paste0(
-      x@llmconfig@base_url,
-      "/api/chat"
-    )) |>
-      httr2::req_body_json(followup_request_body) |>
-      httr2::req_user_agent("kaimana-r Agent (kaimana.rtemis.org)") |>
-      httr2::req_perform(verbosity = verbosity - 1L)
-    # Check for errors
-    httr2::resp_check_status(followup_resp)
-    if (verbosity > 0) {
-      # Replace working message with done
-      msg(repr_bracket(x@llmconfig@model_name), "done.")
-    }
-    # {<<} Follow-up response
-    out <- httr2::resp_body_json(followup_resp)
-
-    # {++} Append response to messages as LLMMessage
-    append_message(
-      running_state,
-      create_llm_message(
-        x,
-        content = out[["message"]][["content"]],
-        reasoning = out[["message"]][["thinking"]],
-        tool_calls = out[["message"]][["tool_calls"]]
-      ),
-      verbosity = verbosity
-    )
-  } # /tool calls
-  get_messages(x)
+  } # /while max_tool_rounds < max_tool_rounds
+  get_messages(running_state)
 } # /kaimana::generate.Agent
