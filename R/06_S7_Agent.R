@@ -64,6 +64,7 @@ Agent <- new_class(
       system_prompt = system_prompt,
       use_memory = use_memory,
       tools = tools,
+      max_tool_rounds = max_tool_rounds,
       output_schema = output_schema,
       name = name
     )
@@ -129,20 +130,22 @@ method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
       "(None)\n"
     } else {
       paste0(
-        "\n",
-        sapply(
-          x@tools,
-          function(tool) {
-            paste0(
-              "               - ",
-              fmt(tool@function_name, bold = TRUE, output_type = output_type),
-              ": ",
-              tool@description
-            )
-          }
+        paste0(
+          "\n",
+          sapply(
+            x@tools,
+            function(tool) {
+              paste0(
+                "               - ",
+                fmt(tool@function_name, bold = TRUE, output_type = output_type),
+                ": ",
+                tool@description
+              )
+            }
+          ),
+          collapse = ""
         ),
-        "\n",
-        collapse = "\n"
+        "\n"
       )
     }, # / if tools
     if (!is.null(x@output_schema)) {
@@ -162,7 +165,6 @@ method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
 method(print, Agent) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.Agent
-
 
 # %% create_llm_message.Ollama ----
 # Needs to follow Agent definition
@@ -241,6 +243,7 @@ create_agent <- function(
     system_prompt = system_prompt,
     use_memory = use_memory,
     tools = tools,
+    max_tool_rounds = max_tool_rounds,
     output_schema = output_schema,
     name = name
   )
@@ -321,12 +324,12 @@ method(generate, Agent) <- function(
   }
 
   ## Add Tools
+  # "required" field must be list, even if empty or single tool (handled by as_list.Tool)
   if (!is.null(x@tools) && use_tools) {
     request_body[["tools"]] <- lapply(x@tools, as_list)
   }
 
-  if (verbosity > 0) {
-    output_type <- get_output_type()
+  if (verbosity > 0L) {
     msg(repr_bracket(x@llmconfig@model_name), "working...")
   }
 
