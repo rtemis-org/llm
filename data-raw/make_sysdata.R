@@ -3,10 +3,12 @@
 # 2025 EDG rtemis.org
 
 # %% Constants ----
-AVAILABLE_TOOLS <- c(
-  "query_wikipedia",
-  "query_semanticscholar",
-  "query_duckduckgo_ia"
+AVAILABLE_TOOLS <- list(
+  datetime = "get_current_datetime",
+  wikipedia = "query_wikipedia",
+  semanticscholar = "query_semanticscholar",
+  duckduckgoia = "query_duckduckgo_ia",
+  arxiv = "query_arxiv"
 )
 HASH_ALGO <- "sha256"
 
@@ -23,16 +25,20 @@ pkg_env <- asNamespace("kaimana")
 # # List of allowed tools (can auto-detect from a tagged object or manual list)
 # allowed_functions <- c("safe_sum", "extract_pdf_text")
 
+.hash_function <- getFromNamespace(".hash_function", "kaimana")
+
 # %% Build the tool_DB
 tool_DB <- data.frame(
-  function_name = AVAILABLE_TOOLS,
+  name = names(AVAILABLE_TOOLS),
+  function_name = unlist(AVAILABLE_TOOLS, use.names = FALSE),
   hash = vapply(
-    AVAILABLE_TOOLS,
+    unlist(AVAILABLE_TOOLS),
     function(nm) .hash_function(get(nm, envir = pkg_env)),
     FUN.VALUE = character(1)
   ),
   stringsAsFactors = FALSE
 )
 
-# Save to sysdata.rda in your R/ directory
+
+# %% Save to sysdata.rda in your R/ directory
 usethis::use_data(tool_DB, internal = TRUE, overwrite = TRUE)
