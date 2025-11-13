@@ -463,7 +463,7 @@ method(generate, Agent) <- function(
               paste0(
                 "Tool '",
                 tn,
-                "' response:\n",
+                "' response:\n\n",
                 tool_responses[[tn]],
                 # jsonlite::toJSON(
                 #   tool_responses[[tn]],
