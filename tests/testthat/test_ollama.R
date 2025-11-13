@@ -16,8 +16,6 @@ test_that("ollama_list_models works", {
 test_that("ollama_get_model_info works", {
   all_models <- ollama_get_model_info()
   expect_s3_class(all_models, "data.table")
-  model_info <- ollama_get_model_info(x = model_name)
-  expect_s3_class(model_info, "list")
 }) # /ollama_get_model_info
 
 

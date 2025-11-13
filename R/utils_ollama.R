@@ -46,26 +46,26 @@ ollama_list_models <- function(
 # %% ollama_get_model_info() ----
 #' Get Ollama Model Info
 #'
-#' @param model Character: Name of model. If NULL, all models are returned.
+#' @param model Optional character vector: Name of model(s) to get info for. If NULL, all available
+#' models' info is returned.
 #' @param base_url Character: Base URL of Ollama server.
 #'
-#' @return List with model info if `x` is defined, data.table with all models' info otherwise.
+#' @return data.table
 #'
 #' @author EDG
 #' @export
 ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
   models <- .ollama_api_tags(base_url = base_url, output = "list")[["models"]]
-  models <- data.table::rbindlist(models, fill = TRUE)
+  models <- data.table::rbindlist(
+    lapply(models, \(m) data.table(t(unlist(m)))),
+    fill = TRUE
+  )
+
   if (is.null(x)) {
-    out <- models
+    models
   } else {
-    out <- models[name == x]
-    if (nrow(out) == 0) {
-      cli::cli_abort("Model ", x, " not found.")
-    }
-    out <- as.list(out)
+    models[name %in% x]
   }
-  out
 } # /ollama_get_model_info
 
 
