@@ -36,23 +36,23 @@ MESSAGE_ROLE_TOOL <- "tool"
 Message <- new_class(
   "Message",
   properties = list(
+    content = class_character,
     role = class_character,
     name = new_union(NULL | class_character),
-    content = class_character,
     timestamp = class_POSIXct,
     metadata = new_union(NULL | class_list)
   ),
   constructor = function(
+    content = character(0L),
     role = character(0L),
     name = NULL,
-    content = character(0L),
     metadata = NULL
   ) {
     new_object(
       S7_object(),
+      content = content,
       role = role,
       name = name,
-      content = content,
       timestamp = Sys.time(),
       metadata = metadata
     )
@@ -93,6 +93,18 @@ method(print, Message) <- function(x, output_type = NULL, ...) {
 } # /kaimana::print.Message
 
 
+# %% as_list.Message ----
+method(as_list, Message) <- function(x) {
+  list(
+    role = x@role,
+    name = x@name,
+    content = x@content,
+    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    metadata = x@metadata
+  )
+} # /kaimana::as_list.Message
+
+
 # %% SystemMessage Class ----
 #' @title SystemMessage Class
 #'
@@ -105,15 +117,15 @@ SystemMessage <- new_class(
   "SystemMessage",
   parent = Message,
   constructor = function(
-    name = NULL,
     content,
+    name = NULL,
     metadata = NULL
   ) {
     new_object(
       Message(),
+      content = content,
       role = MESSAGE_ROLE_SYSTEM,
       name = name,
-      content = content,
       metadata = metadata
     )
   }
@@ -164,16 +176,16 @@ InputMessage <- new_class(
     image_path = new_union(NULL | class_character)
   ),
   constructor = function(
-    name = NULL,
     content,
+    name = NULL,
     image_path = NULL,
     metadata = NULL
   ) {
     new_object(
       Message(),
+      content = content,
       role = MESSAGE_ROLE_INPUT,
       name = name,
-      content = content,
       image_path = image_path,
       metadata = metadata
     )
@@ -210,6 +222,19 @@ method(print, InputMessage) <- function(x, output_type = NULL, ...) {
 } # /kaimana::print.InputMessage
 
 
+# %% as_list.InputMessage ----
+method(as_list, InputMessage) <- function(x) {
+  list(
+    role = x@role,
+    name = x@name,
+    content = x@content,
+    image_path = x@image_path,
+    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    metadata = x@metadata
+  )
+} # /kaimana::as_list.InputMessage
+
+
 # %% LLMMessage Class ----
 #' @title LLMMessage Class
 #'
@@ -227,8 +252,8 @@ LLMMessage <- new_class(
     tool_calls = new_union(NULL | class_list)
   ),
   constructor = function(
-    name = NULL,
     content,
+    name = NULL,
     metadata = NULL,
     model_name,
     reasoning = NULL,
@@ -306,6 +331,21 @@ method(print, LLMMessage) <- function(x, output_type = NULL, ...) {
 } # /kaimana::print.LLMMessage
 
 
+# %% as_list.LLMMessage ----
+method(as_list, LLMMessage) <- function(x) {
+  list(
+    role = x@role,
+    name = x@name,
+    reasoning = x@reasoning,
+    content = x@content,
+    tool_calls = x@tool_calls,
+    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    metadata = x@metadata,
+    model_name = x@model_name
+  )
+} # /kaimana::as_list.LLMMessage
+
+
 # %% OllamaMessage ----
 #' @title OllamaMessage Class
 #'
@@ -318,8 +358,8 @@ OllamaMessage <- new_class(
   "OllamaMessage",
   parent = LLMMessage,
   constructor = function(
-    name = NULL,
     content,
+    name = NULL,
     metadata = NULL,
     model_name,
     reasoning = NULL,
@@ -328,8 +368,8 @@ OllamaMessage <- new_class(
     metadata[["provider"]] <- "Ollama"
     new_object(
       LLMMessage(
-        name = name,
         content = content,
+        name = name,
         metadata = metadata,
         model_name = model_name,
         reasoning = reasoning,
@@ -353,15 +393,15 @@ AgentMessage <- new_class(
   "AgentMessage",
   parent = Message,
   constructor = function(
-    name = NULL,
     content,
+    name = NULL,
     metadata = NULL
   ) {
     new_object(
       Message(),
+      content = content,
       role = MESSAGE_ROLE_AGENT,
       name = name,
-      content = content,
       metadata = metadata
     )
   }
@@ -440,8 +480,8 @@ ToolMessage <- new_class(
   "ToolMessage",
   parent = Message,
   constructor = function(
-    name,
     content,
+    name,
     metadata = list()
   ) {
     new_object(
@@ -650,3 +690,9 @@ method(repr, InMemoryAgentState) <- function(x, pad = 0L, output_type = NULL) {
 method(print, InMemoryAgentState) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.InMemoryAgentState
+
+
+# %% View.Message ----
+View.Message <- function(x, title = x@role) {
+  View(as_list(x), title = title)
+} # /kaimana::View.Message
