@@ -11,7 +11,8 @@ query_semanticscholar(
   year = "2000-",
   limit = 5L,
   endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search",
-  output_type = c("json", "data.table")
+  output_type = c("json", "data.table"),
+  verbosity = 1L
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ query_semanticscholar(
 
 \item{output_type}{Character: "json" or "data.table". This should be "json" when used as an agent
 tool.}
+
+\item{verbosity}{Integer: Verbosity level.}
 }
 \value{
 Character with JSON response or data.table
