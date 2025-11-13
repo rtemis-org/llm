@@ -4,7 +4,12 @@
 \alias{query_drugbank}
 \title{Query DrugBank API}
 \usage{
-query_drugbank(query, region = "us", output = c("json", "data.table"))
+query_drugbank(
+  query,
+  region = "us",
+  output_type = c("json", "data.table"),
+  url = "https://api.drugbank.com/v1/drug_names"
+)
 }
 \arguments{
 \item{query}{Character: Search query.}
