@@ -88,6 +88,12 @@ query_duckduckgo_ia <- function(
 
 
 # %% tool_duckduckgo_ia ----
+#' DuckDuckGo Instant Answer Search Tool
+#'
+#' Tool definition for DuckDuckGo Instant Answer search
+#'
+#' @author EDG
+#' @export
 tool_duckduckgo_ia <- create_tool(
   name = "DuckDuckGo Instant Answer Search",
   function_name = "query_duckduckgo_ia",
