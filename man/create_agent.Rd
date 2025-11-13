@@ -2,19 +2,20 @@
 % Please edit documentation in R/06_S7_Agent.R
 \name{create_agent}
 \alias{create_agent}
-\title{Create an Agent}
+\title{Create an \code{Agent}}
 \usage{
 create_agent(
   llmconfig,
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   use_memory = TRUE,
   tools = NULL,
+  max_tool_rounds = 3L,
   output_schema = NULL,
   name = NULL
 )
 }
 \arguments{
-\item{llmconfig}{LLMConfig: The LLMConfig to use.}
+\item{llmconfig}{\code{LLMConfig}: The LLM configuration to use.}
 
 \item{system_prompt}{Optional character: The system prompt to use.}
 
@@ -22,13 +23,18 @@ create_agent(
 
 \item{tools}{Optional list of Tool objects: The tools available to the agent.}
 
+\item{max_tool_rounds}{Integer: Maximum number of tool call rounds per query.}
+
+\item{output_schema}{Optional list: The output schema to enforce on the agent's response created
+using \link{schema}.}
+
 \item{name}{Optional character: The name of the agent.}
 }
 \value{
-Agent object
+\code{Agent} object
 }
 \description{
-Create an Agent
+Create an \code{Agent}
 }
 \author{
 EDG
