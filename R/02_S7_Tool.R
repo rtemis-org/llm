@@ -137,10 +137,10 @@ method(as_list, Tool) <- function(x) {
       description = x@description,
       parameters = list(
         type = "object",
-        required = vapply(
+        # lapply correctly returns `list()` in case of no required parameters
+        required = lapply(
           Filter(function(p) p@required, x@parameters),
-          function(p) p@name,
-          FUN.VALUE = character(1)
+          function(p) p@name
         ),
         properties = structure(
           lapply(
