@@ -141,37 +141,69 @@ query_semanticscholar <- function(
     stop("Year must be a non-empty string.")
   }
 
+  # API key if available
+  api_key <- keyring::key_get("semanticscholar_api_key")
+
   # --- Prepare request using httr2 ---
-  req <- httr2::request(endpoint_url)
-  req <- httr2::req_url_query(
-    req,
-    query = query,
-    fields = paste(fields, collapse = ","),
-    year = year,
-    limit = limit
-  )
-  # Add user agent
-  req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
+  req <- httr2::request(endpoint_url) |>
+    httr2::req_url_query(
+      query = query,
+      fields = paste(fields, collapse = ","),
+      year = year,
+      limit = limit
+    ) |>
+    httr2::req_user_agent("kaimana-r (kaimana.rtemis.org)")
 
-  # --- Perform request ---
-  res <- httr2::req_perform(req)
-  # Check for HTTP errors
-  httr2::resp_check_status(res)
-  # Parse response
-  out <- httr2::resp_body_string(res)
-
-  if (output_type[1L] == "data.table") {
-    # Convert to list
-    out <- jsonlite::fromJSON(out, simplifyVector = TRUE)
-    # Convert to data.table
-    out <- data.table::as.data.table(out[["data"]])
+  if (!is.null(api_key) && nchar(api_key) > 0L) {
+    if (verbosity > 0L) {
+      msg("Using Semantic Scholar API key from keyring.")
+    }
+    req <- req |>
+      httr2::req_headers(
+        "x-api-key" = api_key
+      )
   }
 
-  out
+  # --- Perform request ---
+  result <- tryCatch(
+    {
+      res <- httr2::req_perform(req)
+      # Check for HTTP errors
+      httr2::resp_check_status(res)
+      # Parse response
+      out <- httr2::resp_body_string(res)
+
+      if (output_type == "data.table") {
+        # Convert to list
+        out <- jsonlite::fromJSON(out, simplifyVector = TRUE)
+        # Convert to data.table
+        out <- data.table::as.data.table(out[["data"]])
+      }
+
+      out
+    },
+    error = function(e) {
+      # Extract HTTP status code if available
+      if (inherits(e, "httr2_http_error")) {
+        status_code <- e$status
+        return(paste0("tool call returned HTTP error ", status_code))
+      }
+      # For other errors, return the error message
+      paste0("tool call error: ", conditionMessage(e))
+    }
+  )
+
+  result
 } # /query_semanticscholar
 
 
 # %% tool_semanticscholar ----
+#' Semantic Scholar Search Tool
+#'
+#' Tool definition for Semantic Scholar search
+#'
+#' @author EDG
+#' @export
 tool_semanticscholar <- create_tool(
   name = "Semantic Scholar Search",
   function_name = "query_semanticscholar",
