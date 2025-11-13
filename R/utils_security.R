@@ -7,29 +7,6 @@ HASH_ALGO <- "sha256"
 KMN_LOG_FILE <- "kaimana_security_log.jsonl"
 
 
-# %% hash_function ----
-#' Hash function for validation
-#'
-#' Create a hash of the function's source code for validation purposes
-#'
-#' @param x Function: The function to hash.
-#'
-#' @return Character: The hash of the function's source code.
-#'
-#' @author EDG
-#' @keywords internal
-#' @noRd
-.hash_function <- function(x) {
-  x_env_stripped <- x
-  environment(x_env_stripped) <- baseenv()
-  # hash after explicit serialization (instead of serialize = TRUE in digest)
-  digest::digest(
-    serialize(object = x_env_stripped, connection = NULL),
-    algo = HASH_ALGO
-  )
-} # /kaimana::hash_function
-
-
 # %% report_agent_unauthorized_tool ----
 #' Report security incident
 #'
@@ -65,12 +42,28 @@ report_agent_unauthorized_tool <- function(
 .tool_hash_cache <- new.env(parent = emptyenv())
 
 
-# Internal helper: compute canonical hash
-# .hash_function <- function(f, algo = "sha256") {
-#   f_env_stripped <- f
-#   environment(f_env_stripped) <- baseenv()
-#   digest::digest(serialize(f_env_stripped, NULL, version = 3), algo = algo)
-# }
+# %% hash_function ----
+#' Hash function for validation
+#'
+#' Create a hash of the function's source code for validation purposes
+#'
+#' @param x Function: The function to hash.
+#'
+#' @return Character: The hash of the function's source code.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.hash_function <- function(x, algo = HASH_ALGO) {
+  x_env_stripped <- x
+  environment(x_env_stripped) <- baseenv()
+  # hash after explicit serialization (instead of serialize = TRUE in digest)
+  digest::digest(
+    serialize(object = x_env_stripped, connection = NULL),
+    algo = algo
+  )
+} # /kaimana::hash_function
+
 
 #' Call a tool securely
 #'
