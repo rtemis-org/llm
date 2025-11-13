@@ -70,6 +70,7 @@
 #' @param endpoint_url Character: The Semantic Scholar API endpoint URL.
 #' @param output_type Character: "json" or "data.table". This should be "json" when used as an agent
 #' tool.
+#' @param verbosity Integer: Verbosity level.
 #'
 #' @return Character with JSON response or data.table
 #' @author EDG
@@ -117,7 +118,8 @@ query_semanticscholar <- function(
   year = "2000-",
   limit = 5L,
   endpoint_url = "http://api.semanticscholar.org/graph/v1/paper/search",
-  output_type = c("json", "data.table")
+  output_type = c("json", "data.table"),
+  verbosity = 1L
 ) {
   output_type <- match.arg(output_type)
   # --- Validate query ---
