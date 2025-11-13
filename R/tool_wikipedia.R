@@ -57,10 +57,28 @@ query_wikipedia <- function(
     )
 
   # Perform the request
-  search_resp <- httr2::req_perform(search_req)
+  search_resp <- tryCatch(
+    {
+      resp <- httr2::req_perform(search_req)
+      # Check for HTTP errors
+      httr2::resp_check_status(resp)
+      resp
+    },
+    error = function(e) {
+      # Extract HTTP status code if available
+      if (inherits(e, "httr2_http_error")) {
+        status_code <- e$status
+        return(paste0("tool call returned HTTP error ", status_code))
+      }
+      # For other errors, return the error message
+      return(paste0("tool call error: ", conditionMessage(e)))
+    }
+  )
 
-  # Check for HTTP errors
-  httr2::resp_check_status(search_resp)
+  # Check if we got an error string back
+  if (is.character(search_resp)) {
+    return(search_resp)
+  }
 
   # Convert response to R list
   resp_list <- httr2::resp_body_json(search_resp, simplifyVector = TRUE)
@@ -94,10 +112,28 @@ query_wikipedia <- function(
     )
 
   # Perform the request
-  content_resp <- httr2::req_perform(content_req)
+  content_resp <- tryCatch(
+    {
+      resp <- httr2::req_perform(content_req)
+      # Check for HTTP errors
+      httr2::resp_check_status(resp)
+      resp
+    },
+    error = function(e) {
+      # Extract HTTP status code if available
+      if (inherits(e, "httr2_http_error")) {
+        status_code <- e$status
+        return(paste0("tool call returned HTTP error ", status_code))
+      }
+      # For other errors, return the error message
+      paste0("tool call error: ", conditionMessage(e))
+    }
+  )
 
-  # Check for HTTP errors
-  httr2::resp_check_status(content_resp)
+  # Check if we got an error string back
+  if (is.character(content_resp) && grepl("^tool call", content_resp)) {
+    return(content_resp)
+  }
 
   # Convert response to required output type ("json" or "data.table")
   out <- if (output_type == "json") {
@@ -122,6 +158,12 @@ query_wikipedia <- function(
 
 
 # %% tool_wikipedia ----
+#' Wikipedia Search Tool
+#'
+#' Tool definition for Wikipedia search
+#'
+#' @author EDG
+#' @export
 tool_wikipedia <- create_tool(
   name = "Wikipedia Search",
   function_name = "query_wikipedia",
