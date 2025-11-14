@@ -60,9 +60,29 @@ query_duckduckgo_ia <- function(
   # Add user agent
   req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
   # Perform request
-  res <- httr2::req_perform(req)
-  # Check for HTTP errors
-  httr2::resp_check_status(res)
+  res <- tryCatch(
+    {
+      resp <- httr2::req_perform(req)
+      # Check for HTTP errors
+      httr2::resp_check_status(resp)
+      resp
+    },
+    error = function(e) {
+      # Extract HTTP status code if available
+      if (inherits(e, "httr2_http_error")) {
+        status_code <- e$status
+        return(paste0("tool call returned HTTP error ", status_code))
+      }
+      # For other errors, return the error message
+      paste0("tool call error: ", conditionMessage(e))
+    }
+  )
+
+  # Check if we got an error string back
+  if (is.character(res)) {
+    return(res)
+  }
+
   # Parse response (resp_body_json fails here)
   res_json_raw <- httr2::resp_body_string(res)
   # Convert to list
