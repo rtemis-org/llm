@@ -183,6 +183,12 @@ tool_wikipedia <- create_tool(
       type = "integer",
       description = "Maximum number of pages to return.",
       required = FALSE
+    ),
+    tool_param(
+      name = "section_mode",
+      type = "string",
+      description = "Content to retrieve: 'intro' for the introduction, or 'all' for the full page text.",
+      required = FALSE
     )
   )
 ) # /kaimana::tool_wikipedia
