@@ -403,10 +403,11 @@ method(generate, Agent) <- function(
     verbosity = verbosity
   )
 
-  data.n_completed_tool_rounds <- 0L
-  while (data.n_completed_tool_rounds < x@max_tool_rounds) {
+  n_completed_tool_rounds <- 0L
+  while (n_completed_tool_rounds < x@max_tool_rounds) {
     # {?>_} Check for tool calls
     if (!is.null(res[["message"]][["tool_calls"]])) {
+      n_completed_tool_rounds <- n_completed_tool_rounds + 1L
       tool_names <- sapply(
         res[["message"]][["tool_calls"]],
         function(tc) tc[["function"]][["name"]]
@@ -429,7 +430,6 @@ method(generate, Agent) <- function(
       # Call each tool
       # (how likely is it that an agent will call multiple tools at once rather than one at a time?)
       for (i in seq_along(tool_responses)) {
-        data.n_completed_tool_rounds <- data.n_completed_tool_rounds + 1L
         # {/\} Check that tool exists in agent's tool list and in allowed tool_DB
         if (
           is.null(x@tools) ||
@@ -511,13 +511,13 @@ method(generate, Agent) <- function(
         tool_response_prompt,
         "\n",
         "Acknowledge the tools used and include citations where applicable.",
-        if (x@max_tool_rounds - data.n_completed_tool_rounds > 0L) {
+        if (x@max_tool_rounds - n_completed_tool_rounds > 0L) {
           paste0(
             " If you do not have sufficient information, you may use up to ",
-            x@max_tool_rounds - data.n_completed_tool_rounds,
+            x@max_tool_rounds - n_completed_tool_rounds,
             " more tool call",
             ngettext(
-              x@max_tool_rounds - data.n_completed_tool_rounds,
+              x@max_tool_rounds - n_completed_tool_rounds,
               " round",
               " rounds"
             ),
