@@ -96,7 +96,7 @@ as_list <- new_generic("as_list", "x")
 #' @param x An `AgentState` object.
 #' @param message A `Message` object to append.
 #'
-#' @return The updated `AgentState` object.
+#' @return The updated `AgentState` object, invisibly.
 #'
 #' @author EDG
 #' @export

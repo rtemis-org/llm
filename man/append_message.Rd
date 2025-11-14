@@ -12,7 +12,7 @@ append_message(x, ...)
 \item{message}{A \code{Message} object to append.}
 }
 \value{
-The updated \code{AgentState} object.
+The updated \code{AgentState} object, invisibly.
 }
 \description{
 Generic method to append a \code{Message} object to an \code{AgentState}

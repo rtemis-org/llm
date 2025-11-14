@@ -585,7 +585,7 @@ InMemoryAgentState <- new_class(
 #' @param message `Message` object to append.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return NULL. The method modifies the state in place.
+#' @return The updated `InMemoryAgentState` object, invisibly.
 #'
 #' @author EDG
 #' @noRd
@@ -595,7 +595,7 @@ method(append_message, InMemoryAgentState) <- function(
   verbosity = 1L
 ) {
   # Check message inherits from Message
-  check_is_S7(message, Message)
+  S7::check_is_S7(message, Message)
   x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- message
   if (verbosity > 0L) {
     cat(
@@ -606,6 +606,7 @@ method(append_message, InMemoryAgentState) <- function(
       "\n"
     )
   }
+  invisible(x)
 } # /kaimana::append_message.InMemoryAgentState
 
 
