@@ -96,9 +96,8 @@ validate_function <- function(tool_name, ...) {
   }
 
   if (!identical(current_hash, expected_hash)) {
-    cli::cli_abort(sprintf(
-      "Tool hash mismatch: %s may have been altered",
-      tool_name
-    ))
+    cli::cli_abort(
+      "Tool hash mismatch: {.val {tool_name}} may have been altered."
+    )
   }
 }

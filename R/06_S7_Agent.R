@@ -443,12 +443,10 @@ method(generate, Agent) <- function(
             issue = "Unauthorized tool request",
             tool_requested = tool_names[i]
           )
-          cli::cli_abort(
-            paste(
-              "Agent requested tool '{tool_names[i]}' which is not in the agent's tool list.",
-              "\nThis incident has been reported."
-            )
-          )
+          cli::cli_abort(c(
+            "Agent requested tool '{.val {tool_names[i]}}' which is not in the agent's tool list.",
+            i = "This incident has been reported."
+          ))
         }
         # {/\!} Validate tool function: Throws error if hash does not match
         validate_function(tool_names[i])

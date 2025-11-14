@@ -46,7 +46,7 @@ ollama_list_models <- function(
 # %% ollama_get_model_info() ----
 #' Get Ollama Model Info
 #'
-#' @param model Optional character vector: Name of model(s) to get info for. If NULL, all available
+#' @param x Optional character vector: Name of model(s) to get info for. If NULL, all available
 #' models' info is returned.
 #' @param base_url Character: Base URL of Ollama server.
 #'
@@ -82,11 +82,10 @@ ollama_check_model <- function(x) {
   if (x %in% ollama_list_models()) {
     invisible(NULL)
   } else {
-    cli::cli_abort(
-      "Model ",
-      x,
-      " is not available. Please check the model name and pull it if necessary.\n",
-      "List available models with `ollama_list_models()`."
-    )
+    cli::cli_abort(c(
+      "Model {.val {x}} is not available.",
+      i = "Please check the model name and pull it if necessary.",
+      i = "List available models with `ollama_list_models()`."
+    ))
   }
 } # /kaimana::ollama_check_model
