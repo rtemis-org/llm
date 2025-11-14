@@ -460,11 +460,11 @@ method(generate, Agent) <- function(
         args <- res[["message"]][["tool_calls"]][[i]][["function"]][[
           "arguments"
         ]]
+        fn <- get(tool_names[i], envir = asNamespace("kaimana"))
         # Force output_type = "json" where supported
         if ("output_type" %in% names(formals(fn))) {
           args[["output_type"]] <- "json"
         }
-        fn <- get(tool_names[i], envir = asNamespace("kaimana"))
         tool_responses[[i]] <- do.call(fn, args)
         if (verbosity > 0L) {
           msg("Tool", highlight(tool_names[i]), "returned response.")
