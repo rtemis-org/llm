@@ -283,7 +283,7 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
     )
   )
   if (!is.null(x@output_schema)) {
-    request_body[["format"]] <- output_schema
+    request_body[["format"]] <- x@output_schema
   }
   if (verbosity > 0) {
     output_type <- get_output_type()
