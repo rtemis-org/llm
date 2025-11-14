@@ -430,12 +430,11 @@ method(generate, Agent) <- function(
       # Call each tool
       # (how likely is it that an agent will call multiple tools at once rather than one at a time?)
       for (i in seq_along(tool_responses)) {
-        # {/\} Check that tool exists in agent's tool list and in allowed tool_DB
+        # {/\} Check that tool requested by LLM exists in agent's tool list
+        # Note that Agent validator already checks that all tools in agent's tool list are allowed.
         if (
           is.null(x@tools) ||
-            !(tool_names[i] %in%
-              sapply(x@tools, function(t) t@function_name)) ||
-            !(tool_names[i] %in% tool_DB[["function_name"]])
+            !(tool_names[i] %in% sapply(x@tools, function(t) t@function_name))
         ) {
           # {!!} Report security incident
           report_agent_unauthorized_tool(
