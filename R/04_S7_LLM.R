@@ -282,6 +282,9 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
       temperature = x@config@temperature
     )
   )
+  if (!is.null(x@output_schema)) {
+    request_body[["format"]] <- output_schema
+  }
   if (verbosity > 0) {
     output_type <- get_output_type()
     msg(repr_bracket(x@config@model_name), "working...")
