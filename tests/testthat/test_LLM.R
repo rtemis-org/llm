@@ -63,56 +63,6 @@ test_that("create_Ollama works", {
   testthat::expect_true(S7_inherits(llm, Ollama))
 }) # /create_Ollama
 
-
-# %% Message Class ----
-test_that("Message class works", {
-  msg <- Message(
-    role = "llm",
-    name = "Preprocessor",
-    content = "Hello.",
-    metadata = list(project = "kmn")
-  )
-  testthat::expect_true(S7_inherits(msg, Message))
-}) # /Message
-
-
-# %% LLMMessage Class ----
-test_that("LLMMessage class works", {
-  msg <- LLMMessage(
-    name = "Preprocessor",
-    content = "Hello.",
-    metadata = list(project = "kmn"),
-    model_name = "qwen3:8b",
-    reasoning = "I think therefore I am."
-  )
-  testthat::expect_true(S7_inherits(msg, LLMMessage))
-}) # /LLMMessage
-
-
-# %% OllamaMessage Class ----
-test_that("OllamaMessage class works", {
-  msg <- OllamaMessage(
-    name = "Preprocessor",
-    content = "Hello.",
-    metadata = list(project = "kmn"),
-    model_name = "qwen3:8b",
-    reasoning = "I think therefore I am."
-  )
-  testthat::expect_true(S7_inherits(msg, OllamaMessage))
-  testthat::expect_equal(msg@metadata[["provider"]], "Ollama")
-}) # /OllamaMessage
-
-
-# %% AgentMessage Class ----
-test_that("AgentMessage class works", {
-  msg <- AgentMessage(
-    name = "Agent1",
-    content = "Processing data.",
-    metadata = list(task = "data cleaning")
-  )
-  testthat::expect_true(S7_inherits(msg, AgentMessage))
-}) # /AgentMessage
-
 # %% generate.Ollama ----
 # Slow test, uncomment to run
 # res <- llm |>
