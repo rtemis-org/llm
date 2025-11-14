@@ -6,36 +6,18 @@
 test_that("schema() works", {
   # Create an R list defining the schema
   schema_list <- schema(
-    frequency = list(
-      type = "numeric",
-      description = "Frequency of the oscillator"
-    ),
-    amplitude = list(
-      type = "numeric",
-      description = "Amplitude of the oscillator"
-    ),
-    oscillator_type = list(
-      type = "string",
-      description = "Type of the oscillator"
-    ),
+    frequency = field("numeric", "Frequency of the oscillator"),
+    amplitude = field("numeric", "Amplitude of the oscillator"),
+    oscillator_type = field("string", "Type of the oscillator"),
     required = c("frequency", "amplitude"),
     output = "list"
   )
   testthat::expect_type(schema_list, "list")
   # Create a JSON string defining the schema
   schema_json <- schema(
-    frequency = list(
-      type = "numeric",
-      description = "Frequency of the oscillator"
-    ),
-    amplitude = list(
-      type = "numeric",
-      description = "Amplitude of the oscillator"
-    ),
-    oscillator_type = list(
-      type = "string",
-      description = "Type of the oscillator"
-    ),
+    frequency = field("numeric", "Frequency of the oscillator"),
+    amplitude = field("numeric", "Amplitude of the oscillator"),
+    oscillator_type = field("string", "Type of the oscillator"),
     required = c("frequency", "amplitude"),
     output = "json"
   )
