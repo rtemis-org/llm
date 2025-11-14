@@ -134,7 +134,7 @@ query_wikipedia <- function(
   )
 
   # Check if we got an error string back
-  if (is.character(content_resp) && grepl("^tool call", content_resp)) {
+  if (is.character(content_resp)) {
     return(content_resp)
   }
 
