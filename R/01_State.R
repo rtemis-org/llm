@@ -247,9 +247,9 @@ LLMMessage <- new_class(
   "LLMMessage",
   parent = Message,
   properties = list(
-    model_name = class_character,
     reasoning = new_union(NULL | class_character),
-    tool_calls = new_union(NULL | class_list)
+    tool_calls = new_union(NULL | class_list),
+    model_name = class_character
   ),
   constructor = function(
     content,
@@ -261,9 +261,9 @@ LLMMessage <- new_class(
   ) {
     new_object(
       Message(),
+      content = content,
       role = MESSAGE_ROLE_LLM,
       name = name,
-      content = content,
       metadata = metadata,
       model_name = model_name,
       reasoning = reasoning,
@@ -601,7 +601,9 @@ method(append_message, InMemoryAgentState) <- function(
     cat(
       format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
       repr_bracket("InMemoryAgentState"),
-      "Appended message from",
+      "Appended",
+      class(message)[1],
+      "from",
       fmt(message@name %||% message@role, col = highlight_col, bold = TRUE),
       "\n"
     )
