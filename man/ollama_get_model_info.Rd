@@ -7,10 +7,10 @@
 ollama_get_model_info(x = NULL, base_url = OLLAMA_URL_DEFAULT)
 }
 \arguments{
-\item{base_url}{Character: Base URL of Ollama server.}
-
-\item{model}{Optional character vector: Name of model(s) to get info for. If NULL, all available
+\item{x}{Optional character vector: Name of model(s) to get info for. If NULL, all available
 models' info is returned.}
+
+\item{base_url}{Character: Base URL of Ollama server.}
 }
 \value{
 data.table
