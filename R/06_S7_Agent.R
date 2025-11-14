@@ -166,16 +166,16 @@ method(print, Agent) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.Agent
 
-# %% create_llm_message.Ollama ----
-# Needs to follow Agent definition
-#' create_llm_message method for Agent with Ollama backend
+
+# %% create_llm_message.Agent ----
+#' create_llm_message method for `Agent`
 #'
-#' @param x Agent object
+#' @param x `Agent` object
 #' @param content Character: The content of the message.
 #' @param reasoning Optional character: The reasoning trace.
 #' @param tool_calls Optional list: Tool call information.
 #'
-#' @return An OllamaMessage object.
+#' @return An `LLMMessage` object.
 #'
 #' @author EDG
 #' @noRd
@@ -185,15 +185,45 @@ method(create_llm_message, Agent) <- function(
   reasoning = NULL,
   tool_calls = NULL
 ) {
-  OllamaMessage(
-    name = x@name,
+  create_llm_message(
+    x@llmconfig,
     content = content,
+    reasoning = reasoning,
+    tool_calls = tool_calls,
+    name = x@name
+  )
+} # /kaimana::create_llm_message.Agent
+
+
+# %% create_llm_message.OllamaConfig ----
+# Needs to follow Agent definition
+#' create_llm_message method for Agent with Ollama backend
+#'
+#' @param x OllamaConfig object
+#' @param content Character: The content of the message.
+#' @param reasoning Optional character: The reasoning trace.
+#' @param tool_calls Optional list: Tool call information.
+#'
+#' @return An OllamaMessage object.
+#'
+#' @author EDG
+#' @noRd
+method(create_llm_message, OllamaConfig) <- function(
+  x,
+  content,
+  reasoning = NULL,
+  tool_calls = NULL,
+  name = NULL
+) {
+  OllamaMessage(
+    content = content,
+    name = name,
     metadata = list(),
-    model_name = x@llmconfig@model_name,
+    model_name = x@model_name,
     reasoning = reasoning,
     tool_calls = tool_calls
   )
-} # /kaimana::create_llm_message.Ollama
+} # /kaimana::create_llm_message.OllamaConfig
 
 
 # %% get_messages.Agent ----
