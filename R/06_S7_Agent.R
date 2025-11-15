@@ -244,7 +244,7 @@ method(get_messages, Agent) <- function(x) {
 
 # --- Public API -----------------------------------------------------------------------------------
 # %% create_agent() ----
-#' Create an `Agent`
+#' Create a kaimana Agent
 #'
 #' @param llmconfig `LLMConfig`: The LLM configuration to use.
 #' @param system_prompt Optional character: The system prompt to use.
@@ -282,9 +282,9 @@ create_agent <- function(
 
 # %% generate.Agent() ----
 # Reference: https://docs.ollama.com/api/chat
-#' Generate method for Agent
+#' Generate method for kaimana Agent
 #'
-#' @param x Agent object
+#' @param x `Agent` object
 #' @param prompt Character: The prompt to send to the agent.
 #' @param image_path Optional character: Path to an image to include in the prompt.
 #' @param output_schema Optional list: The output schema to enforce on the agent's response.
