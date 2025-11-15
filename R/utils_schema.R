@@ -30,7 +30,7 @@ schema <- function(..., required = NULL, output_type = c("json", "list")) {
       required
     }
   )
-  if (output == "json") {
+  if (output_type == "json") {
     jsonlite::toJSON(out, auto_unbox = TRUE, pretty = TRUE)
   } else {
     out
