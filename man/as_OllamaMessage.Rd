@@ -13,7 +13,7 @@ as_OllamaMessage(x, ...)
 An OllamaMessage object
 }
 \description{
-Generic method to convert various objects to kaimana OllamaMessage objects
+Generic method to convert to \code{OllamaMessage} object
 }
 \author{
 EDG

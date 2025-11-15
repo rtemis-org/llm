@@ -35,7 +35,7 @@ as_Message <- new_generic("as_Message", "x")
 # %% as_OllamaMessage generic ----
 #' Convert to OllamaMessage
 #'
-#' Generic method to convert various objects to kaimana OllamaMessage objects
+#' Generic method to convert to `OllamaMessage` object
 #'
 #' @param x An object to convert
 #'

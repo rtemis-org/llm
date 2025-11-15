@@ -2,7 +2,7 @@
 % Please edit documentation in R/06_S7_Agent.R
 \name{create_agent}
 \alias{create_agent}
-\title{Create an \code{Agent}}
+\title{Create a kaimana Agent}
 \usage{
 create_agent(
   llmconfig,
@@ -34,7 +34,7 @@ using \link{schema}.}
 \code{Agent} object
 }
 \description{
-Create an \code{Agent}
+Create a kaimana Agent
 }
 \author{
 EDG
