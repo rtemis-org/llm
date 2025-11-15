@@ -313,6 +313,10 @@ method(generate, Agent) <- function(
   echo = TRUE,
   verbosity = 1L
 ) {
+  # Get output schema: First check function argument, then agent's default
+  if (is.null(output_schema)) {
+    output_schema <- x@output_schema
+  }
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
