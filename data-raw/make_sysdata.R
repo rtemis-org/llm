@@ -7,8 +7,8 @@ AVAILABLE_TOOLS <- list(
   datetime = "get_current_datetime",
   wikipedia = "query_wikipedia",
   semanticscholar = "query_semanticscholar",
-  duckduckgoia = "query_duckduckgo_ia",
-  arxiv = "query_arxiv"
+  arxiv = "query_arxiv",
+  duckduckgoia = "query_duckduckgo_ia"
 )
 HASH_ALGO <- "sha256"
 
