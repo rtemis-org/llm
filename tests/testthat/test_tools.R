@@ -63,7 +63,8 @@ test_that("Tool class works", {
 
 # %% create_tool() ----
 tool_addition <- create_tool(
-  name = "addition",
+  name = "Addition",
+  function_name = "add_numbers",
   description = "Performs arithmetic addition of two numbers.",
   parameters = list(
     tool_param(
@@ -82,7 +83,7 @@ tool_addition <- create_tool(
 )
 test_that("create_tool() works", {
   expect_true(S7_inherits(tool_addition, Tool))
-  expect_equal(tool_addition@name, "addition")
+  expect_equal(tool_addition@name, "Addition")
   expect_equal(length(tool_addition@parameters), 2)
 }) # /create_tool()
 

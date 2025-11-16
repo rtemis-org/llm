@@ -140,7 +140,7 @@ My name is Kaimana.\" That's it.
 
 My name is Kaimana."
   aimsg <- AIMessage(x)
-  expect_s3_class(aimsg, "AIMessage")
+  expect_true(S7_inherits(aimsg, "AIMessage"))
   expect_type(aimsg[["thinking"]], "character")
   expect_type(aimsg[["content"]], "character")
 })

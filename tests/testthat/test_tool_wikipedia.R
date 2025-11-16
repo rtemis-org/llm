@@ -14,6 +14,6 @@ test_that("query_wikipedia returns expected columns (light run)", {
   )
   expect_s3_class(ws, "data.frame")
   expect_true(all(
-    c("page_id", "title", "content") %in% names(ws)
+    c("pageid", "title", "content") %in% names(ws)
   ))
 })
