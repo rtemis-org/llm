@@ -25,6 +25,27 @@ test_that("SystemMessage class works", {
 }) # /SystemMessage
 
 
+# %% InputMessage Class ----
+test_that("InputMessage class works", {
+  msg <- InputMessage(
+    content = "Process this data.",
+    metadata = list(project = "kmn")
+  )
+  testthat::expect_true(S7_inherits(msg, InputMessage))
+}) # /InputMessage
+
+
+# %% InputMessage + image_path Class ----
+test_that("InputMessage class works", {
+  msg <- InputMessage(
+    content = "Process this data.",
+    metadata = list(project = "kmn"),
+    image_path = "path/to/image.png"
+  )
+  testthat::expect_true(S7_inherits(msg, InputMessage))
+}) # /InputMessage
+
+
 # %% LLMMessage Class ----
 test_that("LLMMessage class works", {
   msg <- LLMMessage(
@@ -55,7 +76,7 @@ test_that("OllamaMessage class works", {
 # %% AgentMessage Class ----
 test_that("AgentMessage class works", {
   msg <- AgentMessage(
-    name = "Agent1",
+    name = "KMN",
     content = "Processing data.",
     metadata = list(task = "data cleaning")
   )

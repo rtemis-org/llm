@@ -2,6 +2,7 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
+# library(testthat)
 # %% schema() ----
 test_that("schema() works", {
   # Create an R list defining the schema
@@ -10,7 +11,7 @@ test_that("schema() works", {
     amplitude = field("numeric", "Amplitude of the oscillator"),
     oscillator_type = field("string", "Type of the oscillator"),
     required = c("frequency", "amplitude"),
-    output = "list"
+    output_type = "list"
   )
   testthat::expect_type(schema_list, "list")
   # Create a JSON string defining the schema
@@ -19,7 +20,7 @@ test_that("schema() works", {
     amplitude = field("numeric", "Amplitude of the oscillator"),
     oscillator_type = field("string", "Type of the oscillator"),
     required = c("frequency", "amplitude"),
-    output = "json"
+    output_type = "json"
   )
   testthat::expect_type(schema_json, "character")
 }) # /schema
@@ -41,7 +42,7 @@ test_that("Agent with output_schema works", {
       description = "Type of the oscillator"
     ),
     required = c("frequency", "amplitude"),
-    output = "list"
+    output_type = "list"
   )
   agent <- Agent(
     llmconfig = config_Ollama(
