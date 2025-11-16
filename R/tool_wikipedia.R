@@ -170,7 +170,12 @@ query_wikipedia <- function(
 tool_wikipedia <- create_tool(
   name = "Wikipedia Search",
   function_name = "query_wikipedia",
-  description = "Search Wikipedia for articles and return their introduction content",
+  description = paste(
+    "Search Wikipedia for articles and return either the introduction or the full article text.",
+    "Useful for retrieving factual information from Wikipedia.",
+    "One strategy is to get multiple articles' introduction first and then refine the search to",
+    "get the full text of the most relevant article."
+  ),
   parameters = list(
     tool_param(
       name = "query",
