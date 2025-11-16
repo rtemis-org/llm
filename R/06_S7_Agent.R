@@ -150,13 +150,13 @@ method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
     }, # / if tools
     if (!is.null(x@output_schema)) {
       paste0(
-        fmt(" Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(x@output_schema, pad = pad, output_type = output_type)
+        fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
+        repr_ls(x@output_schema, pad = pad + 15L, output_type = output_type)
       )
     },
     # llmconfig
     fmt("   LLM Config:\n", bold = TRUE, pad = pad, output_type = output_type),
-    repr(x@llmconfig, pad = 15L, output_type = output_type)
+    repr(x@llmconfig, pad = pad + 15L, output_type = output_type)
   ) #/ paste0
 } # /kaimana::repr.Agent
 
@@ -237,8 +237,8 @@ method(create_llm_message, OllamaConfig) <- function(
 #'
 #' @author EDG
 #' @noRd
-method(get_messages, Agent) <- function(x) {
-  get_messages(x@state)
+method(get_messages, Agent) <- function(x, last = FALSE) {
+  get_messages(x@state, last = last)
 } # /kaimana::get_messages.Agent
 
 
@@ -287,6 +287,8 @@ create_agent <- function(
 #' @param x `Agent` object
 #' @param prompt Character: The prompt to send to the agent.
 #' @param image_path Optional character: Path to an image to include in the prompt.
+#' @param think Optional logical: Whether to enable thinking (reasoning trace) for this call. Only
+#' supported by certain models.
 #' @param output_schema Optional list: The output schema to enforce on the agent's response.
 #' Important: if NULL, the agent's default output_schema will be used. This means that the
 #' generate call's schema takes precedence over the agent's schema.
@@ -309,6 +311,7 @@ method(generate, Agent) <- function(
   x,
   prompt,
   image_path = NULL,
+  think = NULL,
   output_schema = NULL,
   commit_to_memory = TRUE,
   use_tools = TRUE,
@@ -331,7 +334,9 @@ method(generate, Agent) <- function(
       SystemMessage(
         name = x@name,
         content = x@system_prompt
-      )
+      ),
+      echo = echo,
+      verbosity = verbosity
     )
   }
   running_state <- if (update_state) x@state else .tempState
@@ -341,7 +346,9 @@ method(generate, Agent) <- function(
     InputMessage(
       content = prompt,
       image_path = image_path
-    )
+    ),
+    echo = echo,
+    verbosity = verbosity
   )
 
   # {Initial Request Body}
@@ -353,6 +360,11 @@ method(generate, Agent) <- function(
       temperature = x@llmconfig@temperature
     )
   )
+
+  ## Add Thinking
+  if (!is.null(think)) {
+    request_body[["think"]] <- think
+  }
 
   ## Add Output schema
   if (!is.null(output_schema)) {
@@ -385,18 +397,6 @@ method(generate, Agent) <- function(
   # {<<} Initial response
   res <- httr2::resp_body_json(resp)
 
-  # Latest ollama native API return a separate "thinking" field for reasoning traces when
-  # using a model that supports it.
-  # Echo response
-  if (echo) {
-    if (!is.null(res[["message"]][["thinking"]])) {
-      cat(repr_bracket(x@name %||% "Agent"), fmt("reasoning\n", bold = TRUE))
-      cat(res[["message"]][["thinking"]], "\n")
-    }
-    cat(repr_bracket(x@name %||% "Agent"), fmt("response\n", bold = TRUE))
-    cat(res[["message"]][["content"]], "\n")
-  }
-
   # {++} Append initial response
   append_message(
     running_state,
@@ -406,6 +406,7 @@ method(generate, Agent) <- function(
       reasoning = res[["message"]][["thinking"]],
       tool_calls = res[["message"]][["tool_calls"]]
     ),
+    echo = echo,
     verbosity = verbosity
   )
 
@@ -483,33 +484,31 @@ method(generate, Agent) <- function(
             name = tool_names[i],
             content = tool_responses[[i]]
           ),
+          echo = echo,
           verbosity = verbosity
         )
       }
 
       # Prepare AgentMessage with tool responses
       tool_response_prompt <- paste0(
-        "The following tool responses were obtained:\n",
-        paste0(
-          sapply(
-            names(tool_responses),
-            function(tn) {
-              paste0(
-                "Tool '",
-                tn,
-                "' response:\n\n",
-                tool_responses[[tn]],
-                # jsonlite::toJSON(
-                #   tool_responses[[tn]],
-                #   auto_unbox = TRUE,
-                #   pretty = TRUE
-                # ),
-                "\n"
-              )
-            }
-          ),
-          collapse = "\n"
-        )
+        sapply(
+          names(tool_responses),
+          function(tn) {
+            paste0(
+              "Tool '",
+              tn,
+              "' response:\n\n",
+              tool_responses[[tn]],
+              # jsonlite::toJSON(
+              #   tool_responses[[tn]],
+              #   auto_unbox = TRUE,
+              #   pretty = TRUE
+              # ),
+              "\n"
+            )
+          }
+        ),
+        collapse = "\n"
       )
       # Remind agent of original prompt
       tool_response_prompt <- paste0(
@@ -546,6 +545,7 @@ method(generate, Agent) <- function(
         AgentMessage(
           content = tool_response_prompt
         ),
+        echo = echo,
         verbosity = verbosity
       )
 
@@ -591,6 +591,7 @@ method(generate, Agent) <- function(
           reasoning = res[["message"]][["thinking"]],
           tool_calls = res[["message"]][["tool_calls"]]
         ),
+        echo = echo,
         verbosity = verbosity
       )
     } else {
