@@ -78,10 +78,14 @@ InMemoryAgentState <- new_class(
 method(append_message, InMemoryAgentState) <- function(
   x,
   message,
+  echo = TRUE,
   verbosity = 1L
 ) {
   # Check message inherits from Message
   S7::check_is_S7(message, Message)
+  if (echo && verbosity > 0L) {
+    print(message)
+  }
   x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- message
   if (verbosity > 0L) {
     cat(
@@ -107,7 +111,10 @@ method(append_message, InMemoryAgentState) <- function(
 #'
 #' @author EDG
 #' @noRd
-method(get_messages, InMemoryAgentState) <- function(x) {
+method(get_messages, InMemoryAgentState) <- function(x, last = FALSE) {
+  if (last) {
+    return(tail(x@state[["messages"]], 1))
+  }
   x@state[["messages"]]
 } # /kaimana::get_messages.InMemoryAgentState
 
