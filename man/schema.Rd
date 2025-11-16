@@ -22,6 +22,13 @@ Character JSON string (if output = "json") or list (if output = "list")
 \description{
 Define output schema for LLM responses
 }
+\details{
+The \code{required} field needs to remain an array after conversion to JSON, so we use
+\code{I()} to inhibit conversion to JSON object.
+You can use \code{jsonlite::toJSON(your_schema, auto_unbox = TRUE, pretty = TRUE)}
+to verify the output if needed. If \code{required} is a single string, it should return as
+an array with one element, e.g. \verb{"required": ["frequency"]}, NOT \code{"required": "frequency"}.
+}
 \author{
 EDG
 }

@@ -4,10 +4,7 @@
 \alias{field}
 \title{Define a schema field}
 \usage{
-field(
-  type = c("string", "integer", "numeric", "boolean", "array", "object"),
-  description
-)
+field(type = c("string", "number", "boolean", "array", "object"), description)
 }
 \arguments{
 \item{type}{Character: "string", "integer", "numeric", "boolean", "array", "object". The field type.}
@@ -23,9 +20,9 @@ Define a schema field
 \details{
 Use this function to define each individual field when calling \link{schema}.
 This is a convenience function to offer type validation and allow
-\code{field("numeric", "Frequency of the oscillator")} syntax.
+\code{field("number", "Frequency of the oscillator")} syntax.
 instead of
-\code{list(type = "numeric", description = "Frequency of the oscillator")}.
+\code{list(type = "number", description = "Frequency of the oscillator")}.
 }
 \author{
 EDG
