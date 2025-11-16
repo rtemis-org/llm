@@ -72,28 +72,32 @@ Message <- new_class(
 #' @author EDG
 #' @noRd
 method(repr, Message) <- function(x, output_type = NULL) {
-  if (is.null(output_type)) {
-    output_type <- get_output_type()
-  }
   # RHS based on class
-  rhs <- switch(sub(".*::"))
-  {
-    case("SystemMessage"):"System"
-    case("InputMessage"):"Input"
-    case("LLMMessage"):"Response"
-    case("ToolMessage"):"Tool Response"
-    case("AgentMessage"):"Agent"
-    default:""
-  }
-  name <- if (!is.null(x@name)) {
-    paste0(x@name, " (", x@role, ")")
+  rhs <- switch(
+    sub(".*::", "", class(x)[1]),
+    SystemMessage = "System",
+    InputMessage = "Input",
+    LLMMessage = "Response",
+    ToolMessage = "Tool Response",
+    AgentMessage = "Agent Message",
+    "Message"
+  )
+  name <- if (is.null(x@name)) {
+    rhs
   } else {
-    x@role
+    paste(x@name, rhs)
   }
+  .color <- switch(
+    rhs,
+    System = col_system,
+    Input = col_input,
+    Response = col_llm,
+    `Tool Response` = col_tool,
+    `Agent Message` = col_agent,
+    NULL
+  )
   paste0(
-    fmt("[", thin = TRUE, output_type = output_type),
-    fmt(name, bold = TRUE, output_type = output_type),
-    fmt("]", thin = TRUE, output_type = output_type),
+    repr_bracket(name, col = .color, output_type = output_type),
     "\n",
     x@content
   )
@@ -157,22 +161,20 @@ method(repr, SystemMessage) <- function(x, output_type = NULL) {
     NULL
   }
   paste0(
-    fmt(
-      paste0(".: ", name, "System :.\n"),
+    repr_bracket(
+      paste0(name, "System"),
       col = col_system,
-      bold = TRUE,
       output_type = output_type
     ),
+    "\n",
     x@content
   )
 } # /kaimana::repr.SystemMessage
-
 
 # %% print.SystemMessage ----
 method(print, SystemMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.SystemMessage
-
 
 # %% InputMessage Class ----
 #' @title InputMessage Class
@@ -218,13 +220,25 @@ method(repr, InputMessage) <- function(x, output_type = NULL) {
     NULL
   }
   paste0(
-    fmt(
-      paste0(".: ", name, "Input :.\n"),
+    repr_bracket(
+      paste0(name, "Input"),
       col = col_input,
-      bold = TRUE,
       output_type = output_type
     ),
-    x@content
+    "\n",
+    x@content,
+    if (!is.null(x@image_path)) {
+      paste0(
+        "\n",
+        fmt(
+          "\nImage Path: ",
+          col = col_input,
+          bold = TRUE,
+          output_type = output_type
+        ),
+        x@image_path
+      )
+    }
   )
 } # /kaimana::repr.InputMessage
 
@@ -299,40 +313,37 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
   out <- paste0(
     if (!is.null(x@reasoning)) {
       paste0(
-        fmt(
-          paste0(".: ", name, "Reasoning :.\n"),
+        repr_bracket(
+          paste0(name, "Reasoning"),
           col = col_reasoning,
-          bold = TRUE,
           output_type = output_type
         ),
-        x@reasoning,
-        "\n"
+        "\n",
+        x@reasoning
       )
     },
-    if (!is.null(x@content) && nchar(x@content) > 0L) {
+    if (!is.null(x@content) && nchar(trimws(x@content)) > 0L) {
       paste0(
-        fmt(
-          paste0(".: ", name, "Response :.\n"),
+        "\n",
+        repr_bracket(
+          paste0(name, "Response"),
           col = col_llm,
-          bold = TRUE,
           output_type = output_type
         ),
+        "\n",
         x@content
       )
     },
     if (!is.null(x@tool_calls)) {
       paste0(
-        "\n",
-        fmt(
-          paste0(".: ", name, "Tool Call :.\n"),
+        repr_bracket(
+          paste0(name, "Tool Call"),
           col = col_tool,
-          bold = TRUE,
           output_type = output_type
         ),
+        "\n",
         jsonlite::toJSON(x@tool_calls, pretty = TRUE, auto_unbox = TRUE)
       )
-    } else {
-      ""
     }
   )
 } # /kaimana::repr.LLMMessage
@@ -433,12 +444,12 @@ method(repr, AgentMessage) <- function(x, output_type = NULL) {
     "Agent"
   }
   out <- paste0(
-    fmt(
-      paste0(".: ", name, " Message :.\n"),
+    repr_bracket(
+      paste(name, "Message"),
       col = col_agent,
-      bold = TRUE,
       output_type = output_type
     ),
+    "\n",
     x@content
   )
 } # /kaimana::repr.AgentMessage
@@ -519,12 +530,12 @@ method(repr, ToolMessage) <- function(x, output_type = NULL) {
     NULL
   }
   paste0(
-    fmt(
-      paste0(".: ", name, "Tool Response :.\n"),
+    repr_bracket(
+      paste0(name, "Tool Response"),
       col = col_tool,
-      bold = TRUE,
       output_type = output_type
     ),
+    "\n",
     x@content
   )
 } # /kaimana::repr.ToolMessage
