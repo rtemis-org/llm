@@ -288,6 +288,8 @@ create_agent <- function(
 #' @param prompt Character: The prompt to send to the agent.
 #' @param image_path Optional character: Path to an image to include in the prompt.
 #' @param output_schema Optional list: The output schema to enforce on the agent's response.
+#' Important: if NULL, the agent's default output_schema will be used. This means that the
+#' generate call's schema takes precedence over the agent's schema.
 #' @param commit_to_memory Logical: Whether to commit this interaction to the agent's memory.
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.

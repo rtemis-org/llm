@@ -14,6 +14,13 @@
 #'
 #' @return Character JSON string (if output = "json") or list (if output = "list")
 #'
+#' @details
+#' The `required` field needs to remain an array after conversion to JSON, so we use
+#' `I()` to inhibit conversion to JSON object.
+#' You can use `jsonlite::toJSON(your_schema, auto_unbox = TRUE, pretty = TRUE)`
+#' to verify the output if needed. If `required` is a single string, it should return as
+#' an array with one element, e.g. `"required": ["frequency"]`, NOT `"required": "frequency"`.
+#'
 #' @author EDG
 #' @export
 
@@ -25,9 +32,9 @@ schema <- function(..., required = NULL, output_type = c("json", "list")) {
       ...
     ),
     required = if (is.null(required)) {
-      names(list(...))
+      I(names(list(...)))
     } else {
-      required
+      I(required)
     }
   )
   if (output_type == "json") {
@@ -49,14 +56,14 @@ schema <- function(..., required = NULL, output_type = c("json", "list")) {
 #' @details
 #' Use this function to define each individual field when calling [schema].
 #' This is a convenience function to offer type validation and allow
-#' `field("numeric", "Frequency of the oscillator")` syntax.
+#' `field("number", "Frequency of the oscillator")` syntax.
 #' instead of
-#' `list(type = "numeric", description = "Frequency of the oscillator")`.
+#' `list(type = "number", description = "Frequency of the oscillator")`.
 #'
 #' @author EDG
 #' @export
 field <- function(
-  type = c("string", "integer", "numeric", "boolean", "array", "object"),
+  type = c("string", "number", "boolean", "array", "object"),
   description
 ) {
   type <- match.arg(type)
