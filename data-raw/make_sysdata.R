@@ -15,16 +15,6 @@ HASH_ALGO <- "sha256"
 # Import your package namespace manually to access the functions
 pkg_env <- asNamespace("kaimana")
 
-# # Define hash function (e.g. using serialize for integrity)
-# hash_function <- function(f) {
-#   f_env_stripped <- f
-#   environment(f_env_stripped) <- baseenv()
-#   digest(serialize(f_env_stripped, NULL), algo = "sha256")
-# }
-
-# # List of allowed tools (can auto-detect from a tagged object or manual list)
-# allowed_functions <- c("safe_sum", "extract_pdf_text")
-
 .hash_function <- getFromNamespace(".hash_function", "kaimana")
 
 # %% Build the tool_DB
