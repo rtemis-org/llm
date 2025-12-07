@@ -6,28 +6,21 @@
 
 model_name <- "qwen3:8b"
 
-# List Ollama Models ----
+# %% ollama_list_models() ----
 test_that("ollama_list_models works", {
   expect_type(ollama_list_models(), "character")
 }) # /ollama_list_models
 
-# Message Ollama ----
-msg_res <- ollama_chat(
-  model = model_name,
-  system = "You are a helpful assistant.",
-  user = "Hello.",
-  output_type = "text"
-)
-test_that("ollama_chat works", {
-  expect_type(msg_res, "character")
-}) # /ollama_chat
 
-#' Generate Ollama Response ----
-gen_res <- ollama_generate(
-  model = model_name,
-  prompt = "Pick a color.",
-  output_type = "text"
-)
-test_that("ollama_generate works", {
-  expect_type(gen_res, "character")
-}) # /ollama_generate
+# %% ollama_get_model_info() ----
+test_that("ollama_get_model_info works", {
+  all_models <- ollama_get_model_info()
+  expect_s3_class(all_models, "data.table")
+}) # /ollama_get_model_info
+
+
+# %% ollama_check_model() ----
+test_that("ollama_check_model works", {
+  expect_null(ollama_check_model(model_name))
+  expect_error(ollama_check_model("non_existent_model_12345"))
+}) # /ollama_check_model

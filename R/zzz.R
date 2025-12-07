@@ -15,6 +15,8 @@ kaimana_version <- packageVersion("kaimana")
 # rtemis internal functions
 printls <- getFromNamespace("printls", "rtemis")
 printdf <- getFromNamespace("printdf", "rtemis")
+clean_int <- getFromNamespace("clean_int", "rtemis")
+repr_ls <- getFromNamespace("repr_ls", "rtemis")
 
 # References
 # Unicode emojis: https://www.unicode.org/emoji/charts/full-emoji-list.html
@@ -22,7 +24,7 @@ printdf <- getFromNamespace("printdf", "rtemis")
 .onLoad <- function(libname, pkgname) {
   # S7
   S7::methods_register()
-}
+} # /onLoad
 
 .onAttach <- function(libname, pkgname) {
   .startup <- plain(paste0(
@@ -47,4 +49,4 @@ printdf <- getFromNamespace("printdf", "rtemis")
       .startup
     )
   }
-}
+} # /onAttach

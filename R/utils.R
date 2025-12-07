@@ -69,7 +69,7 @@ get_keychain_secret <- function(
       cli::cli_warn(c(
         "x" = "Could not retrieve key for service {.val {service}}.",
         "!" = "Keychain may be locked, the key may not exist, or access may be denied.",
-        ">" = e$message
+        ">" = e[["message"]]
       ))
       NULL
     }

@@ -2,42 +2,41 @@
 % Please edit documentation in R/tool_wikipedia.R
 \name{query_wikipedia}
 \alias{query_wikipedia}
-\title{Query Wikipedia}
+\title{Search Wikipedia}
 \usage{
 query_wikipedia(
   query,
-  limit = 3L,
+  limit = 2L,
+  section_mode = c("intro", "all", "raw_json"),
+  base_url = "https://{language}.wikipedia.org/w/api.php",
   language = "en",
-  max_sections_per_page = NULL,
-  clean_refs = TRUE,
-  output = c("data.table", "JSON"),
-  json_pretty = FALSE,
+  output_type = c("json", "list", "data.table"),
   verbosity = 1L
 )
 }
 \arguments{
-\item{query}{Character: Search query.}
+\item{query}{Character: The search query.}
 
-\item{limit}{Integer: Number of search results to return.}
+\item{limit}{Integer: Maximum number of pages to return.}
 
-\item{language}{Character: Language edition of Wikipedia, e.g. "en", "de".}
+\item{section_mode}{Character: "intro", "all", or "raw_json". "intro" returns only the
+introduction section, "all" returns the full page text, "raw_json" returns the raw JSON response.}
 
-\item{max_sections_per_page}{Integer: Maximum number of sections to retrieve per page. If NULL
-(default), retrieves all sections.}
+\item{base_url}{Character: The base URL for the Wikipedia API.}
 
-\item{clean_refs}{Logical: If TRUE, remove numeric bracketed references like \verb{[1]}, \verb{[2]} from
-text.}
+\item{language}{Character: Language code for the Wikipedia to search (e.g., "en" for English).}
 
-\item{output}{Character: One of "data.table" or "JSON" (default "data.table"). When "JSON",
-returns a JSON string with one object per row.}
-
-\item{json_pretty}{Logical: If TRUE and output == "JSON", pretty-print the JSON (default FALSE).}
+\item{output_type}{Character: "json" or "data.table". This should be "json" when used as an agent
+tool.}
 
 \item{verbosity}{Integer: Verbosity level.}
 }
 \value{
-data.table or JSON string: Combined data of search results, sections, text, and page URL.
+Character with JSON response, list, or data.table.
 }
 \description{
-Query Wikipedia
+Searches wikipedia for a given query
+}
+\author{
+EDG
 }

@@ -4,15 +4,16 @@
 \alias{ollama_get_model_info}
 \title{Get Ollama Model Info}
 \usage{
-ollama_get_model_info(model = NULL, output = "df")
+ollama_get_model_info(x = NULL, base_url = OLLAMA_URL_DEFAULT)
 }
 \arguments{
-\item{model}{Character: Name of model. If NULL, all models are returned.}
+\item{x}{Optional character vector: Name of model(s) to get info for. If NULL, all available
+models' info is returned.}
 
-\item{output}{Character: Type of output to return: "df", "resp", "jsonlist", "raw", "text"}
+\item{base_url}{Character: Base URL of Ollama server.}
 }
 \value{
-Depending on \code{output}.
+data.table
 }
 \description{
 Get Ollama Model Info

@@ -45,7 +45,9 @@ rt_purple <- rtemis_purple
 rt_magenta <- rtemis_magenta
 
 highlight_col <- rtemis_teal
-col_user <- rtemis_teal
-col_thinking <- genlib_orange
-col_tool <- kaimana_blue
-col_assistant <- lmd_burgundy
+col_system <- rtemis_magenta
+col_input <- rtemis_teal
+col_reasoning <- kaimana_red
+col_llm <- genlib_orange
+col_tool <- kaimana_light_blue
+col_agent <- rtemis_magenta_light
