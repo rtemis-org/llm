@@ -4,17 +4,17 @@
 \alias{schema}
 \title{Define output schema for LLM responses}
 \usage{
-schema(..., required = NULL, output_type = c("json", "list"))
+schema(..., output_type = c("list", "json"))
 }
 \arguments{
 \item{...}{Named lists defining the schema fields and their types in the form:
 \code{name = list(type = "type", description = "description")}, e.g.:
 \code{frequency = list(type = "numeric", description = "Frequency of the oscillator")}}
 
+\item{output_type}{Character: "json" or "list". The output format of the schema definition.}
+
 \item{required}{Optional character vector of names of required fields. If NULL, all fields are
 required. Use empty character ("") for no required fields.}
-
-\item{output_type}{Character: "json" or "list". The output format of the schema definition.}
 }
 \value{
 Character JSON string (if output = "json") or list (if output = "list")

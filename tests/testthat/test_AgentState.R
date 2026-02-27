@@ -1,23 +1,23 @@
-# test_AgentState.R
+# test_AgentMemory.R
 # ::kaimana::
 # 2025 EDG rtemis.org
 
-# %% AgentState Class ----
-test_that("AgentState class works", {
-  state <- AgentState()
-  testthat::expect_true(S7_inherits(state, AgentState))
-}) # /AgentState
+# %% AgentMemory Class ----
+test_that("AgentMemory class works", {
+  state <- AgentMemory()
+  testthat::expect_true(S7_inherits(state, AgentMemory))
+}) # /AgentMemory
 
-# %% InMemoryAgentState ----
-test_that("InMemoryAgentState class works", {
-  state <- InMemoryAgentState()
-  testthat::expect_true(S7_inherits(state, InMemoryAgentState))
-}) # /InMemoryAgentState
+# %% InProcessAgentMemory ----
+test_that("InProcessAgentMemory class works", {
+  state <- InProcessAgentMemory()
+  testthat::expect_true(S7_inherits(state, InProcessAgentMemory))
+}) # /InProcessAgentMemory
 
-# %% append_message.AgentState + get_messages.AgentState ----
+# %% append_message.AgentMemory + get_messages.AgentMemory ----
 
-test_that("append_message and get_messages for AgentState work", {
-  imas <- InMemoryAgentState()
+test_that("append_message and get_messages for AgentMemory work", {
+  imas <- InProcessAgentMemory()
   sm <- SystemMessage(
     name = "KMN",
     content = "You are a meticulous research assistant."

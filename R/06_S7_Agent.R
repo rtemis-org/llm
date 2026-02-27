@@ -15,7 +15,7 @@
 #' Class for agents that support reasoning, tool use, structured output, and state management.
 #'
 #' @field llmconfig LLMConfig: The LLMConfig to use.
-#' @field state AgentState: The state of the agent contains the message history and metadata.
+#' @field state AgentMemory: The state of the agent contains the message history and metadata.
 #' @field system_prompt Optional character: The system prompt to use.
 #' @field use_memory Logical: Whether to store conversation history in agent state.
 #' @field tools Optional list of Tool objects: The tools available to the agent.
@@ -29,7 +29,7 @@ Agent <- new_class(
   "Agent",
   properties = list(
     llmconfig = LLMConfig,
-    state = AgentState,
+    state = AgentMemory,
     system_prompt = new_union(NULL | class_character),
     use_memory = class_logical,
     tools = new_union(NULL | class_list),
@@ -39,7 +39,7 @@ Agent <- new_class(
   ),
   constructor = function(
     llmconfig,
-    state = InMemoryAgentState(),
+    state = InProcessAgentMemory(),
     system_prompt = NULL,
     use_memory = TRUE,
     tools = NULL,
@@ -90,10 +90,8 @@ Agent <- new_class(
 
 # %% repr.Agent ----
 method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
-  if (is.null(output_type)) {
-    output_type <- get_output_type()
-  }
-  out <- paste0(
+  output_type <- get_output_type(output_type)
+  paste0(
     repr_S7name("Agent", output_type = output_type),
     fmt("         Name: ", bold = TRUE, pad = pad, output_type = output_type),
     if (is.null(x@name)) {
@@ -157,7 +155,7 @@ method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
     # llmconfig
     fmt("   LLM Config:\n", bold = TRUE, pad = pad, output_type = output_type),
     repr(x@llmconfig, pad = pad + 15L, output_type = output_type)
-  ) #/ paste0
+  ) # / paste0
 } # /kaimana::repr.Agent
 
 
@@ -290,8 +288,8 @@ create_agent <- function(
 #' @param think Optional logical: Whether to enable thinking (reasoning trace) for this call. Only
 #' supported by certain models.
 #' @param output_schema Optional list: The output schema to enforce on the agent's response.
-#' Important: if NULL, the agent's default output_schema will be used. This means that the
-#' generate call's schema takes precedence over the agent's schema.
+#' Important: if NULL, the agent's default output_schema, if defined, will be used. This means that
+#' the generate call's schema takes precedence over the agent's schema.
 #' @param commit_to_memory Logical: Whether to commit this interaction to the agent's memory.
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
@@ -325,9 +323,9 @@ method(generate, Agent) <- function(
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
-  # If not updating state, create a temporary InMemoryAgentState for this interaction only
+  # If not updating state, create a temporary InProcessAgentMemory for this interaction only
   if (!update_state) {
-    .tempState <- InMemoryAgentState()
+    .tempState <- InProcessAgentMemory()
     # Append system prompt
     append_message(
       .tempState,

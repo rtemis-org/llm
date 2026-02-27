@@ -6,33 +6,33 @@
 # subclasses inherit properties from parent classes, need only define new properties
 
 # Description:
-# This file defines the InMemoryAgentState class to encapsulate the state of an Agent, which includes
+# This file defines the InProcessAgentMemory class to encapsulate the state of an Agent, which includes
 # a list of Message objects and associated metadata.
 
-# %% AgentState Class ----
-#' @title AgentState Class
+# %% AgentMemory Class ----
+#' @title AgentMemory Class
 #'
 #' @description
-#' AgentState superclass.
+#' AgentMemory superclass.
 #'
 #' @author EDG
 #' @noRd
-AgentState <- new_class(
-  "AgentState"
-) # /kaimana::AgentState
+AgentMemory <- new_class(
+  "AgentMemory"
+) # /kaimana::AgentMemory
 
 
-# %% InMemoryAgentState Class ----
-#' @title InMemoryAgentState Class
+# %% InProcessAgentMemory Class ----
+#' @title InProcessAgentMemory Class
 #'
 #' @description
 #' Class for Agent state, which includes a list of Message objects and metadata.
 #'
 #' @field state Environment: Contains the list of messages in the Agent's state.
 #' @field metadata List: The metadata associated with the Agent's state.
-InMemoryAgentState <- new_class(
-  "InMemoryAgentState",
-  parent = AgentState,
+InProcessAgentMemory <- new_class(
+  "InProcessAgentMemory",
+  parent = AgentMemory,
   properties = list(
     state = class_environment,
     metadata = new_union(NULL | class_list)
@@ -43,7 +43,7 @@ InMemoryAgentState <- new_class(
     state <- new.env(parent = emptyenv())
     state[["messages"]] <- list()
     new_object(
-      AgentState(),
+      AgentMemory(),
       state = state,
       metadata = metadata
     )
@@ -61,21 +61,21 @@ InMemoryAgentState <- new_class(
       }
     } # /validate state messages
   }
-) # /kaimana::InMemoryAgentState
+) # /kaimana::InProcessAgentMemory
 
 
-# %% append_message.InMemoryAgentState ----
-#' append_message method for `InMemoryAgentState`
+# %% append_message.InProcessAgentMemory ----
+#' append_message method for `InProcessAgentMemory`
 #'
-#' @param x `InMemoryAgentState` object.
+#' @param x `InProcessAgentMemory` object.
 #' @param message `Message` object to append.
 #' @param verbosity Integer: Verbosity level.
 #'
-#' @return The updated `InMemoryAgentState` object, invisibly.
+#' @return The updated `InProcessAgentMemory` object, invisibly.
 #'
 #' @author EDG
 #' @noRd
-method(append_message, InMemoryAgentState) <- function(
+method(append_message, InProcessAgentMemory) <- function(
   x,
   message,
   echo = TRUE,
@@ -88,35 +88,33 @@ method(append_message, InMemoryAgentState) <- function(
   }
   x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- message
   if (verbosity > 0L) {
-    cat(
-      format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-      repr_bracket("InMemoryAgentState"),
+    msg(
+      repr_bracket("InProcessAgentMemory"),
       "Appended",
       class(message)[1],
       "from",
-      fmt(message@name %||% message@role, col = highlight_col, bold = TRUE),
-      "\n"
+      fmt(message@name %||% message@role, col = highlight_col, bold = TRUE)
     )
   }
   invisible(x)
-} # /kaimana::append_message.InMemoryAgentState
+} # /kaimana::append_message.InProcessAgentMemory
 
 
-# %% get_messages.InMemoryAgentState ----
-#' get_messages method for InMemoryAgentState
+# %% get_messages.InProcessAgentMemory ----
+#' get_messages method for InProcessAgentMemory
 #'
-#' @param x InMemoryAgentState object
+#' @param x InProcessAgentMemory object
 #'
 #' @return List of Message objects
 #'
 #' @author EDG
 #' @noRd
-method(get_messages, InMemoryAgentState) <- function(x, last = FALSE) {
+method(get_messages, InProcessAgentMemory) <- function(x, last = FALSE) {
   if (last) {
     return(tail(x@state[["messages"]], 1))
   }
   x@state[["messages"]]
-} # /kaimana::get_messages.InMemoryAgentState
+} # /kaimana::get_messages.InProcessAgentMemory
 
 
 # %% get_message_list ----
@@ -124,12 +122,12 @@ method(get_messages, InMemoryAgentState) <- function(x, last = FALSE) {
 #'
 #' Get messages as a list of named lists for LLM API input after removing ToolMessages
 #'
-#' @param x InMemoryAgentState object
+#' @param x InProcessAgentMemory object
 #' @return List of lists representing messages for LLM input
 #'
 #' @author EDG
 #' @noRd
-method(get_message_list, InMemoryAgentState) <- function(x) {
+method(get_message_list, InProcessAgentMemory) <- function(x) {
   # Remove tool messages; these are packaged with custom prompts as AgentMessage (role = "user")
   msgs <- Filter(
     function(msg) {
@@ -143,25 +141,29 @@ method(get_message_list, InMemoryAgentState) <- function(x) {
       content = msg@content
     )
   })
-} # /kaimana::get_message_list.InMemoryAgentState
+} # /kaimana::get_message_list.InProcessAgentMemory
 
 
-# %% repr.InMemoryAgentState ----
-#' repr method for InMemoryAgentState
+# %% repr.InProcessAgentMemory ----
+#' repr method for InProcessAgentMemory
 #'
-#' @param x InMemoryAgentState object
+#' @param x InProcessAgentMemory object
 #' @param output_type Character: The output type, e.g. "console" or "html"
 #'
-#' @return Character representation of InMemoryAgentState
+#' @return Character representation of InProcessAgentMemory
 #'
 #' @author EDG
 #' @noRd
-method(repr, InMemoryAgentState) <- function(x, pad = 0L, output_type = NULL) {
+method(repr, InProcessAgentMemory) <- function(
+  x,
+  pad = 0L,
+  output_type = NULL
+) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
   }
   paste0(
-    repr_S7name("InMemoryAgentState", pad = pad, output_type = output_type),
+    repr_S7name("InProcessAgentMemory", pad = pad, output_type = output_type),
     fmt(
       length(x@state[["messages"]]),
       col = highlight_col,
@@ -178,14 +180,14 @@ method(repr, InMemoryAgentState) <- function(x, pad = 0L, output_type = NULL) {
     " metadata",
     ngettext(length(x@metadata), " item.\n", " items.\n")
   )
-} # /kaimana::repr.InMemoryAgentState
+} # /kaimana::repr.InProcessAgentMemory
 
 
-# %% print.InMemoryAgentState ----
-# Print method for InMemoryAgentState ----
-method(print, InMemoryAgentState) <- function(x, output_type = NULL, ...) {
+# %% print.InProcessAgentMemory ----
+# Print method for InProcessAgentMemory ----
+method(print, InProcessAgentMemory) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.InMemoryAgentState
+} # /kaimana::print.InProcessAgentMemory
 
 
 # %% View.Message ----

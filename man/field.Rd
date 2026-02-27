@@ -4,7 +4,11 @@
 \alias{field}
 \title{Define a schema field}
 \usage{
-field(type = c("string", "number", "boolean", "array", "object"), description)
+field(
+  type = c("string", "number", "boolean", "array", "object"),
+  description,
+  required = TRUE
+)
 }
 \arguments{
 \item{type}{Character: "string", "integer", "numeric", "boolean", "array", "object". The field type.}

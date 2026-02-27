@@ -123,7 +123,7 @@ tool_duckduckgo_ia <- create_tool(
     "Some queries may not return any results."
   ),
   parameters = list(
-    tool_param(
+    query = tool_param(
       name = "query",
       type = "string",
       description = "Search query",

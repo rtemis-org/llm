@@ -6,7 +6,7 @@
 test_that("Agent class works", {
   agent <- Agent(
     llmconfig = config_Ollama(
-      model_name = "qwen3:8b",
+      model_name = "lfm2.5-thinking:1.2b",
       temperature = 0.3,
       base_url = "http://localhost:11434"
     ),
@@ -22,7 +22,7 @@ test_that("Agent class works", {
 test_that("create_agent() works", {
   agent <- create_agent(
     llmconfig = config_Ollama(
-      model_name = "qwen3:8b",
+      model_name = "lfm2.5-thinking:1.2b",
       temperature = 0.3,
       base_url = "http://localhost:11434"
     ),

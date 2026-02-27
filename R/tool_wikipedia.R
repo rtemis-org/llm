@@ -177,19 +177,19 @@ tool_wikipedia <- create_tool(
     "get the full text of the most relevant article."
   ),
   parameters = list(
-    tool_param(
+    query = tool_param(
       name = "query",
       type = "string",
       description = "The search query.",
       required = TRUE
     ),
-    tool_param(
+    limit = tool_param(
       name = "limit",
       type = "integer",
       description = "Maximum number of pages to return.",
       required = FALSE
     ),
-    tool_param(
+    section_mode = tool_param(
       name = "section_mode",
       type = "string",
       description = "Content to retrieve: 'intro' for the introduction, or 'all' for the full page text.",

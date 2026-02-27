@@ -9,7 +9,7 @@
 # Description:
 # This file defines the Message class hierarchy for the kaimana package,
 # including subclasses SystemMessage, InputMessage, LLMMessage, and ToolMessage.
-# Finally, it defines the InMemoryAgentState class to encapsulate the state of an Agent, which includes
+# Finally, it defines the InProcessAgentMemory class to encapsulate the state of an Agent, which includes
 # a list of Message objects and associated metadata.
 
 # %% Constants ----
@@ -73,8 +73,7 @@ Message <- new_class(
 #' @noRd
 method(repr, Message) <- function(x, output_type = NULL) {
   # RHS based on class
-  rhs <- switch(
-    sub(".*::", "", class(x)[1]),
+  rhs <- switch(sub(".*::", "", class(x)[1]),
     SystemMessage = "System",
     InputMessage = "Input",
     LLMMessage = "Response",
@@ -87,8 +86,7 @@ method(repr, Message) <- function(x, output_type = NULL) {
   } else {
     paste(x@name, rhs)
   }
-  .color <- switch(
-    rhs,
+  .color <- switch(rhs,
     System = col_system,
     Input = col_input,
     Response = col_llm,
@@ -310,7 +308,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
   } else {
     NULL
   }
-  out <- paste0(
+  paste0(
     if (!is.null(x@reasoning)) {
       paste0(
         repr_bracket(

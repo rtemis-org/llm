@@ -7,7 +7,7 @@
 get_message_list(x, ...)
 }
 \arguments{
-\item{x}{An \code{AgentState} object.}
+\item{x}{An \code{AgentMemory} object.}
 }
 \value{
 A list of named lists representing messages.

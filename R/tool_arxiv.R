@@ -219,7 +219,7 @@ tool_arxiv <- create_tool(
     "systems science, and economics."
   ),
   parameters = list(
-    tool_param(
+    query = tool_param(
       name = "query",
       type = "string",
       description = paste(
@@ -228,13 +228,13 @@ tool_arxiv <- create_tool(
       ),
       required = TRUE
     ),
-    tool_param(
+    max_results = tool_param(
       name = "max_results",
       type = "integer",
       description = "Maximum number of results to return (default: 5).",
       required = FALSE
     ),
-    tool_param(
+    sort_by = tool_param(
       name = "sort_by",
       type = "string",
       description = "Sort results by 'relevance', 'lastUpdatedDate', or 'submittedDate'.",

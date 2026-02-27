@@ -24,25 +24,36 @@
 #' @author EDG
 #' @export
 
-schema <- function(..., required = NULL, output_type = c("json", "list")) {
+schema <- function(..., output_type = c("list", "json")) {
   output_type <- match.arg(output_type)
+  fields <- list(...)
+  # Get required field names based on `required` value in each field
+  required <- I(names(fields)[sapply(fields, function(x) x$required)])
+  # Remove `required` from each field
+  fields <- lapply(fields, function(x) x[-which(names(x) == "required")])
   out <- list(
     type = "object",
-    properties = list(
-      ...
-    ),
-    required = if (is.null(required)) {
-      I(names(list(...)))
-    } else {
-      I(required)
-    }
+    properties = fields,
+    required = required
   )
   if (output_type == "json") {
     jsonlite::toJSON(out, auto_unbox = TRUE, pretty = TRUE)
   } else {
+    class(out) <- c("Schema", "list")
     out
   }
 } # /kaimana::schema
+
+
+# %% repr.Schema ----
+repr.Schema <- function(x, pad = 0L, output_type = NULL) {
+  output_type <- get_output_type(output_type)
+  paste0(
+    repr_S7name("Schema", output_type = output_type),
+    "\n",
+    repr_ls(x, pad = pad, output_type = output_type)
+  )
+}
 
 
 # %% field() ----
@@ -64,11 +75,13 @@ schema <- function(..., required = NULL, output_type = c("json", "list")) {
 #' @export
 field <- function(
   type = c("string", "number", "boolean", "array", "object"),
-  description
+  description,
+  required = TRUE
 ) {
   type <- match.arg(type)
   list(
     type = type,
-    description = description
+    description = description,
+    required = required
   )
 } # /kaimana::field

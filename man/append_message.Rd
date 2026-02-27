@@ -7,15 +7,15 @@
 append_message(x, ...)
 }
 \arguments{
-\item{x}{An \code{AgentState} object.}
+\item{x}{An \code{AgentMemory} object.}
 
 \item{message}{A \code{Message} object to append.}
 }
 \value{
-The updated \code{AgentState} object, invisibly.
+The updated \code{AgentMemory} object, invisibly.
 }
 \description{
-Generic method to append a \code{Message} object to an \code{AgentState}
+Generic method to append a \code{Message} object to an \code{AgentMemory}
 }
 \author{
 EDG

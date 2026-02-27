@@ -26,6 +26,24 @@ ToolParameter <- new_class(
 ) # /kaimana::ToolParameter
 
 
+# %% repr ToolParameter ----
+method(repr, ToolParameter) <- function(x, pad = 0L, output_type = NULL) {
+  output_type <- get_output_type(output_type)
+  repr_ls(
+    S7::props(x),
+    pad = pad,
+    print_class = FALSE,
+    output_type = output_type
+  )
+} # /repr.ToolParameter
+
+
+# %% print ToolParameter ----
+method(print, ToolParameter) <- function(x, ...) {
+  cat(repr(x, ...), "\n")
+} # /print.ToolParameter
+
+
 # %% tool_param() ----
 #' tool_param
 #'
@@ -85,6 +103,24 @@ Tool <- new_class(
     }
   }
 ) # /kaimana::Tool
+
+
+# %% repr Tool ----
+method(repr, Tool) <- function(x, pad = 0L, output_type = NULL) {
+  output_type <- get_output_type(output_type)
+  repr_ls(
+    S7::props(x),
+    pad = pad,
+    print_class = FALSE,
+    output_type = output_type
+  )
+}
+
+
+# %% print Tool ----
+method(print, Tool) <- function(x, ...) {
+  cat(repr(x, ...), "\n")
+} # /print.Tool
 
 
 # %% create_tool() ----

@@ -91,12 +91,12 @@ as_list <- new_generic("as_list", "x")
 # %% append_message generic ----
 #' Append message
 #'
-#' Generic method to append a `Message` object to an `AgentState`
+#' Generic method to append a `Message` object to an `AgentMemory`
 #'
-#' @param x An `AgentState` object.
+#' @param x An `AgentMemory` object.
 #' @param message A `Message` object to append.
 #'
-#' @return The updated `AgentState` object, invisibly.
+#' @return The updated `AgentMemory` object, invisibly.
 #'
 #' @author EDG
 #' @export
@@ -106,9 +106,9 @@ append_message <- new_generic("append_message", "x")
 # %% get_messages generic ----
 #' Get messages
 #'
-#' Generic method to retrieve messages from `AgentState` objects
+#' Generic method to retrieve messages from `AgentMemory` objects
 #'
-#' @param x An `AgentState` object.
+#' @param x An `AgentMemory` object.
 #'
 #' @return A list of `Message` objects.
 #'
@@ -122,7 +122,7 @@ get_messages <- new_generic("get_messages", "x")
 #'
 #' Generic method to retrieve messages as a list of named lists for LLM APIs
 #'
-#' @param x An `AgentState` object.
+#' @param x An `AgentMemory` object.
 #'
 #' @return A list of named lists representing messages.
 #'

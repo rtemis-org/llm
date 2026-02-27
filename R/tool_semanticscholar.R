@@ -214,7 +214,7 @@ tool_semanticscholar <- create_tool(
     "social sciences, and humanities."
   ),
   parameters = list(
-    tool_param(
+    query = tool_param(
       name = "query",
       type = "string",
       description = paste(
@@ -223,7 +223,7 @@ tool_semanticscholar <- create_tool(
       ),
       required = TRUE
     ),
-    tool_param(
+    year = tool_param(
       name = "year",
       type = "string",
       description = "Year filter in the format 'YYYY-' or 'YYYY-YYYY'.",

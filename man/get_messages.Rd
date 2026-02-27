@@ -7,13 +7,13 @@
 get_messages(x, ...)
 }
 \arguments{
-\item{x}{An \code{AgentState} object.}
+\item{x}{An \code{AgentMemory} object.}
 }
 \value{
 A list of \code{Message} objects.
 }
 \description{
-Generic method to retrieve messages from \code{AgentState} objects
+Generic method to retrieve messages from \code{AgentMemory} objects
 }
 \author{
 EDG
