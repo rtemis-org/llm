@@ -58,22 +58,6 @@ as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
 get_content <- new_generic("get_content", "x")
 
 
-# %% invoke generic ----
-#' Invoke Method
-#'
-#' Generic method for invoking LLMs and agents
-#'
-#' @param x An object of class LLM, ReAgent, or ReAct
-#' @param query Character: The query or prompt to pass to the model or agent
-#' @param ... Additional arguments passed to specific methods
-#'
-#' @return An AIResponse object
-#'
-#' @author EDG
-#' @export
-invoke <- new_generic("invoke", "x")
-
-
 # %% as_list generic ----
 #' Convert to R list
 #'
@@ -170,4 +154,4 @@ AIThinking <- new_class(
       metadata = metadata
     )
   }
-) # kaimana::AIThinking
+) # /kaimana::AIThinking
