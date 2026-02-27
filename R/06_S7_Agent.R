@@ -8,7 +8,7 @@
 # Thinking: https://docs.ollama.com/capabilities/thinking#enable-thinking-in-api-calls
 
 # --- Internal API ---------------------------------------------------------------------------------
-# %% Agent Class ----
+# %% Agent ----
 #' @title agent
 #'
 #' @description
@@ -241,7 +241,7 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 
 
 # --- Public API -----------------------------------------------------------------------------------
-# %% create_agent() ----
+# %% create_agent ----
 #' Create a kaimana Agent
 #'
 #' @param llmconfig `LLMConfig`: The LLM configuration to use.
@@ -278,7 +278,7 @@ create_agent <- function(
 } # /kaimana::create_agent
 
 
-# %% generate.Agent() ----
+# %% generate.Agent ----
 # Reference: https://docs.ollama.com/api/chat
 #' Generate method for kaimana Agent
 #'

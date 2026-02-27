@@ -2,7 +2,7 @@
 # ::kaimana::
 # 2025 EDG rtemis.org
 
-# %% AIResponse Class ----
+# %% AIResponse ----
 #' @title AIResponse Class
 #'
 #' @description
@@ -19,7 +19,8 @@ AIResponse <- new_class(
   )
 ) # kaimana::AIResponse
 
-# repr method for AIResponse ----
+
+# %% repr.AIResponse ----
 method(repr, AIResponse) <- function(x, output_type = NULL) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
@@ -91,14 +92,14 @@ method(repr, AIResponse) <- function(x, output_type = NULL) {
 } # /kaimana::repr.AIResponse
 
 
-# Print AIResponse ----
+# %% print.AIResponse ----
 method(print, AIResponse) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type))
   invisible(x)
 } # kaimana::print.AIResponse
 
 
-#as.list.AIResponse ----
+# %% as.list.AIResponse ----
 method(as.list, AIResponse) <- function(x, ...) {
   x@response
 } # kaimana::as.list.AIResponse

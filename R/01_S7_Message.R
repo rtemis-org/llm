@@ -20,7 +20,7 @@ LLM_MESSAGE_ROLE <- "assistant"
 TOOL_MESSAGE_ROLE <- "tool"
 
 
-# %% Message Class ----
+# %% Message ----
 #' @title Message Class
 #'
 #' @description
@@ -73,7 +73,8 @@ Message <- new_class(
 #' @noRd
 method(repr, Message) <- function(x, output_type = NULL) {
   # RHS based on class
-  rhs <- switch(sub(".*::", "", class(x)[1]),
+  rhs <- switch(
+    sub(".*::", "", class(x)[1]),
     SystemMessage = "System",
     InputMessage = "Input",
     LLMMessage = "Response",
@@ -86,7 +87,8 @@ method(repr, Message) <- function(x, output_type = NULL) {
   } else {
     paste(x@name, rhs)
   }
-  .color <- switch(rhs,
+  .color <- switch(
+    rhs,
     System = col_system,
     Input = col_input,
     Response = col_llm,
@@ -120,7 +122,7 @@ method(as_list, Message) <- function(x) {
 } # /kaimana::as_list.Message
 
 
-# %% SystemMessage Class ----
+# %% SystemMessage ----
 #' @title SystemMessage Class
 #'
 #' @description
@@ -148,7 +150,6 @@ SystemMessage <- new_class(
 
 
 # %% repr.SystemMessage ----
-# repr method for SystemMessage
 method(repr, SystemMessage) <- function(x, output_type = NULL) {
   if (is.null(output_type)) {
     output_type <- get_output_type()
@@ -174,7 +175,8 @@ method(print, SystemMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /kaimana::print.SystemMessage
 
-# %% InputMessage Class ----
+
+# %% InputMessage ----
 #' @title InputMessage Class
 #'
 #' @description
@@ -260,7 +262,7 @@ method(as_list, InputMessage) <- function(x) {
 } # /kaimana::as_list.InputMessage
 
 
-# %% LLMMessage Class ----
+# %% LLMMessage ----
 #' @title LLMMessage Class
 #'
 #' @description
@@ -490,7 +492,7 @@ method(as_OllamaMessage, class_list) <- function(x) {
 } # /kaimana::as_OllamaMessage.list
 
 
-# %% ToolMessage Class ----
+# %% ToolMessage ----
 #' @title ToolMessage Class
 #'
 #' @description

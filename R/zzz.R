@@ -43,7 +43,7 @@ kaimana_version <- packageVersion("kaimana")
       "\n",
       .startup,
       "\n  ",
-      red("PSA: ", bold = TRUE),
+      fmt("PSA: ", col = rtemis_colors[["red"]], bold = TRUE),
       "Do not throw prompts at language models. Generate responsibly!"
     ))
   } else {

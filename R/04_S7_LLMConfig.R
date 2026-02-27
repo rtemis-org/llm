@@ -1,6 +1,6 @@
 # LLM.R
 # ::kaimana::
-# 2025 EDG rtemis.org
+# 2025- EDG rtemis.org
 
 # References:
 # Ollama API: https://docs.ollama.com/
@@ -14,7 +14,7 @@ OLLAMA_URL_DEFAULT <- "http://localhost:11434"
 
 
 # --- Internal API ---------------------------------------------------------------------------------
-# %% LLMConfig Superclass ----
+# %% LLMConfig ----
 #' @title LLMConfig
 #'
 #' @description
@@ -76,7 +76,7 @@ method(as_list, LLMConfig) <- function(x) {
 } # /as_list.LLMConfig
 
 
-# %% OllamaConfig Class ----
+# %% OllamaConfig ----
 #' @title OllamaConfig Class
 #'
 #' @description

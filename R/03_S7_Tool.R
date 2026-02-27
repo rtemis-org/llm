@@ -1,8 +1,8 @@
 # Tool.R
 # ::kaimana::
-# 2025 EDG rtemis.org
+# 2025- EDG rtemis.org
 
-# %% ToolParameter Class ----
+# %% ToolParameter ----
 #' @title ToolParameter
 #'
 #' @description
@@ -26,7 +26,7 @@ ToolParameter <- new_class(
 ) # /kaimana::ToolParameter
 
 
-# %% repr ToolParameter ----
+# %% repr.ToolParameter ----
 method(repr, ToolParameter) <- function(x, pad = 0L, output_type = NULL) {
   output_type <- get_output_type(output_type)
   repr_ls(
@@ -38,13 +38,13 @@ method(repr, ToolParameter) <- function(x, pad = 0L, output_type = NULL) {
 } # /repr.ToolParameter
 
 
-# %% print ToolParameter ----
+# %% print.ToolParameter ----
 method(print, ToolParameter) <- function(x, ...) {
   cat(repr(x, ...), "\n")
 } # /print.ToolParameter
 
 
-# %% tool_param() ----
+# %% tool_param ----
 #' tool_param
 #'
 #' Define a tool parameter schema
@@ -72,7 +72,7 @@ tool_param <- function(
 } # /kaimana::tool_param
 
 
-# %% Tool Class ----
+# %% Tool ----
 #' @title Tool
 #'
 #' @description
@@ -105,7 +105,7 @@ Tool <- new_class(
 ) # /kaimana::Tool
 
 
-# %% repr Tool ----
+# %% repr.Tool ----
 method(repr, Tool) <- function(x, pad = 0L, output_type = NULL) {
   output_type <- get_output_type(output_type)
   repr_ls(
@@ -114,16 +114,16 @@ method(repr, Tool) <- function(x, pad = 0L, output_type = NULL) {
     print_class = FALSE,
     output_type = output_type
   )
-}
+} # /kaimana::repr.Tool
 
 
-# %% print Tool ----
+# %% print.Tool ----
 method(print, Tool) <- function(x, ...) {
   cat(repr(x, ...), "\n")
 } # /print.Tool
 
 
-# %% create_tool() ----
+# %% create_tool ----
 #' create_tool
 #'
 #' Define a tool for an agent
@@ -164,7 +164,6 @@ create_tool <- function(
 #'
 #' @author EDG
 #' @noRd
-
 method(as_list, Tool) <- function(x) {
   list(
     type = "function",

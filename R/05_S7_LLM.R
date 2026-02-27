@@ -1,9 +1,8 @@
 # LLM.R
 # ::kaimana::
-# 2025 EDG rtemis.org
+# 2025- EDG rtemis.org
 
-# %% LLM Class ----
-
+# %% LLM ----
 #' LLM Class
 #'
 #' A stateless LLM with support for reasoning & structured output.
@@ -27,7 +26,7 @@ LLM <- new_class(
 ) # kaimana::LLM
 
 
-# %% repr.LLM() ----
+# %% repr.LLM ----
 # repr method for LLM ----
 method(repr, LLM) <- function(x, output_type = NULL) {
   output_type <- get_output_type(output_type)
@@ -54,7 +53,7 @@ method(print, LLM) <- function(x, output_type = NULL, ...) {
 } # /print.LLM
 
 
-# %% Ollama Class ----
+# %% Ollama ----
 #' @title Ollama Class
 #'
 #' @description
@@ -89,8 +88,7 @@ Ollama <- new_class(
 ) # /kaimana::Ollama
 
 
-# %% repr.Ollama() ----
-# repr method for Ollama ----
+# %% repr.Ollama ----
 method(repr, Ollama) <- function(x, output_type = NULL) {
   output_type <- get_output_type(output_type)
   paste0(
@@ -118,17 +116,16 @@ method(repr, Ollama) <- function(x, output_type = NULL) {
       )
     }
   )
-} # /repr.Ollama
+} # /kaimana::repr.Ollama
 
 
 # %% print.Ollama ----
-# Print method for Ollama ----
 method(print, Ollama) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /print.Ollama
 
 
-# %% generate.Ollama() ----
+# %% generate.Ollama ----
 #' Generate method for Ollama
 #'
 #' @param x Ollama object
@@ -175,7 +172,7 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
 
 
 # --- Public API ---------------------------------------------------------------------------------
-# %% config_Ollama() ----
+# %% config_Ollama ----
 #' Create an OllamaConfig Object
 #'
 #' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
@@ -198,7 +195,8 @@ config_Ollama <- function(
   )
 } # /config_Ollama
 
-# %% create_Ollama() ----
+
+# %% create_Ollama ----
 #' Create an Ollama Object
 #'
 #' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
@@ -231,4 +229,4 @@ create_Ollama <- function(
     system_prompt = system_prompt,
     output_schema = output_schema
   )
-} # /create_Ollama
+} # /kaimana::create_Ollama

@@ -9,7 +9,7 @@
 # This file defines the InProcessAgentMemory class to encapsulate the state of an Agent, which includes
 # a list of Message objects and associated metadata.
 
-# %% AgentMemory Class ----
+# %% AgentMemory ----
 #' @title AgentMemory Class
 #'
 #' @description
@@ -22,7 +22,7 @@ AgentMemory <- new_class(
 ) # /kaimana::AgentMemory
 
 
-# %% InProcessAgentMemory Class ----
+# %% InProcessAgentMemory ----
 #' @title InProcessAgentMemory Class
 #'
 #' @description
@@ -117,7 +117,7 @@ method(get_messages, InProcessAgentMemory) <- function(x, last = FALSE) {
 } # /kaimana::get_messages.InProcessAgentMemory
 
 
-# %% get_message_list ----
+# %% get_message_list.InProcessAgentMemory ----
 #' Get message list for LLM input
 #'
 #' Get messages as a list of named lists for LLM API input after removing ToolMessages
