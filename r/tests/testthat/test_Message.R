@@ -101,6 +101,7 @@ test_that("AgentMessage class works", {
 
 # %% create_llm_message.OllamaConfig ----
 test_that("create_llm_message.OllamaConfig works", {
+  skip_if_ollama_model_missing(model_name)
   config <- OllamaConfig(
     model_name = model_name,
     temperature = 0.5,
@@ -122,6 +123,7 @@ test_that("create_llm_message.OllamaConfig works", {
 
 # %%create_llm_message.Agent ----
 test_that("create_llm_message.Agent works", {
+  skip_if_ollama_model_missing(model_name)
   agent <- create_agent(
     llmconfig = config_Ollama(
       model_name = model_name,

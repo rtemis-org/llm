@@ -8,6 +8,7 @@ model_name <- "qwen3.5:0.8b"
 
 # %% Agent Class ----
 test_that("Agent class works", {
+  skip_if_ollama_model_missing(model_name)
   agent <- Agent(
     llmconfig = config_Ollama(
       model_name = model_name,
@@ -24,6 +25,7 @@ test_that("Agent class works", {
 
 # %% create_agent() ----
 test_that("create_agent() works", {
+  skip_if_ollama_model_missing(model_name)
   agent <- create_agent(
     llmconfig = config_Ollama(
       model_name = model_name,
