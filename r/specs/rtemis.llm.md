@@ -499,7 +499,7 @@ Request headers:
 ```r
 Authorization: Bearer <api_key>
 Content-Type: application/json
-User-Agent: rtemis.llm-r Agent (rtemis.llm.rtemis.org)
+User-Agent: rtemis (www.rtemis.org)
 OpenAI-Organization: <organization> # optional
 OpenAI-Project: <project>           # optional
 ```
@@ -960,7 +960,7 @@ x-api-key: <resolved_api_key>
 anthropic-version: <config@anthropic_version>
 anthropic-beta: <comma-joined config@anthropic_beta>  # when set
 content-type: application/json
-User-Agent: rtemis.llm-r Agent (rtemis.llm.rtemis.org)
+User-Agent: rtemis (www.rtemis.org)
 ```
 
 `extra_headers` are merged last.
