@@ -1,0 +1,56 @@
+name: R CI (r2u)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - r/**
+      - .github/workflows/r-ci-r2u.yml
+  push:
+    branches:
+      - main
+    paths:
+      - r/**
+      - .github/workflows/r-ci-r2u.yml
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: r-ci-r2u-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  r-cmd-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: eddelbuettel/github-actions/r2u-setup@master
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - name: Install package dependencies
+        working-directory: r
+        shell: Rscript {0}
+        run: |
+          options(repos = c(
+            CRAN = "https://cloud.r-project.org",
+            "https://rtemis-org.r-universe.dev"
+          ))
+          install.packages(c("remotes", "rcmdcheck"))
+          remotes::install_deps(dependencies = TRUE)
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          working-directory: r
+          upload-snapshots: true
+          build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
