@@ -1,4 +1,14 @@
 ^kaimana\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^__dev$
 ^data-raw$
+^docs$
+^specs$
+^AGENTS\.md$
+^CLAUDE\.md$
+^README\.md$
+^pkgdown$
+^SKILL\.md$
+^LICENSE\.md$
+^Makefile$
