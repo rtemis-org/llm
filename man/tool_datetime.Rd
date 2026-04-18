@@ -5,7 +5,7 @@
 \alias{tool_datetime}
 \title{Get Current Date and Time}
 \format{
-An object of class \code{kaimana::Tool} (inherits from \code{S7_object}) of length 1.
+An object of class \code{rtemis.llm::Tool} (inherits from \code{S7_object}) of length 1.
 }
 \usage{
 tool_datetime

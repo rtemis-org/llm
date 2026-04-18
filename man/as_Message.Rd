@@ -13,7 +13,7 @@ as_Message(x, ...)
 A Message object
 }
 \description{
-Generic method to convert various objects to kaimana Message objects
+Generic method to convert various objects to rtemis.llm Message objects
 }
 \author{
 EDG

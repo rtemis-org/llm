@@ -4,7 +4,10 @@
 \alias{get_keychain_secret}
 \title{Get secret from macOS Keychain}
 \usage{
-get_keychain_secret(service = "KAIMANA_API_KEY", account = Sys.getenv("USER"))
+get_keychain_secret(
+  service = "RTEMIS_LLM_API_KEY",
+  account = Sys.getenv("USER")
+)
 }
 \arguments{
 \item{service}{The service name in Keychain (e.g. "OPENAI_API_KEY")}

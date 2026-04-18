@@ -5,7 +5,7 @@
 \alias{tool_wikipedia}
 \title{Wikipedia Search Tool}
 \format{
-An object of class \code{kaimana::Tool} (inherits from \code{S7_object}) of length 1.
+An object of class \code{rtemis.llm::Tool} (inherits from \code{S7_object}) of length 1.
 }
 \usage{
 tool_wikipedia
