@@ -177,8 +177,11 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
     error = function(e) NULL
   )
   api_message <- NULL
-  if (!is.null(body[["error"]][["message"]])) {
-    api_message <- body[["error"]][["message"]]
+  err <- body[["error"]]
+  if (is.character(err) && length(err) == 1L && nzchar(err)) {
+    api_message <- err
+  } else if (is.list(err) && !is.null(err[["message"]])) {
+    api_message <- err[["message"]]
   } else if (!is.null(body[["message"]])) {
     api_message <- body[["message"]]
   }
