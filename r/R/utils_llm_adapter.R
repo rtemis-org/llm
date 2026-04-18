@@ -135,6 +135,8 @@ method(build_chat_request_body, OllamaConfig) <- function(
   think = NULL,
   use_tools = TRUE
 ) {
+  effective_think <- think %||% x@think
+  .check_ollama_think(effective_think, "think")
   request_body <- list(
     model = x@model_name,
     messages = build_chat_messages(x, state),
@@ -143,8 +145,8 @@ method(build_chat_request_body, OllamaConfig) <- function(
       temperature = x@temperature
     )
   )
-  if (!is.null(think)) {
-    request_body[["think"]] <- think
+  if (!is.null(effective_think)) {
+    request_body[["think"]] <- effective_think
   }
   if (!is.null(output_schema)) {
     request_body[["format"]] <- build_response_format(x, output_schema)

@@ -106,6 +106,13 @@ method(repr, Ollama) <- function(x, output_type = NULL) {
     fmt("Temperature: ", bold = TRUE, output_type = output_type),
     highlight(x@config@temperature, output_type = output_type),
     "\n",
+    if (!is.null(x@config@think)) {
+      paste0(
+        fmt("Thinking: ", bold = TRUE, output_type = output_type),
+        highlight(x@config@think, output_type = output_type),
+        "\n"
+      )
+    },
     if (!is.null(x@output_schema)) {
       paste0(
         fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
@@ -293,9 +300,11 @@ method(print, Claude) <- function(x, output_type = NULL, ...) {
 #' @author EDG
 #'
 #' @noRd
-method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
+method(generate, Ollama) <- function(x, prompt, think = NULL, verbosity = 1L) {
   # Check input
   check_inherits(prompt, "character")
+  effective_think <- think %||% x@config@think
+  .check_ollama_think(effective_think, "think")
   # Request
   request_body <- list(
     model = x@config@model_name,
@@ -306,6 +315,9 @@ method(generate, Ollama) <- function(x, prompt, verbosity = 1L) {
       temperature = x@config@temperature
     )
   )
+  if (!is.null(effective_think)) {
+    request_body[["think"]] <- effective_think
+  }
   if (!is.null(x@output_schema)) {
     request_body[["format"]] <- as_list(x@output_schema)
   }
@@ -453,6 +465,9 @@ method(generate, Claude) <- function(
 #' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
 #' @param temperature Numeric: The temperature for the model.
 #' @param base_url Character: Base URL of Ollama server.
+#' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode
+#' for this config. Logical values target models like deepseek or qwen3; character values target
+#' gpt-oss. Can be overridden per call.
 #'
 #' @return OllamaConfig object.
 #'
@@ -461,12 +476,14 @@ method(generate, Claude) <- function(
 config_Ollama <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
-  base_url = OLLAMA_URL_DEFAULT
+  base_url = OLLAMA_URL_DEFAULT,
+  think = NULL
 ) {
   OllamaConfig(
     model_name = model_name,
     temperature = temperature,
-    base_url = base_url
+    base_url = base_url,
+    think = think
   )
 } # /config_Ollama
 
@@ -480,6 +497,8 @@ config_Ollama <- function(
 #' @param output_schema Optional Schema: An optional output schema created using [schema].
 #' @param name Character or NULL: An optional name for the Ollama object.
 #' @param base_url Character: Base URL of Ollama server.
+#' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
+#' Logical values target models like deepseek or qwen3; character values target gpt-oss.
 #'
 #' @return Ollama object.
 #'
@@ -491,7 +510,8 @@ create_Ollama <- function(
   temperature = TEMPERATURE_DEFAULT,
   output_schema = NULL,
   name = NULL,
-  base_url = OLLAMA_URL_DEFAULT
+  base_url = OLLAMA_URL_DEFAULT,
+  think = NULL
 ) {
   ollama_check_model(model_name)
   Ollama(
@@ -499,7 +519,8 @@ create_Ollama <- function(
     config = OllamaConfig(
       model_name = model_name,
       temperature = temperature,
-      base_url = base_url
+      base_url = base_url,
+      think = think
     ),
     system_prompt = system_prompt,
     output_schema = output_schema

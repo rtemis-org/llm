@@ -92,22 +92,51 @@ method(as_list, LLMConfig) <- function(x) {
 OllamaConfig <- new_class(
   "OllamaConfig",
   parent = LLMConfig,
+  properties = list(
+    think = S7::new_property(
+      class = S7::new_union(S7::class_logical, S7::class_character, NULL),
+      default = NULL
+    )
+  ),
   constructor = function(
     model_name,
     temperature,
-    base_url
+    base_url,
+    think = NULL
   ) {
     ollama_check_model(model_name)
+    .check_ollama_think(think, "think")
     new_object(
       LLMConfig(
         model_name = model_name,
         temperature = temperature,
         backend = "ollama",
         base_url = base_url
-      )
+      ),
+      think = think
     )
   }
 )
+
+
+# %% as_list.OllamaConfig ----
+#' as_list method for OllamaConfig
+#'
+#' @param x OllamaConfig object.
+#'
+#' @return List representation of OllamaConfig.
+#'
+#' @author EDG
+#' @noRd
+method(as_list, OllamaConfig) <- function(x) {
+  list(
+    model_name = x@model_name,
+    temperature = x@temperature,
+    backend = x@backend,
+    base_url = x@base_url,
+    think = x@think
+  )
+} # /as_list.OllamaConfig
 
 
 # %% OpenAIConfig ----

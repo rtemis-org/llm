@@ -66,6 +66,41 @@ ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
 } # /ollama_get_model_info
 
 
+# %% .check_ollama_think() ----
+#' Validate Ollama think Argument
+#'
+#' Ollama accepts either a logical scalar (e.g. deepseek, qwen3) or a character
+#' scalar in `{"low", "medium", "high"}` (e.g. gpt-oss).
+#'
+#' @param x Object: Value to validate.
+#' @param name Character: Argument name to report in error messages.
+#'
+#' @return NULL, invisibly.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.check_ollama_think <- function(x, name = "think") {
+  if (is.null(x)) {
+    return(invisible(NULL))
+  }
+  if (length(x) != 1L || is.na(x)) {
+    cli::cli_abort(
+      "{.var {name}} must be a logical scalar or one of {.val low}, {.val medium}, {.val high}."
+    )
+  }
+  if (is.logical(x)) {
+    return(invisible(NULL))
+  }
+  if (is.character(x) && x %in% c("low", "medium", "high")) {
+    return(invisible(NULL))
+  }
+  cli::cli_abort(
+    "{.var {name}} must be a logical scalar or one of {.val low}, {.val medium}, {.val high}."
+  )
+}
+
+
 # %% ollama_check_model() ----
 #' Check Ollama Model is Available
 #'
