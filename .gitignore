@@ -1,0 +1,17 @@
+# Dev
+__dev/
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Zed
+.zed/
+
+# Agents
+.claude/
+AGENTS.md
+CLAUDE.md
