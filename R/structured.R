@@ -1,7 +1,3 @@
-# structured.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 #' Setup Output Schema
 #'
 #' Helper function to create a schema for structured output
@@ -26,4 +22,4 @@ make_output_schema <- function(..., required = "all") {
     properties = properties,
     required = required
   )
-} # /kaimana::make_output_schema
+}

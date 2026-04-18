@@ -1,7 +1,3 @@
-# tools_semanticscholar.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # References:
 # https://www.semanticscholar.org/product/api/tutorial
 # https://api.semanticscholar.org/api-docs/#tag/Paper-Data/operation/get_graph_paper_relevance_search
@@ -154,12 +150,10 @@ query_semanticscholar <- function(
       year = year,
       limit = limit
     ) |>
-    httr2::req_user_agent("kaimana-r (kaimana.rtemis.org)")
+    httr2::req_user_agent("rtemis.llm-r (rtemis.llm.rtemis.org)")
 
   if (!is.null(api_key) && nchar(api_key) > 0L) {
-    if (verbosity > 0L) {
-      msg("Using Semantic Scholar API key from keyring.")
-    }
+    msg("Using Semantic Scholar API key from keyring.", verbosity = verbosity)
     req <- req |>
       httr2::req_headers(
         "x-api-key" = api_key
@@ -230,4 +224,4 @@ tool_semanticscholar <- create_tool(
       required = FALSE
     )
   )
-) # /kaimana::tool_semanticscholar
+)

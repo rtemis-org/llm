@@ -1,10 +1,3 @@
-# State.R
-# ::kaimana::
-
-# References:
-# https://rconsortium.github.io/S7/
-# subclasses inherit properties from parent classes, need only define new properties
-
 # Description:
 # This file defines the InProcessAgentMemory class to encapsulate the state of an Agent, which includes
 # a list of Message objects and associated metadata.
@@ -19,7 +12,7 @@
 #' @noRd
 AgentMemory <- new_class(
   "AgentMemory"
-) # /kaimana::AgentMemory
+)
 
 
 # %% InProcessAgentMemory ----
@@ -35,7 +28,7 @@ InProcessAgentMemory <- new_class(
   parent = AgentMemory,
   properties = list(
     state = class_environment,
-    metadata = new_union(NULL | class_list)
+    metadata = optional(S7::class_list)
   ),
   constructor = function(
     metadata = NULL
@@ -61,7 +54,7 @@ InProcessAgentMemory <- new_class(
       }
     } # /validate state messages
   }
-) # /kaimana::InProcessAgentMemory
+)
 
 
 # %% append_message.InProcessAgentMemory ----
@@ -87,17 +80,16 @@ method(append_message, InProcessAgentMemory) <- function(
     print(message)
   }
   x@state[["messages"]][[length(x@state[["messages"]]) + 1]] <- message
-  if (verbosity > 0L) {
-    msg(
-      repr_bracket("InProcessAgentMemory"),
-      "Appended",
-      class(message)[1],
-      "from",
-      fmt(message@name %||% message@role, col = highlight_col, bold = TRUE)
-    )
-  }
+  msg(
+    repr_bracket("InProcessAgentMemory"),
+    "Appended",
+    class(message)[1],
+    "from",
+    fmt(message@name %||% message@role, col = highlight_col, bold = TRUE),
+    verbosity = verbosity
+  )
   invisible(x)
-} # /kaimana::append_message.InProcessAgentMemory
+}
 
 
 # %% get_messages.InProcessAgentMemory ----
@@ -114,7 +106,7 @@ method(get_messages, InProcessAgentMemory) <- function(x, last = FALSE) {
     return(tail(x@state[["messages"]], 1))
   }
   x@state[["messages"]]
-} # /kaimana::get_messages.InProcessAgentMemory
+}
 
 
 # %% get_message_list.InProcessAgentMemory ----
@@ -141,7 +133,7 @@ method(get_message_list, InProcessAgentMemory) <- function(x) {
       content = msg@content
     )
   })
-} # /kaimana::get_message_list.InProcessAgentMemory
+}
 
 
 # %% repr.InProcessAgentMemory ----
@@ -180,17 +172,17 @@ method(repr, InProcessAgentMemory) <- function(
     " metadata",
     ngettext(length(x@metadata), " item.\n", " items.\n")
   )
-} # /kaimana::repr.InProcessAgentMemory
+}
 
 
 # %% print.InProcessAgentMemory ----
 # Print method for InProcessAgentMemory ----
 method(print, InProcessAgentMemory) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.InProcessAgentMemory
+}
 
 
 # %% View.Message ----
 View.Message <- function(x, title = x@role) {
   View(as_list(x), title = title)
-} # /kaimana::View.Message
+}

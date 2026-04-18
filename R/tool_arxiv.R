@@ -1,7 +1,3 @@
-# tool_arxiv.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # References:
 # https://info.arxiv.org/help/api/index.html
 # https://info.arxiv.org/help/api/user-manual.html
@@ -71,7 +67,7 @@ query_arxiv <- function(
       sortBy = sort_by,
       sortOrder = sort_order
     ) |>
-    httr2::req_user_agent("kaimana-r (kaimana.rtemis.org)")
+    httr2::req_user_agent("rtemis.llm-r (rtemis.llm.rtemis.org)")
 
   # --- Perform request ---
   result <- tryCatch(
@@ -241,4 +237,4 @@ tool_arxiv <- create_tool(
       required = FALSE
     )
   )
-) # /kaimana::tool_arxiv
+)

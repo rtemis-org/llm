@@ -1,7 +1,3 @@
-# tool_wikipedia.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # References:
 # https://www.mediawiki.org/wiki/API:Main_page
 # https://api.wikimedia.org/wiki/Core_REST_API/Reference/Search/Search_content
@@ -157,7 +153,7 @@ query_wikipedia <- function(
     }
   }
   out
-} # /kaimana::query_wikipedia
+}
 
 
 # %% tool_wikipedia ----
@@ -196,4 +192,4 @@ tool_wikipedia <- create_tool(
       required = FALSE
     )
   )
-) # /kaimana::tool_wikipedia
+)

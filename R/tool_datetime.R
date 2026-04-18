@@ -1,7 +1,3 @@
-# tool_datetime.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 #' Get Current Date and Time
 #'
 #' Gets the current date and time in ISO format.
@@ -41,4 +37,4 @@ tool_datetime <- create_tool(
   function_name = "get_current_datetime",
   description = "Get the current date and time in ISO format.",
   parameters = list()
-) # /kaimana::tool_datetime
+)

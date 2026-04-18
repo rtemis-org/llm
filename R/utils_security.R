@@ -1,10 +1,6 @@
-# utils_security.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # %% Constants ----
 HASH_ALGO <- "sha256"
-KMN_LOG_FILE <- "kaimana_security_log.jsonl"
+KMN_LOG_FILE <- "rtemis.llm_security_log.jsonl"
 
 
 # %% get_keychain_secret ----
@@ -23,7 +19,7 @@ KMN_LOG_FILE <- "kaimana_security_log.jsonl"
 #'
 #' @export
 get_keychain_secret <- function(
-  service = "KAIMANA_API_KEY",
+  service = "RTEMIS_LLM_API_KEY",
   account = Sys.getenv("USER")
 ) {
   cmd <- sprintf(
@@ -73,7 +69,7 @@ report_agent_unauthorized_tool <- function(
   log_line <- jsonlite::toJSON(log_entry, auto_unbox = TRUE)
   cat(log_line, file = KMN_LOG_FILE, append = TRUE, sep = "\n")
   invisible(NULL)
-} # /kaimana::report_agent_unauthorized_tool
+}
 
 
 # Internal environment to memoize verified tool hashes
@@ -100,7 +96,7 @@ report_agent_unauthorized_tool <- function(
     serialize(object = x_env_stripped, connection = NULL),
     algo = algo
   )
-} # /kaimana::hash_function
+}
 
 
 #' Call a tool securely
@@ -114,7 +110,7 @@ report_agent_unauthorized_tool <- function(
 #' @keywords internal
 #' @noRd
 validate_function <- function(tool_name, ...) {
-  ns <- asNamespace("kaimana")
+  ns <- asNamespace("rtemis.llm")
 
   # --- Step 1: Check allowed tool names ---
   if (!tool_name %in% tool_DB[["function_name"]]) {

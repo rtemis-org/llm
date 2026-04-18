@@ -1,11 +1,3 @@
-# utils_ollama.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
-# TOC:
-#   - ollama_list_models
-#   - ollama_get_model_info
-
 # References
 # https://hauselin.github.io/ollama-r/
 
@@ -25,7 +17,7 @@
   } else {
     httr2::resp_body_string(res)
   }
-} # /kaimana::.ollama_api_tags
+}
 
 # %% ollama_list_models() ----
 #' List Ollama Models
@@ -40,7 +32,7 @@ ollama_list_models <- function(
   res <- .ollama_api_tags(base_url = base_url, output = "list")
   # Format response using httr2
   sapply(res[["models"]], function(x) x[["model"]])
-} # /kaimana::ollama_list_models
+}
 
 
 # %% ollama_get_model_info() ----
@@ -88,4 +80,4 @@ ollama_check_model <- function(x) {
       i = "List available models with `ollama_list_models()`."
     ))
   }
-} # /kaimana::ollama_check_model
+}

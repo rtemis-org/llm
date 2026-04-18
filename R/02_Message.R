@@ -1,13 +1,8 @@
-# Message.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # References:
 # https://rconsortium.github.io/S7/
-# subclasses inherit properties from parent classes, need only define new properties
 
 # Description:
-# This file defines the Message class hierarchy for the kaimana package,
+# This file defines the Message class hierarchy for the rtemis.llm package,
 # including subclasses SystemMessage, InputMessage, LLMMessage, and ToolMessage.
 # Finally, it defines the InProcessAgentMemory class to encapsulate the state of an Agent, which includes
 # a list of Message objects and associated metadata.
@@ -39,9 +34,9 @@ Message <- new_class(
   properties = list(
     content = class_character,
     role = class_character,
-    name = new_union(NULL | class_character),
+    name = optional(S7::class_character),
     timestamp = class_POSIXct,
-    metadata = new_union(NULL | class_list)
+    metadata = optional(S7::class_list)
   ),
   constructor = function(
     content = character(0L),
@@ -58,7 +53,7 @@ Message <- new_class(
       metadata = metadata
     )
   }
-) # /kaimana::Message
+)
 
 
 # %% repr.Message ----
@@ -101,13 +96,13 @@ method(repr, Message) <- function(x, output_type = NULL) {
     "\n",
     x@content
   )
-} # /kaimana::repr.Message
+}
 
 
 # %% print.Message ----
 method(print, Message) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.Message
+}
 
 
 # %% as_list.Message ----
@@ -119,7 +114,7 @@ method(as_list, Message) <- function(x) {
     timestamp = x@timestamp,
     metadata = x@metadata
   )
-} # /kaimana::as_list.Message
+}
 
 
 # %% SystemMessage ----
@@ -146,7 +141,7 @@ SystemMessage <- new_class(
       metadata = metadata
     )
   }
-) # /kaimana::SystemMessage
+)
 
 
 # %% repr.SystemMessage ----
@@ -168,12 +163,12 @@ method(repr, SystemMessage) <- function(x, output_type = NULL) {
     "\n",
     x@content
   )
-} # /kaimana::repr.SystemMessage
+}
 
 # %% print.SystemMessage ----
 method(print, SystemMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.SystemMessage
+}
 
 
 # %% InputMessage ----
@@ -188,7 +183,7 @@ InputMessage <- new_class(
   "InputMessage",
   parent = Message,
   properties = list(
-    image_path = new_union(NULL | class_character)
+    image_path = optional(S7::class_character)
   ),
   constructor = function(
     content,
@@ -205,7 +200,7 @@ InputMessage <- new_class(
       metadata = metadata
     )
   }
-) # /kaimana::InputMessage
+)
 
 
 # %% repr.InputMessage ----
@@ -240,13 +235,13 @@ method(repr, InputMessage) <- function(x, output_type = NULL) {
       )
     }
   )
-} # /kaimana::repr.InputMessage
+}
 
 
 # %% print.InputMessage ----
 method(print, InputMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.InputMessage
+}
 
 
 # %% as_list.InputMessage ----
@@ -259,7 +254,7 @@ method(as_list, InputMessage) <- function(x) {
     timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
     metadata = x@metadata
   )
-} # /kaimana::as_list.InputMessage
+}
 
 
 # %% LLMMessage ----
@@ -274,8 +269,8 @@ LLMMessage <- new_class(
   "LLMMessage",
   parent = Message,
   properties = list(
-    reasoning = new_union(NULL | class_character),
-    tool_calls = new_union(NULL | class_list),
+    reasoning = optional(S7::class_character),
+    tool_calls = optional(S7::class_list),
     model_name = class_character
   ),
   constructor = function(
@@ -297,7 +292,7 @@ LLMMessage <- new_class(
       tool_calls = tool_calls
     )
   }
-) # /kaimana::LLMMessage
+)
 
 
 # %% repr.LLMMessage ----
@@ -319,12 +314,12 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
           output_type = output_type
         ),
         "\n",
-        x@reasoning
+        x@reasoning,
+        "\n"
       )
     },
     if (!is.null(x@content) && nchar(trimws(x@content)) > 0L) {
       paste0(
-        "\n",
         repr_bracket(
           paste0(name, "Response"),
           col = col_llm,
@@ -346,13 +341,13 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
       )
     }
   )
-} # /kaimana::repr.LLMMessage
+}
 
 
 # %% print.LLMMessage ----
 method(print, LLMMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.LLMMessage
+}
 
 
 # %% as_list.LLMMessage ----
@@ -367,7 +362,7 @@ method(as_list, LLMMessage) <- function(x) {
     metadata = x@metadata,
     model_name = x@model_name
   )
-} # /kaimana::as_list.LLMMessage
+}
 
 
 # %% OllamaMessage ----
@@ -401,7 +396,82 @@ OllamaMessage <- new_class(
       )
     )
   }
-) # /kaimana::OllamaMessage
+)
+
+
+# %% OpenAIMessage ----
+#' @title OpenAIMessage Class
+#'
+#' @description
+#' LLMMessage subclass for OpenAI-compatible messages.
+#'
+#' @author EDG
+#' @noRd
+OpenAIMessage <- new_class(
+  "OpenAIMessage",
+  parent = LLMMessage,
+  constructor = function(
+    content,
+    name = NULL,
+    metadata = NULL,
+    model_name,
+    reasoning = NULL,
+    tool_calls = NULL,
+    provider = "OpenAI-compatible"
+  ) {
+    if (is.null(metadata)) {
+      metadata <- list()
+    }
+    metadata[["provider"]] <- provider
+    new_object(
+      LLMMessage(
+        content = content,
+        name = name,
+        metadata = metadata,
+        model_name = model_name,
+        reasoning = reasoning,
+        tool_calls = tool_calls
+      )
+    )
+  }
+)
+
+
+# %% ClaudeMessage ----
+#' @title ClaudeMessage Class
+#'
+#' @description
+#' LLMMessage subclass for Anthropic Claude messages.
+#'
+#' @author EDG
+#' @noRd
+ClaudeMessage <- new_class(
+  "ClaudeMessage",
+  parent = LLMMessage,
+  constructor = function(
+    content,
+    name = NULL,
+    metadata = NULL,
+    model_name,
+    reasoning = NULL,
+    tool_calls = NULL
+  ) {
+    if (is.null(metadata)) {
+      metadata <- list()
+    }
+    metadata[["provider"]] <- "Anthropic"
+    new_object(
+      LLMMessage(
+        content = content,
+        name = name,
+        metadata = metadata,
+        model_name = model_name,
+        reasoning = reasoning,
+        tool_calls = tool_calls
+      )
+    )
+  }
+)
 
 
 # %% AgentMessage ----
@@ -429,7 +499,7 @@ AgentMessage <- new_class(
       metadata = metadata
     )
   }
-) # /kaimana::AgentMessage
+)
 
 
 # %% repr.AgentMessage ----
@@ -452,14 +522,14 @@ method(repr, AgentMessage) <- function(x, output_type = NULL) {
     "\n",
     x@content
   )
-} # /kaimana::repr.AgentMessage
+}
 
 
 # %% print.AgentMessage ----
 # Print method for AgentMessage ----
 method(print, AgentMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.AgentMessage
+}
 
 
 # %% as_OllamaMessage.list() ----
@@ -489,7 +559,7 @@ method(as_OllamaMessage, class_list) <- function(x) {
     model_name = x[["model"]],
     reasoning = reasoning
   )
-} # /kaimana::as_OllamaMessage.list
+}
 
 
 # %% ToolMessage ----
@@ -503,9 +573,13 @@ method(as_OllamaMessage, class_list) <- function(x) {
 ToolMessage <- new_class(
   "ToolMessage",
   parent = Message,
+  properties = list(
+    tool_call_id = optional(S7::class_character)
+  ),
   constructor = function(
     content,
     name,
+    tool_call_id = NULL,
     metadata = list()
   ) {
     new_object(
@@ -513,10 +587,24 @@ ToolMessage <- new_class(
       role = TOOL_MESSAGE_ROLE,
       name = name,
       content = content,
+      tool_call_id = tool_call_id,
       metadata = metadata
     )
   }
-) # /kaimana::ToolMessage
+)
+
+
+# %% as_list.ToolMessage ----
+method(as_list, ToolMessage) <- function(x) {
+  list(
+    role = x@role,
+    name = x@name,
+    tool_call_id = x@tool_call_id,
+    content = x@content,
+    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    metadata = x@metadata
+  )
+}
 
 
 # %% repr.ToolMessage ----
@@ -538,10 +626,10 @@ method(repr, ToolMessage) <- function(x, output_type = NULL) {
     "\n",
     x@content
   )
-} # /kaimana::repr.ToolMessage
+}
 
 
 # %% print.ToolMessage ----
 method(print, ToolMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /kaimana::print.ToolMessage
+}

@@ -1,9 +1,8 @@
-# S7 utils
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # --- Generics -------------------------------------------------------------------------------------
-# %% generate generic ----
+# %% to_json ----
+to_json <- new_generic("to_json", "x")
+
+# %% generate ----
 #' Generate Method
 #'
 #' Generic method for generating text or structured output from LLMs and Agents
@@ -18,10 +17,10 @@
 generate <- new_generic("generate", "x")
 
 
-# %% as_Message generic ----
+# %% as_Message ----
 #' Convert to Message
 #'
-#' Generic method to convert various objects to kaimana Message objects
+#' Generic method to convert various objects to rtemis.llm Message objects
 #'
 #' @param x An object to convert
 #'
@@ -32,7 +31,7 @@ generate <- new_generic("generate", "x")
 as_Message <- new_generic("as_Message", "x")
 
 
-# %% as_OllamaMessage generic ----
+# %% as_OllamaMessage ----
 #' Convert to OllamaMessage
 #'
 #' Generic method to convert to `OllamaMessage` object
@@ -46,7 +45,7 @@ as_Message <- new_generic("as_Message", "x")
 as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
 
 
-# %% get_content generic ----
+# %% get_content ----
 #' Get content
 #'
 #' @param x An object of class AIResponse or ReasoningResponse
@@ -58,7 +57,7 @@ as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
 get_content <- new_generic("get_content", "x")
 
 
-# %% as_list generic ----
+# %% as_list ----
 #' Convert to R list
 #'
 #' Generic method to convert various objects to R lists
@@ -72,7 +71,7 @@ get_content <- new_generic("get_content", "x")
 as_list <- new_generic("as_list", "x")
 
 
-# %% append_message generic ----
+# %% append_message ----
 #' Append message
 #'
 #' Generic method to append a `Message` object to an `AgentMemory`
@@ -87,7 +86,7 @@ as_list <- new_generic("as_list", "x")
 append_message <- new_generic("append_message", "x")
 
 
-# %% get_messages generic ----
+# %% get_messages ----
 #' Get messages
 #'
 #' Generic method to retrieve messages from `AgentMemory` objects
@@ -101,7 +100,7 @@ append_message <- new_generic("append_message", "x")
 get_messages <- new_generic("get_messages", "x")
 
 
-# %% get_message_list generic ----
+# %% get_message_list ----
 #' Get message list
 #'
 #' Generic method to retrieve messages as a list of named lists for LLM APIs
@@ -115,7 +114,7 @@ get_messages <- new_generic("get_messages", "x")
 get_message_list <- new_generic("get_message_list", "x")
 
 
-# %% create_llm_message generic ----
+# %% create_llm_message ----
 #' Create agent message
 #'
 #' Generic method to create an agent message for different backends
@@ -129,6 +128,111 @@ get_message_list <- new_generic("get_message_list", "x")
 #' @author EDG
 #' @export
 create_llm_message <- new_generic("create_llm_message", "x")
+
+
+# %% build_chat_messages ----
+#' Build Chat Messages
+#'
+#' Generic method to build provider-specific chat messages from agent memory
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A list of provider-specific message lists.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+build_chat_messages <- new_generic("build_chat_messages", "x")
+
+
+# %% build_chat_request_body ----
+#' Build Chat Request Body
+#'
+#' Generic method to build provider-specific chat request bodies.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A named list.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+build_chat_request_body <- new_generic("build_chat_request_body", "x")
+
+
+# %% perform_chat_request ----
+#' Perform Chat Request
+#'
+#' Generic method to perform provider-specific chat API requests.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return An `httr2_response` object.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+perform_chat_request <- new_generic("perform_chat_request", "x")
+
+
+# %% parse_chat_response ----
+#' Parse Chat Response
+#'
+#' Generic method to parse provider-specific chat API responses.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A named list with normalized response fields.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+parse_chat_response <- new_generic("parse_chat_response", "x")
+
+
+# %% decode_tool_arguments ----
+#' Decode Tool Arguments
+#'
+#' Generic method to decode provider-specific tool call arguments.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A named list of tool arguments.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+decode_tool_arguments <- new_generic("decode_tool_arguments", "x")
+
+
+# %% build_tool_message ----
+#' Build Tool Message
+#'
+#' Generic method to build provider-specific tool response messages.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A `ToolMessage` object.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+build_tool_message <- new_generic("build_tool_message", "x")
+
+
+# %% build_response_format ----
+#' Build Response Format
+#'
+#' Generic method to build provider-specific structured output request fields.
+#'
+#' @param x An `LLMConfig` object.
+#'
+#' @return A named list.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+build_response_format <- new_generic("build_response_format", "x")
 
 
 # %% AIThinking Class ----
@@ -154,4 +258,4 @@ AIThinking <- new_class(
       metadata = metadata
     )
   }
-) # /kaimana::AIThinking
+)

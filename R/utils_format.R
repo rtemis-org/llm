@@ -1,9 +1,4 @@
-# utils_format.R
-# ::kaimana-r::
-# 2025 EDG rtemis.org
-
 # Utilities to format messages
-
 repr_bracket <- function(x, col = highlight_col, output_type = NULL) {
   output_type <- get_output_type(output_type)
 
@@ -12,7 +7,7 @@ repr_bracket <- function(x, col = highlight_col, output_type = NULL) {
     fmt(x, col = col, bold = TRUE, output_type = output_type),
     fmt("]", muted = TRUE, output_type = output_type)
   )
-} # /kaimana::repr_bracket
+}
 
 
 #' Convert character vector to markdown list

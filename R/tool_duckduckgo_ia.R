@@ -1,7 +1,3 @@
-# tool_duckduckgo.R
-# ::kaimana::
-# 2025 EDG rtemis.org
-
 # %% Constants ----
 DUCKDUCKGO_URL <- "https://api.duckduckgo.com/"
 
@@ -58,7 +54,7 @@ query_duckduckgo_ia <- function(
     )
   }
   # Add user agent
-  req <- httr2::req_user_agent(req, "Kaimana (kaimana.rtemis.org)")
+  req <- httr2::req_user_agent(req, "rtemis.llm (rtemis.llm.rtemis.org)")
   # Perform request
   res <- tryCatch(
     {
@@ -104,7 +100,7 @@ query_duckduckgo_ia <- function(
     return(jsonlite::toJSON(dat, pretty = FALSE, auto_unbox = TRUE))
   }
   dat
-} # /kaimana::query_duckduckgo_ia
+}
 
 
 # %% tool_duckduckgo_ia ----

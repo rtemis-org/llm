@@ -1,7 +1,3 @@
-# Tool.R
-# ::kaimana::
-# 2025- EDG rtemis.org
-
 # %% ToolParameter ----
 #' @title ToolParameter
 #'
@@ -23,7 +19,7 @@ ToolParameter <- new_class(
     description = class_character,
     required = class_logical
   )
-) # /kaimana::ToolParameter
+)
 
 
 # %% repr.ToolParameter ----
@@ -69,7 +65,7 @@ tool_param <- function(
     description = description,
     required = required
   )
-} # /kaimana::tool_param
+}
 
 
 # %% Tool ----
@@ -102,7 +98,7 @@ Tool <- new_class(
       }
     }
   }
-) # /kaimana::Tool
+)
 
 
 # %% repr.Tool ----
@@ -114,7 +110,7 @@ method(repr, Tool) <- function(x, pad = 0L, output_type = NULL) {
     print_class = FALSE,
     output_type = output_type
   )
-} # /kaimana::repr.Tool
+}
 
 
 # %% print.Tool ----
@@ -150,7 +146,7 @@ create_tool <- function(
     description = description,
     parameters = parameters
   )
-} # /kaimana::create_tool
+}
 
 
 # %% as_list.Tool ----
@@ -165,6 +161,14 @@ create_tool <- function(
 #' @author EDG
 #' @noRd
 method(as_list, Tool) <- function(x) {
+  required <- sapply(
+    Filter(function(p) p@required, x@parameters),
+    function(p) p@name,
+    USE.NAMES = FALSE
+  )
+  if (length(required) == 0L) {
+    required <- I(character())
+  }
   list(
     type = "function",
     `function` = list(
@@ -172,11 +176,7 @@ method(as_list, Tool) <- function(x) {
       description = x@description,
       parameters = list(
         type = "object",
-        # lapply correctly returns `list()` in case of no required parameters
-        required = lapply(
-          Filter(function(p) p@required, x@parameters),
-          function(p) p@name
-        ),
+        required = required,
         properties = structure(
           lapply(
             x@parameters,
@@ -192,4 +192,4 @@ method(as_list, Tool) <- function(x) {
       ) # /parameters
     ) # /function
   )
-} # /kaimana::as_list.Tool
+}
