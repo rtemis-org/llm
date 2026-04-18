@@ -8,6 +8,8 @@ as_list(x, ...)
 }
 \arguments{
 \item{x}{An object to convert}
+
+\item{...}{Additional arguments for specific methods}
 }
 \value{
 A named R list

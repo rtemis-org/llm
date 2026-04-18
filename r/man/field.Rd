@@ -16,7 +16,7 @@ field(
 
 \item{description}{Optional Character: A brief description of the field.}
 
-\item{type}{Character {"string", "number", "integer", "boolean", "array", "object"}: The field
+\item{type}{Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
 type.}
 
 \item{required}{Logical: Whether the field is required.}
@@ -26,6 +26,11 @@ Field object
 }
 \description{
 Define a schema field
+}
+\examples{
+# `type`` defaults to "string", `required` defaults to TRUE
+field("lab_name", "Name of the lab test")
+field("normal_range_low", "Lower bound of normal range", type = "number")
 }
 \author{
 EDG

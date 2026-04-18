@@ -4,18 +4,28 @@
 \alias{generate}
 \title{Generate Method}
 \usage{
-generate(x, ...)
+generate(x, prompt, verbosity = 1L, ...)
 }
 \arguments{
 \item{x}{An object of class LLM or Agent.}
 
-\item{prompt}{Character: The prompt or query to pass to the model or agent.}
+\item{prompt}{Character: The prompt to pass to the model or agent.}
+
+\item{verbosity}{Integer: Verbosity level.}
+
+\item{...}{Additional arguments for specific methods, see Details.}
 }
 \value{
 \code{Message} object or list.
 }
 \description{
 Generic method for generating text or structured output from LLMs and Agents
+}
+\details{
+\strong{OpenAI} & \strong{Claude} extra arguments:
+\itemize{
+\item \code{think} Logical: Whether to return reasoning trace
+}
 }
 \author{
 EDG
