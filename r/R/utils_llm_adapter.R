@@ -226,6 +226,7 @@ method(perform_chat_request, OllamaConfig) <- function(
   resp <- httr2::request(paste0(x@base_url, "/api/chat")) |>
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis (www.rtemis.org)") |>
+    httr2::req_error(is_error = function(resp) FALSE) |>
     httr2::req_perform(verbosity = verbosity - 1L)
   .check_http_response(resp, "Ollama")
   resp
