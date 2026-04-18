@@ -150,7 +150,7 @@ query_semanticscholar <- function(
       year = year,
       limit = limit
     ) |>
-    httr2::req_user_agent("rtemis.llm-r (rtemis.llm.rtemis.org)")
+    httr2::req_user_agent("rtemis (www.rtemis.org)")
 
   if (!is.null(api_key) && nchar(api_key) > 0L) {
     msg("Using Semantic Scholar API key from keyring.", verbosity = verbosity)

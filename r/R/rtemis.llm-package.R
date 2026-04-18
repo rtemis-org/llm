@@ -9,7 +9,7 @@
 #' ecosystem.
 #'
 #' @section Online Documentation and Vignettes:
-#' <https://rtemis.llm.rtemis.org>
+#' <https://www.rtemis.org>
 #'
 #' @name rtemis.llm-package
 #' @import rtemis.core data.table S7

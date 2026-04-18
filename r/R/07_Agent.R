@@ -329,6 +329,7 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response created
 #' using [schema].
 #' @param name Optional character: The name of the agent.
+#' @param verbosity Integer: Verbosity level.
 #'
 #' @return `Agent` object
 #'

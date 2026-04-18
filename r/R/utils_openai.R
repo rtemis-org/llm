@@ -544,7 +544,7 @@ openai_list_models <- function(
   )
   req <- httr2::request(paste0(config@base_url, "/models")) |>
     httr2::req_method("GET") |>
-    httr2::req_user_agent("rtemis.llm-r models (rtemis.llm.rtemis.org)") |>
+    httr2::req_user_agent("rtemis (www.rtemis.org)") |>
     .add_openai_headers(config)
   resp <- httr2::req_perform(req)
   .check_http_response(resp, .openai_provider_name(config))

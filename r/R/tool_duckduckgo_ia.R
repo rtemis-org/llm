@@ -54,7 +54,7 @@ query_duckduckgo_ia <- function(
     )
   }
   # Add user agent
-  req <- httr2::req_user_agent(req, "rtemis.llm (rtemis.llm.rtemis.org)")
+  req <- httr2::req_user_agent(req, "rtemis (www.rtemis.org)")
   # Perform request
   res <- tryCatch(
     {

@@ -265,6 +265,7 @@ build_response_format <- new_generic("build_response_format", "x")
 #' @field metadata List: Metadata about the thinking step.
 #'
 #' @author EDG
+#' @noRd
 AIThinking <- new_class(
   "AIThinking",
   properties = list(

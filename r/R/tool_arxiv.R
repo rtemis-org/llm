@@ -67,7 +67,7 @@ query_arxiv <- function(
       sortBy = sort_by,
       sortOrder = sort_order
     ) |>
-    httr2::req_user_agent("rtemis.llm-r (rtemis.llm.rtemis.org)")
+    httr2::req_user_agent("rtemis (www.rtemis.org)")
 
   # --- Perform request ---
   result <- tryCatch(

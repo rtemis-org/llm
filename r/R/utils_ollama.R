@@ -22,6 +22,8 @@
 # %% ollama_list_models() ----
 #' List Ollama Models
 #'
+#' @param base_url Character: Base URL of Ollama server.
+#'
 #' @return Character vector: Model names.
 #'
 #' @author EDG
@@ -52,6 +54,9 @@ ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
     lapply(models, function(m) data.table(t(unlist(m)))),
     fill = TRUE
   )
+
+  # appease R CMD check
+  name <- NULL
 
   if (is.null(x)) {
     models

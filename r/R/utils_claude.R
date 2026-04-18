@@ -500,7 +500,7 @@ claude_list_models <- function(
   repeat {
     req <- httr2::request(url) |>
       httr2::req_method("GET") |>
-      httr2::req_user_agent("rtemis.llm-r models (rtemis.llm.rtemis.org)") |>
+      httr2::req_user_agent("rtemis (www.rtemis.org)") |>
       .add_claude_headers(config)
     resp <- httr2::req_perform(req)
     .check_claude_response(resp)

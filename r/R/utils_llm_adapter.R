@@ -223,7 +223,7 @@ method(perform_chat_request, OllamaConfig) <- function(
 ) {
   resp <- httr2::request(paste0(x@base_url, "/api/chat")) |>
     httr2::req_body_json(request_body) |>
-    httr2::req_user_agent("rtemis.llm-r Agent (rtemis.llm.rtemis.org)") |>
+    httr2::req_user_agent("rtemis (www.rtemis.org)") |>
     httr2::req_perform(verbosity = verbosity - 1L)
   .check_http_response(resp, "Ollama")
   resp
@@ -249,7 +249,7 @@ method(perform_chat_request, OpenAIConfig) <- function(
 ) {
   req <- httr2::request(paste0(x@base_url, "/chat/completions")) |>
     httr2::req_body_json(request_body) |>
-    httr2::req_user_agent("rtemis.llm-r Agent (rtemis.llm.rtemis.org)") |>
+    httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_openai_headers(x)
   resp <- httr2::req_perform(req, verbosity = verbosity - 1L)
@@ -628,7 +628,7 @@ method(perform_chat_request, ClaudeConfig) <- function(
 ) {
   req <- httr2::request(paste0(x@base_url, "/messages")) |>
     httr2::req_body_json(request_body) |>
-    httr2::req_user_agent("rtemis.llm-r Agent (rtemis.llm.rtemis.org)") |>
+    httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_claude_headers(x)
   resp <- httr2::req_perform(req, verbosity = verbosity - 1L)

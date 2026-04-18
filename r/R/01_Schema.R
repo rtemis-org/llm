@@ -17,7 +17,7 @@
 #' Internal S7 class for one JSON Schema property.
 #'
 #' @field name Optional Character: Field name.
-#' @field type Character {"string", "number", "integer", "boolean", "array", "object"}: JSON
+#' @field type Character \{"string", "number", "integer", "boolean", "array", "object"\}: JSON
 #' Schema type.
 #' @field description Optional Character: Field description.
 #' @field required Logical: Whether the field is required by its parent schema.
@@ -242,8 +242,9 @@ field <- function(
 #' @param name Optional Character: The name of the schema.
 #' @param ... Field objects defining the schema fields.
 #' @param description Optional Character: A brief description of the schema.
-#' @param output_type Character {"schema", "list", "json"}: Output format.
+#'
 #' @return Schema object, named list, or JSON string.
+#'
 #' @author EDG
 #' @export
 #'
