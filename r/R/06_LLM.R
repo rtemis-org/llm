@@ -326,9 +326,10 @@ method(generate, Ollama) <- function(x, prompt, think = NULL, verbosity = 1L) {
   resp <- httr2::request(paste0(x@config@base_url, "/api/generate")) |>
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis.llm-r LLM (www.rtemis.org)") |>
+    httr2::req_error(is_error = function(resp) FALSE) |>
     httr2::req_perform(verbosity = verbosity - 1L)
   # Check for errors
-  httr2::resp_check_status(resp)
+  .check_http_response(resp, "Ollama")
 
   # Replace working message with done
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
