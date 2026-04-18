@@ -37,15 +37,20 @@ jobs:
       - uses: eddelbuettel/github-actions/r2u-setup@master
 
       - name: Install package dependencies
-        working-directory: r
-        shell: Rscript {0}
-        run: |
-          options(repos = c(
-            CRAN = "https://cloud.r-project.org",
-            "https://rtemis-org.r-universe.dev"
-          ))
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE)
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 30
+          shell: Rscript
+          command: |
+            setwd("r")
+            options(repos = c(
+              CRAN = "https://cloud.r-project.org",
+              "https://rtemis-org.r-universe.dev"
+            ))
+            install.packages(c("remotes", "rcmdcheck"))
+            remotes::install_deps(dependencies = TRUE)
 
       - uses: r-lib/actions/check-r-package@v2
         with:
