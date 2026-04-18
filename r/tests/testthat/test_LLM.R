@@ -68,6 +68,58 @@ test_that("create_Ollama works", {
   testthat::expect_true(S7_inherits(llm, Ollama))
 }) # /create_Ollama
 
+# %% OllamaConfig think property ----
+test_that("OllamaConfig accepts valid think values", {
+  skip_if_ollama_model_missing(model_name)
+  # logical
+  cfg_true <- OllamaConfig(
+    model_name = model_name,
+    temperature = 0.3,
+    base_url = "http://localhost:11434",
+    think = TRUE
+  )
+  testthat::expect_identical(cfg_true@think, TRUE)
+  # character levels
+  cfg_high <- OllamaConfig(
+    model_name = model_name,
+    temperature = 0.3,
+    base_url = "http://localhost:11434",
+    think = "high"
+  )
+  testthat::expect_identical(cfg_high@think, "high")
+  # NULL default
+  cfg_null <- OllamaConfig(
+    model_name = model_name,
+    temperature = 0.3,
+    base_url = "http://localhost:11434"
+  )
+  testthat::expect_null(cfg_null@think)
+}) # /OllamaConfig think
+
+
+test_that("OllamaConfig rejects invalid think values", {
+  skip_if_ollama_model_missing(model_name)
+  testthat::expect_error(
+    OllamaConfig(
+      model_name = model_name,
+      temperature = 0.3,
+      base_url = "http://localhost:11434",
+      think = "extreme"
+    ),
+    "think"
+  )
+  testthat::expect_error(
+    OllamaConfig(
+      model_name = model_name,
+      temperature = 0.3,
+      base_url = "http://localhost:11434",
+      think = c(TRUE, FALSE)
+    ),
+    "think"
+  )
+}) # /OllamaConfig think invalid
+
+
 # %% generate.Ollama ----
 # Slow test, uncomment to run
 # res <- llm |>
