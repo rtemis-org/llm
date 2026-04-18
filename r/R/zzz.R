@@ -10,7 +10,6 @@
 
 # vars
 rtemis.llm_version <- packageVersion("rtemis.llm")
-.availableCores <- unname(future::availableCores())
 
 # References
 # Unicode emojis: https://www.unicode.org/emoji/charts/full-emoji-list.html
