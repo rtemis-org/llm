@@ -14,6 +14,7 @@ llmapply(
   output_schema = NULL,
   name = NULL,
   verbosity = 1L,
+  extract_responses = TRUE,
   agent = NULL,
   ...
 )
@@ -26,7 +27,23 @@ llmapply(
 
 \item{model_name}{Character: The name of the model to use. Ignored if \code{agent} is provided.}
 
-\item{use_memory}{Logical: If \code{TRUE}, the agent will retain memory across calls. Ignored if \code{agent} is provided.}
+\item{use_memory}{Logical: If \code{TRUE}, the agent will retain memory across calls. Ignored if
+\code{agent} is provided.}
+
+\item{tools}{List of \code{Tool} objects: Tools to use for all calls. Ignored if \code{agent} is provided.}
+
+\item{max_tool_rounds}{Integer: Maximum number of tool use rounds per call. Ignored if \code{agent}
+is provided.}
+
+\item{output_schema}{\code{Schema} object, named list, or JSON string defining the expected structure
+of the LLM response. Ignored if \code{agent} is provided.}
+
+\item{name}{Character: Name for the agent. Ignored if \code{agent} is provided.}
+
+\item{verbosity}{Integer: Verbosity level for messages. Ignored if \code{agent} is provided.}
+
+\item{extract_responses}{Logical: If \code{TRUE}, extract the content of the assistant message from
+the full response. If \code{FALSE}, return the full response object from the agent.}
 
 \item{agent}{\code{Agent} object: Agent to use for generating responses.}
 

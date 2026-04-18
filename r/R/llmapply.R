@@ -5,7 +5,17 @@
 #'   [base::as.list]. Each element will form the user prompt for a separate call to the LLM agent.
 #' @param system_prompt Character: The system prompt to use for all calls.
 #' @param model_name Character: The name of the model to use. Ignored if `agent` is provided.
-#' @param use_memory Logical: If `TRUE`, the agent will retain memory across calls. Ignored if `agent` is provided.
+#' @param use_memory Logical: If `TRUE`, the agent will retain memory across calls. Ignored if
+#'   `agent` is provided.
+#' @param tools List of `Tool` objects: Tools to use for all calls. Ignored if `agent` is provided.
+#' @param max_tool_rounds Integer: Maximum number of tool use rounds per call. Ignored if `agent`
+#'   is provided.
+#' @param output_schema `Schema` object, named list, or JSON string defining the expected structure
+#'   of the LLM response. Ignored if `agent` is provided.
+#' @param name Character: Name for the agent. Ignored if `agent` is provided.
+#' @param verbosity Integer: Verbosity level for messages. Ignored if `agent` is provided.
+#' @param extract_responses Logical: If `TRUE`, extract the content of the assistant message from
+#'   the full response. If `FALSE`, return the full response object from the agent.
 #' @param agent `Agent` object: Agent to use for generating responses.
 #' @param ... Additional arguments passed to the `generate` method for the agent.
 #'
