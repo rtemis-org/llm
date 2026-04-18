@@ -1,4 +1,4 @@
-name: R CI (r2u)
+name: R CI
 
 on:
   workflow_dispatch:
@@ -35,8 +35,6 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: eddelbuettel/github-actions/r2u-setup@master
-
-      - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Install package dependencies
         working-directory: r
