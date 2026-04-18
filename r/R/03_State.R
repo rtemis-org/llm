@@ -131,12 +131,13 @@ method(get_message_list, InProcessAgentMemory) <- function(x) {
     },
     get_messages(x)
   )
-  lapply(msgs, function(msg) {
+  # Unname to ensure JSON serialization emits an array, not an object keyed by role.
+  unname(lapply(msgs, function(msg) {
     list(
       role = msg@role,
       content = msg@content
     )
-  })
+  }))
 }
 
 
