@@ -164,7 +164,9 @@ test_that("OpenAI-compatible response format wraps schemas", {
   response_format <- build_response_format(config, output_schema)
   expect_equal(response_format[["type"]], "json_schema")
   expect_true(response_format[["json_schema"]][["strict"]])
-  expect_false(response_format[["json_schema"]][["schema"]][["additionalProperties"]])
+  expect_false(response_format[["json_schema"]][["schema"]][[
+    "additionalProperties"
+  ]])
 })
 
 
@@ -238,7 +240,10 @@ test_that("OpenAI-compatible response parsing extracts message fields", {
   )
   resp <- httr2::response(
     status_code = 200,
-    headers = list(`content-type` = "application/json", `x-request-id` = "req_123"),
+    headers = list(
+      `content-type` = "application/json",
+      `x-request-id` = "req_123"
+    ),
     body = charToRaw(body)
   )
   parsed <- parse_chat_response(config, resp)

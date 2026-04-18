@@ -176,8 +176,18 @@ test_that("Claude merges consecutive tool messages into one user block", {
     validate_model = FALSE
   )
   state <- InProcessAgentMemory()
-  append_message(state, SystemMessage(content = "Sys."), echo = FALSE, verbosity = 0L)
-  append_message(state, InputMessage(content = "Question."), echo = FALSE, verbosity = 0L)
+  append_message(
+    state,
+    SystemMessage(content = "Sys."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  append_message(
+    state,
+    InputMessage(content = "Question."),
+    echo = FALSE,
+    verbosity = 0L
+  )
   append_message(
     state,
     ToolMessage(
@@ -246,7 +256,12 @@ test_that("Claude tools use flat {name, description, input_schema} shape", {
     )
   )
   state <- InProcessAgentMemory()
-  append_message(state, InputMessage(content = "Hi"), echo = FALSE, verbosity = 0L)
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
   body <- build_chat_request_body(config, state = state, tools = list(tool))
   expect_length(body[["tools"]], 1L)
   t <- body[["tools"]][[1L]]
@@ -270,7 +285,12 @@ test_that("Claude structured output injects forced synthetic tool", {
     answer = field("string", "Answer text.")
   )
   state <- InProcessAgentMemory()
-  append_message(state, InputMessage(content = "Hi"), echo = FALSE, verbosity = 0L)
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
   body <- build_chat_request_body(
     config,
     state = state,
