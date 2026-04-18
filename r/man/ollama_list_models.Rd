@@ -6,6 +6,9 @@
 \usage{
 ollama_list_models(base_url = OLLAMA_URL_DEFAULT)
 }
+\arguments{
+\item{base_url}{Character: Base URL of Ollama server.}
+}
 \value{
 Character vector: Model names.
 }

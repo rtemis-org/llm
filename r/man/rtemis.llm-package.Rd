@@ -11,7 +11,7 @@ ecosystem.
 }
 \section{Online Documentation and Vignettes}{
 
-\url{https://rtemis.llm.rtemis.org}
+\url{https://www.rtemis.org}
 }
 
 \author{

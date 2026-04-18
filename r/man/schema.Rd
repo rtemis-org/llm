@@ -12,8 +12,6 @@ schema(name = NULL, ..., description = NULL)
 \item{...}{Field objects defining the schema fields.}
 
 \item{description}{Optional Character: A brief description of the schema.}
-
-\item{output_type}{Character {"schema", "list", "json"}: Output format.}
 }
 \value{
 Schema object, named list, or JSON string.

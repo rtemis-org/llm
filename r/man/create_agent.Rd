@@ -30,6 +30,8 @@ create_agent(
 using \link{schema}.}
 
 \item{name}{Optional character: The name of the agent.}
+
+\item{verbosity}{Integer: Verbosity level.}
 }
 \value{
 \code{Agent} object
