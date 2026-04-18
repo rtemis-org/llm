@@ -26,6 +26,7 @@ llmapply <- function(
   output_schema = NULL,
   name = NULL,
   verbosity = 1L,
+  extract_responses = TRUE,
   agent = NULL,
   ...
 ) {
@@ -50,7 +51,13 @@ llmapply <- function(
     )
   }
   # Iterate over X and generate responses
-  lapply(X, function(prompt) {
+  out <- lapply(X, function(prompt) {
     generate(agent, prompt, ...)
   })
+  if (extract_responses) {
+    out <- lapply(out, function(x) {
+      x$assistant@content
+    })
+  }
+  out
 }
