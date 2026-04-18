@@ -14,6 +14,7 @@
 #' @name rtemis.llm-package
 #' @import rtemis.core data.table S7
 #' @importFrom utils sessionInfo
-#' @importFrom rlang %||%
+#' @importFrom stats setNames
+#' @importFrom utils View
 "_PACKAGE"
 NULL
