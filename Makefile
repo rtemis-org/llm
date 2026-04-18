@@ -33,7 +33,7 @@ check: check-r
 
 check-r:
 	@echo "==> R: Checking rtemis.draw"
-	cd r && Rscript -e "devtools::check()"
+	cd r && R CMD build . && R CMD check rtemis.llm_*.tar.gz --as-cran && rm rtemis.llm_*.tar.gz
 
 # ── Build Site ───────────────────────────────────────────────────────────────
 site: site-r
