@@ -23,6 +23,9 @@ AgentMemory <- new_class(
 #'
 #' @field state Environment: Contains the list of messages in the Agent's state.
 #' @field metadata List: The metadata associated with the Agent's state.
+#'
+#' @author EDG
+#' @noRd
 InProcessAgentMemory <- new_class(
   "InProcessAgentMemory",
   parent = AgentMemory,
@@ -176,7 +179,6 @@ method(repr, InProcessAgentMemory) <- function(
 
 
 # %% print.InProcessAgentMemory ----
-# Print method for InProcessAgentMemory ----
 method(print, InProcessAgentMemory) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 }

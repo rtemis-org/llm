@@ -207,12 +207,19 @@ method(to_json, Schema) <- function(x) {
 #'
 #' @param name Optional Character: The name of the field.
 #' @param description Optional Character: A brief description of the field.
-#' @param type Character {"string", "number", "integer", "boolean", "array", "object"}: The field
+#' @param type Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
 #'   type.
 #' @param required Logical: Whether the field is required.
+#'
 #' @return Field object
+#'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # `type`` defaults to "string", `required` defaults to TRUE
+#' field("lab_name", "Name of the lab test")
+#' field("normal_range_low", "Lower bound of normal range", type = "number")
 field <- function(
   name,
   description = name,

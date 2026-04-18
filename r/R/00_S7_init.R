@@ -8,13 +8,25 @@ to_json <- new_generic("to_json", "x")
 #' Generic method for generating text or structured output from LLMs and Agents
 #'
 #' @param x An object of class LLM or Agent.
-#' @param prompt Character: The prompt or query to pass to the model or agent.
+#' @param prompt Character: The prompt to pass to the model or agent.
+#' @param verbosity Integer: Verbosity level.
+#' @param ... Additional arguments for specific methods, see Details.
+#'
+#' @details
+#' **OpenAI** & **Claude** extra arguments:
+#' - `think` Logical: Whether to return reasoning trace
 #'
 #' @return `Message` object or list.
 #'
 #' @author EDG
 #' @export
-generate <- new_generic("generate", "x")
+generate <- new_generic(
+  "generate",
+  "x",
+  function(x, prompt, verbosity = 1L, ...) {
+    S7_dispatch()
+  }
+)
 
 
 # %% as_Message ----
@@ -27,7 +39,8 @@ generate <- new_generic("generate", "x")
 #' @return A Message object
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 as_Message <- new_generic("as_Message", "x")
 
 
@@ -41,7 +54,8 @@ as_Message <- new_generic("as_Message", "x")
 #' @return An OllamaMessage object
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
 
 
@@ -53,7 +67,8 @@ as_OllamaMessage <- new_generic("as_OllamaMessage", "x")
 #' @return Character if content is text, data.table if content is structured
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 get_content <- new_generic("get_content", "x")
 
 
@@ -63,6 +78,7 @@ get_content <- new_generic("get_content", "x")
 #' Generic method to convert various objects to R lists
 #'
 #' @param x An object to convert
+#' @param ... Additional arguments for specific methods
 #'
 #' @return A named R list
 #'
@@ -82,7 +98,8 @@ as_list <- new_generic("as_list", "x")
 #' @return The updated `AgentMemory` object, invisibly.
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 append_message <- new_generic("append_message", "x")
 
 
@@ -96,7 +113,8 @@ append_message <- new_generic("append_message", "x")
 #' @return A list of `Message` objects.
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 get_messages <- new_generic("get_messages", "x")
 
 
@@ -110,7 +128,8 @@ get_messages <- new_generic("get_messages", "x")
 #' @return A list of named lists representing messages.
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 get_message_list <- new_generic("get_message_list", "x")
 
 
@@ -126,7 +145,8 @@ get_message_list <- new_generic("get_message_list", "x")
 #' @return An `LLMMessage` object.
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 create_llm_message <- new_generic("create_llm_message", "x")
 
 
