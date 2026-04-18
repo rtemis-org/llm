@@ -1,3 +1,5 @@
+[![R CI](https://github.com/rtemis-org/llm/actions/workflows/r-ci-r2u.yml/badge.svg)](https://github.com/rtemis-org/llm/actions/workflows/r-ci-r2u.yml)
+
 # rtemis.llm R package
 
 rtemis.llm is a package to interface with Large Language Models, part of the [rtemis](https://rtemis.org) ecosystem.
