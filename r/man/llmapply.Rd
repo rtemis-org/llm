@@ -4,13 +4,31 @@
 \alias{llmapply}
 \title{Batch submission of prompts to an LLM agent}
 \usage{
-llmapply(X, agent, ...)
+llmapply(
+  X,
+  system_prompt,
+  model_name = NULL,
+  use_memory = FALSE,
+  tools = NULL,
+  max_tool_rounds = 3L,
+  output_schema = NULL,
+  name = NULL,
+  verbosity = 1L,
+  agent = NULL,
+  ...
+)
 }
 \arguments{
 \item{X}{A vector (atomic or list) to iterate over. Other objects will be coerced by
 \link[base:list]{base::as.list}. Each element will form the user prompt for a separate call to the LLM agent.}
 
-\item{agent}{An object of class \code{Agent} to which the prompts will be submitted.}
+\item{system_prompt}{Character: The system prompt to use for all calls.}
+
+\item{model_name}{Character: The name of the model to use. Ignored if \code{agent} is provided.}
+
+\item{use_memory}{Logical: If \code{TRUE}, the agent will retain memory across calls. Ignored if \code{agent} is provided.}
+
+\item{agent}{\code{Agent} object: Agent to use for generating responses.}
 
 \item{...}{Additional arguments passed to the \code{generate} method for the agent.}
 }
@@ -19,6 +37,9 @@ A list of \code{Message} objects or a list of structured responses returned by t
 }
 \description{
 Batch submission of prompts to an LLM agent
+}
+\details{
+Either model_name or agent must be provided. If both are provided, the agent will take precedence.
 }
 \author{
 EDG

@@ -7,7 +7,8 @@
 config_Ollama(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
-  base_url = OLLAMA_URL_DEFAULT
+  base_url = OLLAMA_URL_DEFAULT,
+  think = NULL
 )
 }
 \arguments{
@@ -16,6 +17,10 @@ config_Ollama(
 \item{temperature}{Numeric: The temperature for the model.}
 
 \item{base_url}{Character: Base URL of Ollama server.}
+
+\item{think}{Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode
+for this config. Logical values target models like deepseek or qwen3; character values target
+gpt-oss. Can be overridden per call.}
 }
 \value{
 OllamaConfig object.

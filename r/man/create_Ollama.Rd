@@ -10,7 +10,8 @@ create_Ollama(
   temperature = TEMPERATURE_DEFAULT,
   output_schema = NULL,
   name = NULL,
-  base_url = OLLAMA_URL_DEFAULT
+  base_url = OLLAMA_URL_DEFAULT,
+  think = NULL
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ create_Ollama(
 \item{name}{Character or NULL: An optional name for the Ollama object.}
 
 \item{base_url}{Character: Base URL of Ollama server.}
+
+\item{think}{Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
+Logical values target models like deepseek or qwen3; character values target gpt-oss.}
 }
 \value{
 Ollama object.
