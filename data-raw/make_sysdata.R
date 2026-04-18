@@ -1,5 +1,5 @@
 # make_sysdata.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
 
 # %% Constants ----
@@ -13,9 +13,9 @@ AVAILABLE_TOOLS <- list(
 HASH_ALGO <- "sha256"
 
 # Import your package namespace manually to access the functions
-pkg_env <- asNamespace("kaimana")
+pkg_env <- asNamespace("rtemis.llm")
 
-.hash_function <- getFromNamespace(".hash_function", "kaimana")
+.hash_function <- getFromNamespace(".hash_function", "rtemis.llm")
 
 # %% Build the tool_DB
 tool_DB <- data.frame(
