@@ -93,7 +93,7 @@ method(repr, Message) <- function(x, output_type = NULL) {
   )
   paste0(
     repr_bracket(name, col = .color, output_type = output_type),
-    "\n",
+    " ",
     x@content
   )
 }
@@ -160,7 +160,7 @@ method(repr, SystemMessage) <- function(x, output_type = NULL) {
       col = col_system,
       output_type = output_type
     ),
-    "\n",
+    " ",
     x@content
   )
 }
@@ -220,7 +220,7 @@ method(repr, InputMessage) <- function(x, output_type = NULL) {
       col = col_input,
       output_type = output_type
     ),
-    "\n",
+    " ",
     x@content,
     if (!is.null(x@image_path)) {
       paste0(
@@ -313,7 +313,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
           col = col_reasoning,
           output_type = output_type
         ),
-        "\n",
+        " ",
         x@reasoning,
         "\n"
       )
@@ -325,7 +325,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
           col = col_llm,
           output_type = output_type
         ),
-        "\n",
+        "",
         x@content
       )
     },
