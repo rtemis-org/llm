@@ -12,11 +12,16 @@ RoxygenNote: 7.3.3
 Imports:
     rtemis.core,
     S7,
-    data.table
+    data.table,
+    rlang
 Suggests:
+    cli,
+    digest,
     httr2,
     jsonlite,
-    testthat (>= 3.0.0)
+    keyring,
+    testthat (>= 3.0.0),
+    xml2
 Additional_repositories:
     https://rtemis-org.r-universe.dev
 Config/testthat/edition: 3
