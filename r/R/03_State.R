@@ -108,7 +108,8 @@ method(get_messages, InProcessAgentMemory) <- function(x, last = FALSE) {
   if (last) {
     return(tail(x@state[["messages"]], 1))
   }
-  x@state[["messages"]]
+  out <- x@state[["messages"]]
+  setNames(out, sapply(out, function(msg) msg@role))
 }
 
 
