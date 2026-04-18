@@ -1,10 +1,10 @@
 # test-ollama.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
 
 # library(testthat)
 
-model_name <- "qwen3:8b"
+model_name <- "qwen3.5:0.8b"
 
 # %% ollama_list_models() ----
 test_that("ollama_list_models works", {

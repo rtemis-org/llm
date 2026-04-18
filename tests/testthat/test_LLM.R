@@ -1,13 +1,15 @@
 # test_LLM.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
 
-# library(testthat)
+# %% Settings ----
+model_name <- "qwen3.5:0.8b"
+
 
 # %% LLMConfig Class ----
 test_that("LLMConfig class works", {
   config <- LLMConfig(
-    model_name = "qwen3:8b",
+    model_name = model_name,
     temperature = 0.7,
     backend = "ollama",
     base_url = "http://localhost:11434"
@@ -19,7 +21,7 @@ test_that("LLMConfig class works", {
 # %% OllamaConfig Class ----
 test_that("OllamaConfig class works", {
   config <- OllamaConfig(
-    model_name = "qwen3:8b",
+    model_name = model_name,
     temperature = 0.7,
     base_url = "http://localhost:11434"
   )
@@ -41,7 +43,7 @@ test_that("LLM class works", {
 test_that("Ollama class works", {
   llm <- Ollama(
     config = OllamaConfig(
-      model_name = "qwen3:8b",
+      model_name = "gemma4:e4b",
       temperature = 0.3,
       base_url = "http://localhost:11434"
     ),
@@ -53,7 +55,7 @@ test_that("Ollama class works", {
 
 # %% create_Ollama() ----
 llm <- create_Ollama(
-  model_name = "qwen3:8b",
+  model_name = model_name,
   system_prompt = "You are a meticulous research assistant.",
   temperature = 0.4,
   output_schema = NULL,

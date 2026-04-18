@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(kaimana)
+library(rtemis.llm)
 
-test_check("kaimana")
+test_check("rtemis.llm")

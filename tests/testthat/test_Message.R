@@ -1,6 +1,10 @@
 # test_Message.R
-# ::kaimana::
-# 2025 EDG rtemis.org
+# ::rtemis.llm::
+# 2025- EDG rtemis.org
+
+# %% Settings ----
+model_name <- "qwen3.5:0.8b"
+
 
 # %% Message Class ----
 test_that("Message class works", {
@@ -46,13 +50,24 @@ test_that("InputMessage class works", {
 }) # /InputMessage
 
 
+# %% LLMMessage Class (no reasoning) ----
+test_that("LLMMessage class works", {
+  msg <- LLMMessage(
+    name = "Preprocessor",
+    content = "Hello.",
+    metadata = list(project = "kmn"),
+    model_name = model_name
+  )
+  testthat::expect_true(S7_inherits(msg, LLMMessage))
+}) # /LLMMessage
+
 # %% LLMMessage Class ----
 test_that("LLMMessage class works", {
   msg <- LLMMessage(
     name = "Preprocessor",
     content = "Hello.",
     metadata = list(project = "kmn"),
-    model_name = "qwen3:8b",
+    model_name = model_name,
     reasoning = "I think therefore I am."
   )
   testthat::expect_true(S7_inherits(msg, LLMMessage))
@@ -65,7 +80,7 @@ test_that("OllamaMessage class works", {
     name = "Preprocessor",
     content = "Hello.",
     metadata = list(project = "kmn"),
-    model_name = "qwen3:8b",
+    model_name = model_name,
     reasoning = "I think therefore I am."
   )
   testthat::expect_true(S7_inherits(msg, OllamaMessage))
@@ -87,7 +102,7 @@ test_that("AgentMessage class works", {
 # %% create_llm_message.OllamaConfig ----
 test_that("create_llm_message.OllamaConfig works", {
   config <- OllamaConfig(
-    model_name = "qwen3:8b",
+    model_name = model_name,
     temperature = 0.5,
     base_url = "http://localhost:11434"
   )
@@ -109,7 +124,7 @@ test_that("create_llm_message.OllamaConfig works", {
 test_that("create_llm_message.Agent works", {
   agent <- create_agent(
     llmconfig = config_Ollama(
-      model_name = "qwen3:8b",
+      model_name = model_name,
       temperature = 0.3,
     ),
     system_prompt = "You are a meticulous research assistant.",

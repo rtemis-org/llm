@@ -1,5 +1,5 @@
 # test_tools_wikipedia.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
 
 test_that("query_wikipedia returns expected columns (light run)", {

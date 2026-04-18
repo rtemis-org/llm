@@ -1,5 +1,5 @@
 # test_validate.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
 
 # %% validate_function ----

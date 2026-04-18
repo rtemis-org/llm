@@ -1,12 +1,16 @@
 # test_Agent.R
-# ::kaimana::
+# ::rtemis.llm::
 # 2025 EDG rtemis.org
+
+# %% Settings ---
+model_name <- "qwen3.5:0.8b"
+
 
 # %% Agent Class ----
 test_that("Agent class works", {
   agent <- Agent(
     llmconfig = config_Ollama(
-      model_name = "lfm2.5-thinking:1.2b",
+      model_name = model_name,
       temperature = 0.3,
       base_url = "http://localhost:11434"
     ),
@@ -22,7 +26,7 @@ test_that("Agent class works", {
 test_that("create_agent() works", {
   agent <- create_agent(
     llmconfig = config_Ollama(
-      model_name = "lfm2.5-thinking:1.2b",
+      model_name = model_name,
       temperature = 0.3,
       base_url = "http://localhost:11434"
     ),
