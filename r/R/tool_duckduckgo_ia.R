@@ -91,6 +91,8 @@ query_duckduckgo_ia <- function(
     Abstract_text = res_list[["AbstractText"]],
     Abstract_URL = res_list[["AbstractURL"]]
   )
+  # appease R CMD check
+  Answer <- Answer_type <- NULL
   if (nchar(res_list[["Answer"]]) > 0L) {
     dat[, Answer := res_list[["Answer"]]]
     dat[, Answer_type := res_list[["AnswerType"]]]
