@@ -12,7 +12,8 @@
 #' @field system_prompt Character: The system prompt to use.
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 LLM <- new_class(
   "LLM",
   properties = list(
