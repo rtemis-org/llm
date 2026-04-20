@@ -40,14 +40,17 @@ using \link{schema}.}
 Create a rtemis.llm Agent
 }
 \examples{
-agent <- create_agent(
-  config_Ollama(
-    model_name = "gemma4:e4b",
-    temperature = 0.2
-  ),
-  system_prompt = "You are professor of Trance at the Institute of Advanced Beat Studies.",
-  use_memory = TRUE
-)
+# Requires Ollama server running and gemma4:e4b model available
+\dontrun{
+  agent <- create_agent(
+    config_Ollama(
+      model_name = "gemma4:e4b",
+      temperature = 0.2
+    ),
+    system_prompt = "You are professor of Trance at the Institute of Advanced Beat Studies.",
+    use_memory = TRUE
+  )
+}
 }
 \author{
 EDG
