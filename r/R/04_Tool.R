@@ -18,7 +18,16 @@ ToolParameter <- new_class(
     type = class_character,
     description = class_character,
     required = class_logical
-  )
+  ),
+  validator = function(self) {
+    check_scalar_character(self@name, "name")
+    if (!nzchar(self@name)) {
+      cli::cli_abort("ToolParameter name cannot be empty.")
+    }
+    check_enum(self@type, .SCHEMA_FIELD_TYPES, arg_name = "type")
+    check_scalar_logical(self@required, "required")
+    NULL
+  }
 )
 
 
@@ -51,8 +60,12 @@ method(print, ToolParameter) <- function(x, ...) {
 #' @param required Logical: Whether the parameter is required.
 #'
 #' @return ToolParameter object
+#'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' tool_param("query", "string", "search query to send", required = TRUE)
 tool_param <- function(
   name,
   type,
@@ -134,6 +147,27 @@ method(print, Tool) <- function(x, ...) {
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' tool_addition <- create_tool(
+#'   name = "Addition",
+#'   function_name = "add_numbers",
+#'   description = "Performs arithmetic addition of two numbers.",
+#'   parameters = list(
+#'     tool_param(
+#'       name = "x",
+#'       type = "number",
+#'       description = "The first number to add",
+#'       required = TRUE
+#'     ),
+#'     tool_param(
+#'       name = "y",
+#'       type = "number",
+#'       description = "The second number to add",
+#'       required = TRUE
+#'     )
+#'   )
+#' )
 create_tool <- function(
   name,
   function_name,

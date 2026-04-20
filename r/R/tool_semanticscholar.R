@@ -99,7 +99,8 @@
 #'   \item{authors}
 #' }
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 query_semanticscholar <- function(
   query,
   fields = c(

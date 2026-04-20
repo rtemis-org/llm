@@ -20,6 +20,18 @@ to_json <- new_generic("to_json", "x")
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   agent <- create_agent(
+#'     config_Ollama(
+#'       model_name = "gemma4:e4b",
+#'       temperature = 0.2,
+#'     )
+#'   )
+#'   generate(agent, "What is your name?")
+#' }
 generate <- new_generic(
   "generate",
   "x",
@@ -84,6 +96,10 @@ get_content <- new_generic("get_content", "x")
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' decay_time <- field("decay_time", "Time from peak amplitude to sustain level", type = "number")
+#' as_list(decay_time)
 as_list <- new_generic("as_list", "x")
 
 

@@ -335,6 +335,16 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' agent <- create_agent(
+#'   config_Ollama(
+#'     model_name = "gemma4:e4b",
+#'     temperature = 0.2
+#'   ),
+#'   system_prompt = "You are professor of Trance at the Institute of Advanced Beat Studies.",
+#'   use_memory = TRUE
+#' )
 create_agent <- function(
   llmconfig,
   system_prompt = SYSTEM_PROMPT_DEFAULT,

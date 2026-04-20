@@ -60,6 +60,15 @@ ClaudeConfig object.
 \description{
 Create a ClaudeConfig Object
 }
+\examples{
+cfg <- config <- config_Claude(
+   model_name = "claude-sonnet-4-6",
+   temperature = 0.4,
+   api_key = "test-key",
+   max_tokens = 1024L,
+   validate_model = FALSE
+)
+}
 \author{
 EDG
 }

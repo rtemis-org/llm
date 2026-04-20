@@ -5,6 +5,8 @@
 #'   [base::as.list]. Each element will form the user prompt for a separate call to the LLM agent.
 #' @param system_prompt Character: The system prompt to use for all calls.
 #' @param model_name Character: The name of the model to use. Ignored if `agent` is provided.
+#' @param backend Character: The LLM backend to use. One of "ollama", "claude", or "openai".
+#'   Ignored if `agent` is provided.
 #' @param use_memory Logical: If `TRUE`, the agent will retain memory across calls. Ignored if
 #'   `agent` is provided.
 #' @param tools List of `Tool` objects: Tools to use for all calls. Ignored if `agent` is provided.
@@ -16,20 +18,33 @@
 #' @param verbosity Integer: Verbosity level for messages. Ignored if `agent` is provided.
 #' @param extract_responses Logical: If `TRUE`, extract the content of the assistant message from
 #'   the full response. If `FALSE`, return the full response object from the agent.
-#' @param agent `Agent` object: Agent to use for generating responses.
+#' @param agent Optional `Agent` object: Agent to use for generating responses.
 #' @param ... Additional arguments passed to the `generate` method for the agent.
 #'
 #' @return A list of `Message` objects or a list of structured responses returned by the agent
 #'
 #' @details
-#' Either model_name or agent must be provided. If both are provided, the agent will take precedence.
+#' Either agent is provided, all agent-related arguments (model_name, backend, use_memory, tools,
+#' max_tool_rounds, output_schema, name, verbosity) are ignored. If agent is not provided, a new
+#' agent will be created using the provided agent-related arguments.
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server with the "gemma4:e4b" model
+#' \dontrun{
+#'   hex <- llmapply(
+#'      c("teal", "orange", "burgundy"),
+#'      system_prompt = "Return the hexadecimal code for the following color in format #FFFFFF",
+#'      model_name = "gemma4:e4b"
+#'    )
+#' }
 llmapply <- function(
   X,
   system_prompt,
   model_name = NULL,
+  backend = c("ollama", "claude", "openai"),
   use_memory = FALSE,
   tools = NULL,
   max_tool_rounds = 3L,
@@ -40,6 +55,7 @@ llmapply <- function(
   agent = NULL,
   ...
 ) {
+  backend <- match.arg(backend)
   # Ensure X is a list for iteration
   if (!is.list(X)) {
     X <- as.list(X)
@@ -49,8 +65,14 @@ llmapply <- function(
     cli::cli_abort("Either {.arg model_name} or {.arg agent} must be provided.")
   }
   if (is.null(agent)) {
+    config_fn <- switch(
+      backend,
+      ollama = config_Ollama,
+      claude = config_Claude,
+      openai = config_OpenAI
+    )
     agent <- create_agent(
-      config_Ollama(model_name),
+      config_fn(model_name),
       system_prompt = system_prompt,
       use_memory = use_memory,
       tools = tools,

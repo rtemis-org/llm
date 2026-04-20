@@ -35,6 +35,16 @@ NULL, invisibly, if model is available; otherwise throws an error.
 \description{
 Check OpenAI-compatible Model Is Available
 }
+\examples{
+# Requires running OpenAI-compatible server with /models endpoint
+\dontrun{
+  openai_check_model(
+    x = "local-model",
+    base_url = "http://localhost:1234/v1",
+    api_key = "test-key"
+  )
+}
+}
 \author{
 EDG
 }

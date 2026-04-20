@@ -31,15 +31,6 @@ rtemis.llm_version <- packageVersion("rtemis.llm")
   ))
   if (interactive()) {
     packageStartupMessage(paste0(
-      # pkglogo(
-      #   pkg = pkgname,
-      #   args = list(
-      #     color_left = rtemis_colors[["blue"]],
-      #     color_right = rtemis_colors[["light_green"]],
-      #     output_type = "ansi"
-      #   )
-      # ),
-      # "\n",
       .startup,
       "\n  ",
       fmt("PSA: ", col = rtemis_colors[["red"]], bold = TRUE),

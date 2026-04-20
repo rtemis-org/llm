@@ -22,6 +22,27 @@ Tool object
 \description{
 Define a tool for an agent
 }
+\examples{
+tool_addition <- create_tool(
+  name = "Addition",
+  function_name = "add_numbers",
+  description = "Performs arithmetic addition of two numbers.",
+  parameters = list(
+    tool_param(
+      name = "x",
+      type = "number",
+      description = "The first number to add",
+      required = TRUE
+    ),
+    tool_param(
+      name = "y",
+      type = "number",
+      description = "The second number to add",
+      required = TRUE
+    )
+  )
+)
+}
 \author{
 EDG
 }

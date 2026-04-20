@@ -34,7 +34,8 @@
 #' }
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 query_arxiv <- function(
   query,
   max_results = 5L,

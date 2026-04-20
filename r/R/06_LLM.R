@@ -474,6 +474,15 @@ method(generate, Claude) <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   config_Ollama(
+#'     model_name = "gemma4:e4b",
+#'     temperature = 0.2
+#'   )
+#' }
 config_Ollama <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
@@ -505,6 +514,16 @@ config_Ollama <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   create_Ollama(
+#'     model_name = "gemma4:e4b",
+#'     system_prompt = "You are professor of Drum and Bass at the Institute of Advanced Beat Studies.",
+#'     temperature = 1.0
+#'   )
+#' }
 create_Ollama <- function(
   model_name,
   system_prompt = SYSTEM_PROMPT_DEFAULT,
@@ -551,6 +570,14 @@ create_Ollama <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' cfg <- config_OpenAI(
+#'    model_name = "local-model",
+#'    temperature = 0.4,
+#'    base_url = "http://localhost:1234/v1/",
+#'    validate_model = FALSE
+#' )
 config_OpenAI <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
@@ -609,6 +636,14 @@ config_OpenAI <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' llm <- create_OpenAI(
+#'    model_name = "local-model",
+#'    base_url = "http://localhost:1234/v1",
+#'    system_prompt = "You are a meticulous research assistant.",
+#'    validate_model = FALSE
+#' )
 create_OpenAI <- function(
   model_name,
   system_prompt = SYSTEM_PROMPT_DEFAULT,
@@ -676,6 +711,15 @@ create_OpenAI <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' cfg <- config <- config_Claude(
+#'    model_name = "claude-sonnet-4-6",
+#'    temperature = 0.4,
+#'    api_key = "test-key",
+#'    max_tokens = 1024L,
+#'    validate_model = FALSE
+#' )
 config_Claude <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
@@ -737,6 +781,14 @@ config_Claude <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' llm <- create_Claude(
+#'    model_name = "claude-sonnet-4-5",
+#'    system_prompt = "You are a meticulous research assistant.",
+#'    api_key = "test-key",
+#'    validate_model = FALSE
+#' )
 create_Claude <- function(
   model_name,
   system_prompt = SYSTEM_PROMPT_DEFAULT,

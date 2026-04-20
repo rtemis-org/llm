@@ -17,6 +17,10 @@ A named R list
 \description{
 Generic method to convert various objects to R lists
 }
+\examples{
+decay_time <- field("decay_time", "Time from peak amplitude to sustain level", type = "number")
+as_list(decay_time)
+}
 \author{
 EDG
 }

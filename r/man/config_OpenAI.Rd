@@ -54,6 +54,14 @@ OpenAIConfig object.
 \description{
 Create an OpenAI-compatible Config Object
 }
+\examples{
+cfg <- config_OpenAI(
+   model_name = "local-model",
+   temperature = 0.4,
+   base_url = "http://localhost:1234/v1/",
+   validate_model = FALSE
+)
+}
 \author{
 EDG
 }

@@ -7,7 +7,8 @@
 #' @return A JSON string with fields "date", "time", and "timezone".
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 get_current_datetime <- function(output_type = c("json", "list")) {
   output_type <- match.arg(output_type)
   dt <- list(

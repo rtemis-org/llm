@@ -21,6 +21,9 @@ ToolParameter object
 \description{
 Define a tool parameter schema
 }
+\examples{
+tool_param("query", "string", "search query to send", required = TRUE)
+}
 \author{
 EDG
 }

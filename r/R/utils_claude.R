@@ -478,6 +478,15 @@ resolve_claude_thinking_budget <- function(config, think = NULL) {
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Anthropic-compatible server with /models endpoint
+#' \dontrun{
+#'   claude_list_models(
+#'     base_url = "http://localhost:1234/v1",
+#'    api_key = "test-key"
+#'   )
+#' }
 claude_list_models <- function(
   base_url = CLAUDE_URL_DEFAULT,
   api_key = NULL,
@@ -542,6 +551,16 @@ claude_list_models <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Anthropic-compatible server with /models endpoint
+#' \dontrun{
+#'   claude_check_model(
+#'     x = "test-model",
+#'     base_url = "http://localhost:1234/v1",
+#'     api_key = "test-key"
+#'   )
+#' }
 claude_check_model <- function(
   x,
   base_url = CLAUDE_URL_DEFAULT,

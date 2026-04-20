@@ -13,7 +13,8 @@ DUCKDUCKGO_URL <- "https://api.duckduckgo.com/"
 #'
 #' @author EDG
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 query_duckduckgo_ia <- function(
   query,
   ia = NULL,
