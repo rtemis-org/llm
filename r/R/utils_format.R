@@ -17,7 +17,8 @@ repr_bracket <- function(x, col = highlight_col, output_type = NULL) {
 #' @return Character string formatted as markdown list
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 #'
 #' @examples
 #' md_char2list(c("Item 1", "Item 2", "Item 3")) |> cat()
