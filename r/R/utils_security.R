@@ -17,7 +17,8 @@ KMN_LOG_FILE <- "rtemis.llm_security_log.jsonl"
 #' If the key cannot be retrieved, a warning -not an error- is issued, and `NULL` is returned.
 #' We avoid throwing an error to allow the calling function to handle the absence of the key.
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 get_keychain_secret <- function(
   service = "RTEMIS_LLM_API_KEY",
   account = Sys.getenv("USER")

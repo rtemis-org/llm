@@ -28,6 +28,15 @@ OllamaConfig object.
 \description{
 Create an OllamaConfig Object
 }
+\examples{
+# Requires running Ollama server and gemma4:e4b model
+\dontrun{
+  config_Ollama(
+    model_name = "gemma4:e4b",
+    temperature = 0.2
+  )
+}
+}
 \author{
 EDG
 }

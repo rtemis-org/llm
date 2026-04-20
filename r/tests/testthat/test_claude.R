@@ -5,14 +5,14 @@
 # %% ClaudeConfig ----
 test_that("ClaudeConfig class and config_Claude work", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     temperature = 0.4,
     api_key = "test-key",
     max_tokens = 1024L,
     validate_model = FALSE
   )
   expect_true(S7_inherits(config, ClaudeConfig))
-  expect_equal(config@model_name, "claude-sonnet-4-5")
+  expect_equal(config@model_name, "claude-sonnet-4-6")
   expect_equal(config@max_tokens, 1024L)
   expect_equal(config@backend, "anthropic")
   expect_equal(config@base_url, "https://api.anthropic.com/v1")
@@ -22,7 +22,7 @@ test_that("ClaudeConfig class and config_Claude work", {
 # %% config_Claude API key handling ----
 test_that("config_Claude aborts when no API key is resolvable", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key_env = "RTEMIS_LLM_CLAUDE_EMPTY_TEST_KEY",
     validate_model = FALSE
   )
@@ -34,7 +34,7 @@ test_that("config_Claude aborts when no API key is resolvable", {
 test_that("config_Claude rejects non-positive max_tokens", {
   expect_error(
     config_Claude(
-      model_name = "claude-sonnet-4-5",
+      model_name = "claude-sonnet-4-6",
       api_key = "test-key",
       max_tokens = 0,
       validate_model = FALSE
@@ -48,7 +48,7 @@ test_that("config_Claude rejects non-positive max_tokens", {
 test_that("config_Claude rejects thinking budgets below the minimum", {
   expect_error(
     config_Claude(
-      model_name = "claude-sonnet-4-5",
+      model_name = "claude-sonnet-4-6",
       api_key = "test-key",
       thinking_budget_tokens = 256L,
       validate_model = FALSE
@@ -61,7 +61,7 @@ test_that("config_Claude rejects thinking budgets below the minimum", {
 # %% repr.ClaudeConfig ----
 test_that("ClaudeConfig repr redacts API keys", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "anthropic-secret",
     validate_model = FALSE
   )
@@ -74,20 +74,20 @@ test_that("ClaudeConfig repr redacts API keys", {
 # %% create_Claude() ----
 test_that("create_Claude works", {
   llm <- create_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     system_prompt = "You are a meticulous research assistant.",
     api_key = "test-key",
     validate_model = FALSE
   )
   expect_true(S7_inherits(llm, Claude))
-  expect_equal(llm@config@model_name, "claude-sonnet-4-5")
+  expect_equal(llm@config@model_name, "claude-sonnet-4-6")
 })
 
 
 # %% build_chat_request_body.ClaudeConfig ----
 test_that("Claude request body uses Messages API shape", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     temperature = 0.2,
     max_tokens = 2048L,
@@ -108,7 +108,7 @@ test_that("Claude request body uses Messages API shape", {
     verbosity = 0L
   )
   body <- build_chat_request_body(config, state = state)
-  expect_equal(body[["model"]], "claude-sonnet-4-5")
+  expect_equal(body[["model"]], "claude-sonnet-4-6")
   expect_equal(body[["max_tokens"]], 2048L)
   expect_equal(body[["temperature"]], 0.2)
   expect_equal(body[["system"]], "System prompt.")
@@ -129,7 +129,7 @@ test_that("Claude request body uses Messages API shape", {
 # %% build_chat_request_body.ClaudeConfig thinking ----
 test_that("Claude request body includes thinking when configured", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     thinking_budget_tokens = 2048L,
     validate_model = FALSE
@@ -150,7 +150,7 @@ test_that("Claude request body includes thinking when configured", {
 # %% build_chat_request_body.ClaudeConfig think requires budget ----
 test_that("Claude think=TRUE with no configured budget aborts", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -171,7 +171,7 @@ test_that("Claude think=TRUE with no configured budget aborts", {
 # %% build_chat_messages.ClaudeConfig tool merging ----
 test_that("Claude merges consecutive tool messages into one user block", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -224,7 +224,7 @@ test_that("Claude merges consecutive tool messages into one user block", {
 # %% build_chat_messages.ClaudeConfig tool_call_id required ----
 test_that("Claude tool messages require a tool_call_id", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -242,7 +242,7 @@ test_that("Claude tool messages require a tool_call_id", {
 # %% Tool schema shape for Claude ----
 test_that("Claude tools use flat {name, description, input_schema} shape", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -277,7 +277,7 @@ test_that("Claude tools use flat {name, description, input_schema} shape", {
 # %% build_response_format.ClaudeConfig structured output ----
 test_that("Claude structured output injects forced synthetic tool", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -309,7 +309,7 @@ test_that("Claude structured output injects forced synthetic tool", {
 # %% decode_tool_arguments.ClaudeConfig ----
 test_that("Claude tool arguments are returned as named list", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -330,7 +330,7 @@ test_that("Claude tool arguments are returned as named list", {
 # %% build_tool_message.ClaudeConfig ----
 test_that("Claude tool messages include tool_call_id", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -353,7 +353,7 @@ test_that("Claude tool messages include tool_call_id", {
 # %% parse_chat_response.ClaudeConfig ----
 test_that("Claude response parsing extracts text, thinking and tool_use blocks", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -362,7 +362,7 @@ test_that("Claude response parsing extracts text, thinking and tool_use blocks",
       id = "msg_123",
       type = "message",
       role = "assistant",
-      model = "claude-sonnet-4-5",
+      model = "claude-sonnet-4-6",
       content = list(
         list(type = "thinking", thinking = "Let me think."),
         list(type = "text", text = "Visible answer."),
@@ -412,7 +412,7 @@ test_that("Claude response parsing extracts text, thinking and tool_use blocks",
 # %% parse_chat_response.ClaudeConfig refusal ----
 test_that("Claude refusal stop_reason is surfaced", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
   )
@@ -421,7 +421,7 @@ test_that("Claude refusal stop_reason is surfaced", {
       id = "msg_refusal",
       type = "message",
       role = "assistant",
-      model = "claude-sonnet-4-5",
+      model = "claude-sonnet-4-6",
       content = list(list(type = "text", text = "I cannot help with that.")),
       stop_reason = "refusal"
     ),
@@ -477,7 +477,7 @@ test_that("ClaudeMessage preserves raw_content via metadata", {
   m <- ClaudeMessage(
     content = "Hi",
     metadata = list(raw_content = raw),
-    model_name = "claude-sonnet-4-5"
+    model_name = "claude-sonnet-4-6"
   )
   expect_equal(m@metadata[["raw_content"]], raw)
   expect_equal(m@metadata[["provider"]], "Anthropic")

@@ -8,6 +8,7 @@ llmapply(
   X,
   system_prompt,
   model_name = NULL,
+  backend = c("ollama", "claude", "openai"),
   use_memory = FALSE,
   tools = NULL,
   max_tool_rounds = 3L,
@@ -27,6 +28,9 @@ llmapply(
 
 \item{model_name}{Character: The name of the model to use. Ignored if \code{agent} is provided.}
 
+\item{backend}{Character: The LLM backend to use. One of "ollama", "claude", or "openai".
+Ignored if \code{agent} is provided.}
+
 \item{use_memory}{Logical: If \code{TRUE}, the agent will retain memory across calls. Ignored if
 \code{agent} is provided.}
 
@@ -45,7 +49,7 @@ of the LLM response. Ignored if \code{agent} is provided.}
 \item{extract_responses}{Logical: If \code{TRUE}, extract the content of the assistant message from
 the full response. If \code{FALSE}, return the full response object from the agent.}
 
-\item{agent}{\code{Agent} object: Agent to use for generating responses.}
+\item{agent}{Optional \code{Agent} object: Agent to use for generating responses.}
 
 \item{...}{Additional arguments passed to the \code{generate} method for the agent.}
 }
@@ -56,7 +60,19 @@ A list of \code{Message} objects or a list of structured responses returned by t
 Batch submission of prompts to an LLM agent
 }
 \details{
-Either model_name or agent must be provided. If both are provided, the agent will take precedence.
+If \code{agent} is provided, all agent-related arguments (model_name, backend, use_memory, tools,
+max_tool_rounds, output_schema, name, verbosity) are ignored. If \code{agent} is not provided, a new
+Agent will be created using the provided arguments.
+}
+\examples{
+# Requires running Ollama server with the "gemma4:e4b" model
+\dontrun{
+  hex <- llmapply(
+     c("teal", "orange", "burgundy"),
+     system_prompt = "Return the hexadecimal code for the following color in format #FFFFFF",
+     model_name = "gemma4:e4b"
+   )
+}
 }
 \author{
 EDG

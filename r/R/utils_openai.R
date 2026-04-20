@@ -526,6 +526,15 @@ add_openai_thinking_options <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running OpenAI-compatible server with /models endpoint
+#' \dontrun{
+#'   openai_list_models(
+#'     base_url = "http://localhost:1234/v1",
+#'     api_key = "test-key"
+#'   )
+#' }
 openai_list_models <- function(
   base_url = OPENAI_URL_DEFAULT,
   api_key = NULL,
@@ -577,6 +586,16 @@ openai_list_models <- function(
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running OpenAI-compatible server with /models endpoint
+#' \dontrun{
+#'   openai_check_model(
+#'     x = "local-model",
+#'     base_url = "http://localhost:1234/v1",
+#'     api_key = "test-key"
+#'   )
+#' }
 openai_check_model <- function(
   x,
   base_url = OPENAI_URL_DEFAULT,

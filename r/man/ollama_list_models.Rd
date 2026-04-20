@@ -15,6 +15,11 @@ Character vector: Model names.
 \description{
 List Ollama Models
 }
+\examples{
+\dontrun{
+ollama_list_models()
+}
+}
 \author{
 EDG
 }

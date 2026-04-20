@@ -32,6 +32,16 @@ NULL, invisibly, if the model is available; otherwise throws an error.
 \description{
 Check Claude Model Is Available
 }
+\examples{
+# Requires running Anthropic-compatible server with /models endpoint
+\dontrun{
+  claude_check_model(
+    x = "test-model",
+    base_url = "http://localhost:1234/v1",
+    api_key = "test-key"
+  )
+}
+}
 \author{
 EDG
 }

@@ -63,6 +63,14 @@ OpenAI object.
 \description{
 Create an OpenAI-compatible LLM Object
 }
+\examples{
+llm <- create_OpenAI(
+   model_name = "local-model",
+   base_url = "http://localhost:1234/v1",
+   system_prompt = "You are a meticulous research assistant.",
+   validate_model = FALSE
+)
+}
 \author{
 EDG
 }

@@ -13,7 +13,8 @@ DUCKDUCKGO_URL <- "https://api.duckduckgo.com/"
 #'
 #' @author EDG
 #'
-#' @export
+#' @keywords internal
+#' @noRd
 query_duckduckgo_ia <- function(
   query,
   ia = NULL,
@@ -106,11 +107,8 @@ query_duckduckgo_ia <- function(
 
 
 # %% tool_duckduckgo_ia ----
-#' DuckDuckGo Instant Answer Search Tool
-#'
-#' Tool definition for DuckDuckGo Instant Answer search
-#'
-#' @author EDG
+#' @rdname tools
+#' @format NULL
 #' @export
 tool_duckduckgo_ia <- create_tool(
   name = "DuckDuckGo Instant Answer Search",

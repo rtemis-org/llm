@@ -27,6 +27,18 @@ Generic method for generating text or structured output from LLMs and Agents
 \item \code{think} Logical: Whether to return reasoning trace
 }
 }
+\examples{
+# Requires running Ollama server and gemma4:e4b model
+\dontrun{
+  agent <- create_agent(
+    config_Ollama(
+      model_name = "gemma4:e4b",
+      temperature = 0.2
+    )
+  )
+  generate(agent, "What is your name?")
+}
+}
 \author{
 EDG
 }

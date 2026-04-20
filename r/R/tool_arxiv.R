@@ -34,7 +34,8 @@
 #' }
 #'
 #' @author EDG
-#' @export
+#' @keywords internal
+#' @noRd
 query_arxiv <- function(
   query,
   max_results = 5L,
@@ -200,11 +201,44 @@ query_arxiv <- function(
 
 
 # %% tool_arxiv ----
-#' arXiv Search Tool
+#' Built-in Agent Tools
 #'
-#' Tool definition for arXiv search
+#' Pre-defined `Tool` objects that can be passed to [create_agent()] via the
+#' `tools` argument, allowing an agent to search external services or retrieve
+#' local information.
+#'
+#' @format `Tool` S7 objects:
+#' \describe{
+#'   \item{`tool_arxiv`}{Search arXiv.org for academic papers.}
+#'   \item{`tool_wikipedia`}{Search Wikipedia articles.}
+#'   \item{`tool_semanticscholar`}{Search Semantic Scholar for academic papers.}
+#'   \item{`tool_duckduckgo_ia`}{Query the DuckDuckGo Instant Answer API.}
+#'   \item{`tool_datetime`}{Return the current date, time, and timezone.}
+#' }
 #'
 #' @author EDG
+#' @name tools
+#' @examples
+#' # Inspect a tool
+#' tool_arxiv@name
+#' tool_arxiv@function_name
+#'
+#' \dontrun{
+#' # Use with an Ollama-backed agent
+#' agent <- create_agent(
+#'   llmconfig = config_Ollama(
+#'     model_name = "gemma4:e4b",
+#'     base_url = "http://localhost:11434"
+#'   ),
+#'   system_prompt = "You are a meticulous research assistant.",
+#'   tools = list(tool_datetime, tool_semanticscholar, tool_wikipedia)
+#' )
+#' generate(agent, "Find recent papers on diffusion models.")
+#' }
+NULL
+
+#' @rdname tools
+#' @format NULL
 #' @export
 tool_arxiv <- create_tool(
   name = "arXiv Search",

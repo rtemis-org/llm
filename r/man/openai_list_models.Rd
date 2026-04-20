@@ -32,6 +32,15 @@ Character vector: Model ids.
 \description{
 List OpenAI-compatible Models
 }
+\examples{
+# Requires running OpenAI-compatible server with /models endpoint
+\dontrun{
+  openai_list_models(
+    base_url = "http://localhost:1234/v1",
+    api_key = "test-key"
+  )
+}
+}
 \author{
 EDG
 }

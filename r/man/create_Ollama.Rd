@@ -36,6 +36,16 @@ Ollama object.
 \description{
 Create an Ollama Object
 }
+\examples{
+# Requires running Ollama server and gemma4:e4b model
+\dontrun{
+  create_Ollama(
+    model_name = "gemma4:e4b",
+    system_prompt = "You are professor of Drum and Bass at the Institute of Advanced Beat Studies.",
+    temperature = 1.0
+  )
+}
+}
 \author{
 EDG
 }

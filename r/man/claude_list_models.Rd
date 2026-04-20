@@ -29,6 +29,15 @@ Character vector: Model ids.
 \description{
 List Claude (Anthropic) Models
 }
+\examples{
+# Requires running Anthropic-compatible server with /models endpoint
+\dontrun{
+  claude_list_models(
+    base_url = "http://localhost:1234/v1",
+   api_key = "test-key"
+  )
+}
+}
 \author{
 EDG
 }
