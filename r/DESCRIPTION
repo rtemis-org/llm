@@ -6,7 +6,7 @@ Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "c
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Provides an Agent class with support for reasoning, structured output, memory 
     management, and tool use. Allows creation of custom LLM-based workflows and agentic AI systems 
-    using a functional user-facing frontend and an S7 backend. Includes llmapply() for quick batch
+    using a functional user-facing frontend and an 'S7' backend. Includes llmapply() for quick batch
     LLM inference. Supports Ollama, OpenAI, and Claude endpoints.
 License: GPL (>= 3)
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm-api/

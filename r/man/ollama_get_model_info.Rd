@@ -18,6 +18,12 @@ data.table
 \description{
 Get Ollama Model Info
 }
+\examples{
+\dontrun{
+ollama_get_model_info()
+ollama_get_model_info(x = "gemma4:e4b")
+}
+}
 \author{
 EDG
 }

@@ -15,6 +15,11 @@ NULL, invisibly if model is available; otherwise throws an error.
 \description{
 Check Ollama Model is Available
 }
+\examples{
+\dontrun{
+ollama_check_model("gemma4:e4b")
+}
+}
 \author{
 EDG
 }

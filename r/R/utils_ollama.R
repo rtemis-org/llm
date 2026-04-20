@@ -27,6 +27,10 @@
 #' @return Character vector: Model names.
 #'
 #' @author EDG
+#' @examples
+#' \dontrun{
+#' ollama_list_models()
+#' }
 #' @export
 ollama_list_models <- function(
   base_url = OLLAMA_URL_DEFAULT
@@ -47,6 +51,11 @@ ollama_list_models <- function(
 #' @return data.table
 #'
 #' @author EDG
+#' @examples
+#' \dontrun{
+#' ollama_get_model_info()
+#' ollama_get_model_info(x = "gemma4:e4b")
+#' }
 #' @export
 ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
   models <- .ollama_api_tags(base_url = base_url, output = "list")[["models"]]
@@ -109,6 +118,10 @@ ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
 #' @return NULL, invisibly if model is available; otherwise throws an error.
 #'
 #' @author EDG
+#' @examples
+#' \dontrun{
+#' ollama_check_model("gemma4:e4b")
+#' }
 #' @export
 ollama_check_model <- function(x) {
   if (x %in% ollama_list_models()) {
