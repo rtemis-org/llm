@@ -195,11 +195,8 @@ query_semanticscholar <- function(
 
 
 # %% tool_semanticscholar ----
-#' Semantic Scholar Search Tool
-#'
-#' Tool definition for Semantic Scholar search
-#'
-#' @author EDG
+#' @rdname tools
+#' @format NULL
 #' @export
 tool_semanticscholar <- create_tool(
   name = "Semantic Scholar Search",

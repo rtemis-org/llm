@@ -27,11 +27,8 @@ get_current_datetime <- function(output_type = c("json", "list")) {
 } # /get_current_datetime
 
 
-#' Get Current Date and Time
-#'
-#' Get the current date and time in a specified format.
-#'
-#' @author EDG
+#' @rdname tools
+#' @format NULL
 #' @export
 tool_datetime <- create_tool(
   name = "Get Current Date and Time",

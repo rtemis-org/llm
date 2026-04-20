@@ -158,11 +158,8 @@ query_wikipedia <- function(
 
 
 # %% tool_wikipedia ----
-#' Wikipedia Search Tool
-#'
-#' Tool definition for Wikipedia search
-#'
-#' @author EDG
+#' @rdname tools
+#' @format NULL
 #' @export
 tool_wikipedia <- create_tool(
   name = "Wikipedia Search",
