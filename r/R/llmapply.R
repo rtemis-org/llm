@@ -24,9 +24,9 @@
 #' @return A list of `Message` objects or a list of structured responses returned by the agent
 #'
 #' @details
-#' Either agent is provided, all agent-related arguments (model_name, backend, use_memory, tools,
-#' max_tool_rounds, output_schema, name, verbosity) are ignored. If agent is not provided, a new
-#' agent will be created using the provided agent-related arguments.
+#' If `agent` is provided, all agent-related arguments (model_name, backend, use_memory, tools,
+#' max_tool_rounds, output_schema, name, verbosity) are ignored. If `agent` is not provided, a new
+#' Agent will be created using the provided arguments.
 #'
 #' @author EDG
 #' @export
@@ -55,7 +55,6 @@ llmapply <- function(
   agent = NULL,
   ...
 ) {
-  backend <- match.arg(backend)
   # Ensure X is a list for iteration
   if (!is.list(X)) {
     X <- as.list(X)
@@ -65,6 +64,7 @@ llmapply <- function(
     cli::cli_abort("Either {.arg model_name} or {.arg agent} must be provided.")
   }
   if (is.null(agent)) {
+    backend <- match.arg(backend)
     config_fn <- switch(
       backend,
       ollama = config_Ollama,

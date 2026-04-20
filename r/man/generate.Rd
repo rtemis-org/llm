@@ -33,7 +33,7 @@ Generic method for generating text or structured output from LLMs and Agents
   agent <- create_agent(
     config_Ollama(
       model_name = "gemma4:e4b",
-      temperature = 0.2,
+      temperature = 0.2
     )
   )
   generate(agent, "What is your name?")

@@ -24,6 +24,7 @@ ToolParameter <- new_class(
     if (!nzchar(self@name)) {
       cli::cli_abort("ToolParameter name cannot be empty.")
     }
+    check_scalar_character(self@description, "description")
     check_enum(self@type, .SCHEMA_FIELD_TYPES, arg_name = "type")
     check_scalar_logical(self@required, "required")
     NULL

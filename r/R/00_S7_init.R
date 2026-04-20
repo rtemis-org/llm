@@ -27,7 +27,7 @@ to_json <- new_generic("to_json", "x")
 #'   agent <- create_agent(
 #'     config_Ollama(
 #'       model_name = "gemma4:e4b",
-#'       temperature = 0.2,
+#'       temperature = 0.2
 #'     )
 #'   )
 #'   generate(agent, "What is your name?")

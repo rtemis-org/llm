@@ -60,9 +60,9 @@ A list of \code{Message} objects or a list of structured responses returned by t
 Batch submission of prompts to an LLM agent
 }
 \details{
-Either agent is provided, all agent-related arguments (model_name, backend, use_memory, tools,
-max_tool_rounds, output_schema, name, verbosity) are ignored. If agent is not provided, a new
-agent will be created using the provided agent-related arguments.
+If \code{agent} is provided, all agent-related arguments (model_name, backend, use_memory, tools,
+max_tool_rounds, output_schema, name, verbosity) are ignored. If \code{agent} is not provided, a new
+Agent will be created using the provided arguments.
 }
 \examples{
 # Requires running Ollama server with the "gemma4:e4b" model
