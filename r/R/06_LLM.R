@@ -689,7 +689,7 @@ create_OpenAI <- function(
 #' Create a ClaudeConfig Object
 #'
 #' @param model_name Character: The name of the Claude model to use (for example
-#' `"claude-sonnet-4-5"`).
+#' `"claude-sonnet-4-6"`).
 #' @param temperature Numeric \[0, 2\]: The temperature for the model.
 #' @param base_url Character: Base URL of the Anthropic API.
 #' @param api_key Optional character: API key.
@@ -784,7 +784,7 @@ config_Claude <- function(
 #'
 #' @examples
 #' llm <- create_Claude(
-#'    model_name = "claude-sonnet-4-5",
+#'    model_name = "claude-sonnet-4-6",
 #'    system_prompt = "You are a meticulous research assistant.",
 #'    api_key = "test-key",
 #'    validate_model = FALSE

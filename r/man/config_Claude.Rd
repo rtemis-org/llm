@@ -23,7 +23,7 @@ config_Claude(
 }
 \arguments{
 \item{model_name}{Character: The name of the Claude model to use (for example
-\code{"claude-sonnet-4-5"}).}
+\code{"claude-sonnet-4-6"}).}
 
 \item{temperature}{Numeric [0, 2]: The temperature for the model.}
 

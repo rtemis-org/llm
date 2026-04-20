@@ -68,7 +68,7 @@ Create a Claude LLM Object
 }
 \examples{
 llm <- create_Claude(
-   model_name = "claude-sonnet-4-5",
+   model_name = "claude-sonnet-4-6",
    system_prompt = "You are a meticulous research assistant.",
    api_key = "test-key",
    validate_model = FALSE
