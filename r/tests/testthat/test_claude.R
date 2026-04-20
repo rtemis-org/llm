@@ -5,7 +5,7 @@
 # %% ClaudeConfig ----
 test_that("ClaudeConfig class and config_Claude work", {
   config <- config_Claude(
-    model_name = "claude-sonnet-4-5",
+    model_name = "claude-sonnet-4-6",
     temperature = 0.4,
     api_key = "test-key",
     max_tokens = 1024L,
