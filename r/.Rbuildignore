@@ -8,7 +8,6 @@
 ^specs$
 ^AGENTS\.md$
 ^CLAUDE\.md$
-^README\.md$
 ^pkgdown$
 ^SKILL\.md$
 ^LICENSE\.md$
