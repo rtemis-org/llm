@@ -33,7 +33,7 @@ Create an `Agent`
 agent <- create_agent(
   llmconfig = config_Ollama(
     model_name = "gemma4:26b",
-    temperature = 0.3,
+    temperature = 0.3
   ),
   system_prompt = "You are a meticulous research assistant.",
   name = "Kaimana"
