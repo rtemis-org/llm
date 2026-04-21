@@ -633,3 +633,23 @@ method(repr, ToolMessage) <- function(x, output_type = NULL) {
 method(print, ToolMessage) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 }
+
+
+# %% as.list.Message ----
+#' Convert Message to List
+#'
+#' @param x Message object
+#' @param ... Additional arguments (not used)
+#'
+#' @return A list representation of the Message object
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' message <- Message(
+#'   content = "What is the weather like today?",
+#'   role = "user"
+as.list.Message <- method(as.list, Message) <- function(x, ...) {
+  as_list(x)
+}
