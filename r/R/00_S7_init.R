@@ -1,4 +1,8 @@
 # --- Generics -------------------------------------------------------------------------------------
+# %% map ----
+map <- new_generic("map", c("x", "f"), function(x, f, ...) S7_dispatch())
+
+
 # %% to_json ----
 to_json <- new_generic("to_json", "x")
 
