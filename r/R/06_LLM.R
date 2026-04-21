@@ -97,13 +97,13 @@ method(repr, Ollama) <- function(x, output_type = NULL) {
         "\n"
       )
     },
-    fmt("Model: ", bold = TRUE, output_type = output_type),
+    fmt("        Model: ", bold = TRUE, output_type = output_type),
     highlight(x@config@model_name, output_type = output_type),
     "\n",
     fmt("System Prompt: ", bold = TRUE, output_type = output_type),
     highlight(x@system_prompt, output_type = output_type),
     "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
+    fmt("  Temperature: ", bold = TRUE, output_type = output_type),
     highlight(x@config@temperature, output_type = output_type),
     "\n",
     if (!is.null(x@config@think)) {
@@ -174,21 +174,21 @@ method(repr, OpenAI) <- function(x, output_type = NULL) {
     repr_S7name("OpenAI", output_type = output_type),
     if (!is.null(x@name)) {
       paste(
-        fmt("Name: ", bold = TRUE, output_type = output_type),
+        fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
       )
     },
-    fmt("Model: ", bold = TRUE, output_type = output_type),
+    fmt("        Model: ", bold = TRUE, output_type = output_type),
     highlight(x@config@model_name, output_type = output_type),
     "\n",
-    fmt("Base URL: ", bold = TRUE, output_type = output_type),
+    fmt("     Base URL: ", bold = TRUE, output_type = output_type),
     highlight(x@config@base_url, output_type = output_type),
     "\n",
     fmt("System Prompt: ", bold = TRUE, output_type = output_type),
     highlight(x@system_prompt, output_type = output_type),
     "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
+    fmt("  Temperature: ", bold = TRUE, output_type = output_type),
     highlight(x@config@temperature, output_type = output_type),
     "\n",
     if (!is.null(x@output_schema)) {
@@ -252,21 +252,21 @@ method(repr, Claude) <- function(x, output_type = NULL) {
     repr_S7name("Claude", output_type = output_type),
     if (!is.null(x@name)) {
       paste(
-        fmt("Name: ", bold = TRUE, output_type = output_type),
+        fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
       )
     },
-    fmt("Model: ", bold = TRUE, output_type = output_type),
+    fmt("        Model: ", bold = TRUE, output_type = output_type),
     highlight(x@config@model_name, output_type = output_type),
     "\n",
-    fmt("Base URL: ", bold = TRUE, output_type = output_type),
+    fmt("     Base URL: ", bold = TRUE, output_type = output_type),
     highlight(x@config@base_url, output_type = output_type),
     "\n",
     fmt("System Prompt: ", bold = TRUE, output_type = output_type),
     highlight(x@system_prompt, output_type = output_type),
     "\n",
-    fmt("Temperature: ", bold = TRUE, output_type = output_type),
+    fmt("  Temperature: ", bold = TRUE, output_type = output_type),
     highlight(x@config@temperature, output_type = output_type),
     "\n",
     if (!is.null(x@output_schema)) {
@@ -330,11 +330,21 @@ method(generate, Ollama) <- function(
   options <- list(
     temperature = temperature %||% x@config@temperature
   )
-  if (!is.null(top_p)) options[["top_p"]] <- top_p
-  if (!is.null(top_k)) options[["top_k"]] <- as.integer(top_k)
-  if (!is.null(seed)) options[["seed"]] <- as.integer(seed)
-  if (!is.null(max_tokens)) options[["num_predict"]] <- as.integer(max_tokens)
-  if (!is.null(stop)) options[["stop"]] <- as.character(stop)
+  if (!is.null(top_p)) {
+    options[["top_p"]] <- top_p
+  }
+  if (!is.null(top_k)) {
+    options[["top_k"]] <- as.integer(top_k)
+  }
+  if (!is.null(seed)) {
+    options[["seed"]] <- as.integer(seed)
+  }
+  if (!is.null(max_tokens)) {
+    options[["num_predict"]] <- as.integer(max_tokens)
+  }
+  if (!is.null(stop)) {
+    options[["stop"]] <- as.character(stop)
+  }
   # Request
   request_body <- list(
     model = x@config@model_name,
@@ -356,7 +366,7 @@ method(generate, Ollama) <- function(
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis.llm-r LLM (www.rtemis.org)") |>
     httr2::req_error(is_error = function(resp) FALSE) |>
-    httr2::req_perform(verbosity = verbosity - 1L)
+    httr2::req_perform(verbosity = max(verbosity - 1L, 0L))
   # Check for errors
   .check_http_response(resp, "Ollama")
 
@@ -527,7 +537,7 @@ method(generate, Claude) <- function(
 }
 
 
-# --- Public API ---------------------------------------------------------------------------------
+# --- Public API -----------------------------------------------------------------------------------
 # %% config_Ollama ----
 #' Create an OllamaConfig Object
 #'
