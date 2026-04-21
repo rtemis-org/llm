@@ -294,32 +294,61 @@ method(print, Claude) <- function(x, output_type = NULL, ...) {
 #'
 #' @param x Ollama object
 #' @param prompt Character: The prompt to send to the model.
+#' @param temperature Optional numeric \[0, 2\]: Per-call temperature override.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate
+#' (mapped to `options.num_predict`).
+#' @param stop Optional character: Stop sequence(s).
+#' @param think Optional logical or character: Whether to enable thinking.
+#' @param output_schema Optional Schema: Per-call output schema override.
 #' @param verbosity Integer: Verbosity level.
+#' @param ... Additional per-call options: `top_k` (integer), `seed` (integer).
 #'
 #' @return OllamaMessage object
 #' @author EDG
 #'
 #' @noRd
-method(generate, Ollama) <- function(x, prompt, think = NULL, verbosity = 1L) {
+method(generate, Ollama) <- function(
+  x,
+  prompt,
+  temperature = NULL,
+  top_p = NULL,
+  max_tokens = NULL,
+  stop = NULL,
+  think = NULL,
+  output_schema = NULL,
+  verbosity = 1L,
+  ...
+) {
   # Check input
   check_inherits(prompt, "character")
   effective_think <- think %||% x@config@think
   .check_ollama_think(effective_think, "think")
+  extra <- list(...)
+  top_k <- extra[["top_k"]]
+  seed <- extra[["seed"]]
+  options <- list(
+    temperature = temperature %||% x@config@temperature
+  )
+  if (!is.null(top_p)) options[["top_p"]] <- top_p
+  if (!is.null(top_k)) options[["top_k"]] <- as.integer(top_k)
+  if (!is.null(seed)) options[["seed"]] <- as.integer(seed)
+  if (!is.null(max_tokens)) options[["num_predict"]] <- as.integer(max_tokens)
+  if (!is.null(stop)) options[["stop"]] <- as.character(stop)
   # Request
   request_body <- list(
     model = x@config@model_name,
     system = x@system_prompt,
     prompt = prompt,
     stream = FALSE,
-    options = list(
-      temperature = x@config@temperature
-    )
+    options = options
   )
   if (!is.null(effective_think)) {
     request_body[["think"]] <- effective_think
   }
-  if (!is.null(x@output_schema)) {
-    request_body[["format"]] <- as_list(x@output_schema)
+  effective_schema <- output_schema %||% x@output_schema
+  if (!is.null(effective_schema)) {
+    request_body[["format"]] <- as_list(effective_schema)
   }
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
   # Perform request
@@ -342,7 +371,14 @@ method(generate, Ollama) <- function(x, prompt, think = NULL, verbosity = 1L) {
 #'
 #' @param x OpenAI object.
 #' @param prompt Character: The prompt to send to the model.
+#' @param temperature Optional numeric \[0, 2\]: Per-call temperature override.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate.
+#' @param stop Optional character: Stop sequence(s).
+#' @param think Optional logical: Whether to enable thinking options.
+#' @param output_schema Optional Schema: Per-call output schema override.
 #' @param verbosity Integer: Verbosity level.
+#' @param ... Additional per-call options: `seed` (integer).
 #'
 #' @return OpenAIMessage object.
 #' @author EDG
@@ -351,10 +387,18 @@ method(generate, Ollama) <- function(x, prompt, think = NULL, verbosity = 1L) {
 method(generate, OpenAI) <- function(
   x,
   prompt,
+  temperature = NULL,
+  top_p = NULL,
+  max_tokens = NULL,
+  stop = NULL,
   think = NULL,
-  verbosity = 1L
+  output_schema = NULL,
+  verbosity = 1L,
+  ...
 ) {
   check_inherits(prompt, "character")
+  extra <- list(...)
+  seed <- extra[["seed"]]
   state <- InProcessAgentMemory()
   append_message(
     state,
@@ -374,9 +418,14 @@ method(generate, OpenAI) <- function(
   request_body <- build_chat_request_body(
     x@config,
     state = state,
-    output_schema = x@output_schema,
+    output_schema = output_schema %||% x@output_schema,
     think = think,
-    use_tools = FALSE
+    use_tools = FALSE,
+    temperature = temperature,
+    top_p = top_p,
+    max_tokens = max_tokens,
+    stop = stop,
+    seed = seed
   )
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
   resp <- perform_chat_request(
@@ -403,8 +452,14 @@ method(generate, OpenAI) <- function(
 #'
 #' @param x Claude object.
 #' @param prompt Character: The prompt to send to the model.
+#' @param temperature Optional numeric \[0, 2\]: Per-call temperature override.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Per-call max_tokens override.
+#' @param stop Optional character: Stop sequence(s) (mapped to `stop_sequences`).
 #' @param think Optional logical: Whether to enable extended thinking for this call.
+#' @param output_schema Optional Schema: Per-call output schema override.
 #' @param verbosity Integer: Verbosity level.
+#' @param ... Additional per-call options: `top_k` (integer).
 #'
 #' @return ClaudeMessage object.
 #' @author EDG
@@ -413,10 +468,18 @@ method(generate, OpenAI) <- function(
 method(generate, Claude) <- function(
   x,
   prompt,
+  temperature = NULL,
+  top_p = NULL,
+  max_tokens = NULL,
+  stop = NULL,
   think = NULL,
-  verbosity = 1L
+  output_schema = NULL,
+  verbosity = 1L,
+  ...
 ) {
   check_inherits(prompt, "character")
+  extra <- list(...)
+  top_k <- extra[["top_k"]]
   state <- InProcessAgentMemory()
   append_message(
     state,
@@ -436,9 +499,14 @@ method(generate, Claude) <- function(
   request_body <- build_chat_request_body(
     x@config,
     state = state,
-    output_schema = x@output_schema,
+    output_schema = output_schema %||% x@output_schema,
     think = think,
-    use_tools = FALSE
+    use_tools = FALSE,
+    temperature = temperature,
+    top_p = top_p,
+    max_tokens = max_tokens,
+    stop = stop,
+    top_k = top_k
   )
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
   resp <- perform_chat_request(
