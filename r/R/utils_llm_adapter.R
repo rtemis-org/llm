@@ -153,11 +153,21 @@ method(build_chat_request_body, OllamaConfig) <- function(
   options <- list(
     temperature = temperature %||% x@temperature
   )
-  if (!is.null(top_p)) options[["top_p"]] <- top_p
-  if (!is.null(top_k)) options[["top_k"]] <- as.integer(top_k)
-  if (!is.null(seed)) options[["seed"]] <- as.integer(seed)
-  if (!is.null(max_tokens)) options[["num_predict"]] <- as.integer(max_tokens)
-  if (!is.null(stop)) options[["stop"]] <- as.character(stop)
+  if (!is.null(top_p)) {
+    options[["top_p"]] <- top_p
+  }
+  if (!is.null(top_k)) {
+    options[["top_k"]] <- as.integer(top_k)
+  }
+  if (!is.null(seed)) {
+    options[["seed"]] <- as.integer(seed)
+  }
+  if (!is.null(max_tokens)) {
+    options[["num_predict"]] <- as.integer(max_tokens)
+  }
+  if (!is.null(stop)) {
+    options[["stop"]] <- as.character(stop)
+  }
   request_body <- list(
     model = x@model_name,
     messages = build_chat_messages(x, state),
@@ -216,12 +226,18 @@ method(build_chat_request_body, OpenAIConfig) <- function(
     stream = FALSE,
     temperature = temperature %||% x@temperature
   )
-  if (!is.null(top_p)) request_body[["top_p"]] <- top_p
+  if (!is.null(top_p)) {
+    request_body[["top_p"]] <- top_p
+  }
   if (!is.null(max_tokens)) {
     request_body[["max_tokens"]] <- as.integer(max_tokens)
   }
-  if (!is.null(stop)) request_body[["stop"]] <- as.character(stop)
-  if (!is.null(seed)) request_body[["seed"]] <- as.integer(seed)
+  if (!is.null(stop)) {
+    request_body[["stop"]] <- as.character(stop)
+  }
+  if (!is.null(seed)) {
+    request_body[["seed"]] <- as.integer(seed)
+  }
   if (!is.null(tools) && use_tools) {
     request_body[["tools"]] <- lapply(tools, as_list)
   }
@@ -262,7 +278,7 @@ method(perform_chat_request, OllamaConfig) <- function(
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis (www.rtemis.org)") |>
     httr2::req_error(is_error = function(resp) FALSE) |>
-    httr2::req_perform(verbosity = verbosity - 1L)
+    httr2::req_perform(verbosity = max(verbosity - 1L, 0L))
   .check_http_response(resp, "Ollama")
   resp
 }
@@ -290,7 +306,7 @@ method(perform_chat_request, OpenAIConfig) <- function(
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_openai_headers(x)
-  resp <- httr2::req_perform(req, verbosity = verbosity - 1L)
+  resp <- httr2::req_perform(req, verbosity = max(verbosity - 1L, 0L))
   .check_http_response(resp, .openai_provider_name(x))
   resp
 }
@@ -627,9 +643,15 @@ method(build_chat_request_body, ClaudeConfig) <- function(
     max_tokens = as.integer(max_tokens %||% x@max_tokens),
     temperature = temperature %||% x@temperature
   )
-  if (!is.null(top_p)) request_body[["top_p"]] <- top_p
-  if (!is.null(top_k)) request_body[["top_k"]] <- as.integer(top_k)
-  if (!is.null(stop)) request_body[["stop_sequences"]] <- as.character(stop)
+  if (!is.null(top_p)) {
+    request_body[["top_p"]] <- top_p
+  }
+  if (!is.null(top_k)) {
+    request_body[["top_k"]] <- as.integer(top_k)
+  }
+  if (!is.null(stop)) {
+    request_body[["stop_sequences"]] <- as.character(stop)
+  }
   system_prompt <- .claude_system_from_state(state)
   if (!is.null(system_prompt) && nzchar(system_prompt)) {
     request_body[["system"]] <- system_prompt
@@ -682,7 +704,7 @@ method(perform_chat_request, ClaudeConfig) <- function(
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_claude_headers(x)
-  resp <- httr2::req_perform(req, verbosity = verbosity - 1L)
+  resp <- httr2::req_perform(req, verbosity = max(verbosity - 1L, 0L))
   .check_claude_response(resp)
   resp
 }
