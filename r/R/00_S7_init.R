@@ -5,18 +5,37 @@ to_json <- new_generic("to_json", "x")
 # %% generate ----
 #' Generate Method
 #'
-#' Generic method for generating text or structured output from LLMs and Agents
+#' Generic method for generating text or structured output from LLMs and Agents.
 #'
 #' @param x An object of class LLM or Agent.
 #' @param prompt Character: The prompt to pass to the model or agent.
+#' @param temperature Optional numeric \[0, 2\]: Per-call sampling temperature.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate. For Claude,
+#' this overrides the config-level value (which is required); for Ollama this maps to
+#' `options.num_predict`; for OpenAI-compatible backends this maps to `max_tokens`.
+#' @param stop Optional character: Stop sequence(s). Mapped to `stop_sequences` on Claude
+#' and `options.stop` on Ollama.
+#' @param think Optional logical or character: Whether to enable model thinking
+#' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
+#' @param output_schema Optional Schema: Output schema to enforce on this call's response.
+#' If omitted, the object's default schema (if any) is used.
 #' @param verbosity Integer: Verbosity level.
-#' @param ... Additional arguments for specific methods, see Details.
+#' @param ... Additional backend-specific per-call arguments. See Details.
 #'
 #' @details
-#' **OpenAI** & **Claude** extra arguments:
-#' - `think` Logical: Whether to return reasoning trace
+#' The system prompt is set once at agent (or LLM) construction time and is **not**
+#' overridable per call. Construct a new agent if you need a different system prompt.
 #'
-#' @return `Message` object or list.
+#' Backend-specific extra arguments accepted via `...`:
+#' - **Ollama**: `top_k` (integer), `seed` (integer)
+#' - **OpenAI**: `seed` (integer)
+#' - **Claude**: `top_k` (integer)
+#'
+#' Any argument set to `NULL` (the default) falls back to the value baked into the
+#' underlying `LLMConfig` at construction time.
+#'
+#' @return `Message` object or list of `Message` objects (for `Agent`).
 #'
 #' @author EDG
 #' @export
@@ -30,12 +49,23 @@ to_json <- new_generic("to_json", "x")
 #'       temperature = 0.2
 #'     )
 #'   )
-#'   generate(agent, "What is your name?")
+#'   generate(agent, "What is your name?", temperature = 0.7)
 #' }
 generate <- new_generic(
   "generate",
   "x",
-  function(x, prompt, verbosity = 1L, ...) {
+  function(
+    x,
+    prompt,
+    temperature = NULL,
+    top_p = NULL,
+    max_tokens = NULL,
+    stop = NULL,
+    think = NULL,
+    output_schema = NULL,
+    verbosity = 1L,
+    ...
+  ) {
     S7_dispatch()
   }
 )
