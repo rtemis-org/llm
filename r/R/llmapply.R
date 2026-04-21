@@ -3,7 +3,8 @@
 #'
 #' @param X A vector (atomic or list) to iterate over. Other objects will be coerced by
 #'   [base::as.list]. Each element will form the user prompt for a separate call to the LLM agent.
-#' @param system_prompt Character: The system prompt to use for all calls.
+#' @param system_prompt Character: The system prompt to use for all calls. Ignored if `agent` is
+#'   provided.
 #' @param model_name Character: The name of the model to use. Ignored if `agent` is provided.
 #' @param backend Character: The LLM backend to use. One of "ollama", "claude", or "openai".
 #'   Ignored if `agent` is provided.

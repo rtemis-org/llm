@@ -44,7 +44,7 @@ agent
 **Output**
 ```
 <Agent>
-         Name: (Undefined)
+         Name: Kaimana
 System Prompt: You are a meticulous research assistant.
        Memory: Enabled
         Tools: (None)
@@ -54,7 +54,7 @@ System Prompt: You are a meticulous research assistant.
                temperature: 0.30
                    backend: ollama
                   base_url: http://localhost:11434
- 
+                     think: NULL
 ```
 
 Generate response

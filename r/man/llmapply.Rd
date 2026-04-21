@@ -24,7 +24,8 @@ llmapply(
 \item{X}{A vector (atomic or list) to iterate over. Other objects will be coerced by
 \link[base:list]{base::as.list}. Each element will form the user prompt for a separate call to the LLM agent.}
 
-\item{system_prompt}{Character: The system prompt to use for all calls.}
+\item{system_prompt}{Character: The system prompt to use for all calls. Ignored if \code{agent} is
+provided.}
 
 \item{model_name}{Character: The name of the model to use. Ignored if \code{agent} is provided.}
 
