@@ -38,11 +38,10 @@ local information.
 }
 \examples{
 # Inspect a tool
-tool_arxiv@name
-tool_arxiv@function_name
+tool_datetime
 
 \dontrun{
-# Use with an Ollama-backed agent
+# Requires a running Ollama server and the "gemma4:e4b" model
 agent <- create_agent(
   llmconfig = config_Ollama(
     model_name = "gemma4:e4b",

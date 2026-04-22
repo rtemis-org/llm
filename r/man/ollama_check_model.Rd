@@ -16,8 +16,9 @@ NULL, invisibly if model is available; otherwise throws an error.
 Check Ollama Model is Available
 }
 \examples{
+# Requires running Ollama server
 \dontrun{
-ollama_check_model("gemma4:e4b")
+  ollama_check_model("gemma4:e4b")
 }
 }
 \author{

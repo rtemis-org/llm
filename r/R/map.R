@@ -12,6 +12,17 @@
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   llmapply(
+#'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
+#'     "gemma4:e4b",
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+#'     temperature = 0.2
+#'   ) |> responses()
+#' }
 responses <- function(x) {
   # Single Message object
   if (S7_inherits(x, Message)) {
@@ -79,6 +90,17 @@ responses <- function(x) {
 #'
 #' @author EDG
 #' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   llmapply(
+#'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
+#'     "gemma4:e4b",
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+#'     temperature = 0.2
+#'   ) |> reasoning()
+#' }
 reasoning <- function(x) {
   one <- function(m) {
     if (S7_inherits(m, LLMMessage) && !is.null(m@reasoning)) {

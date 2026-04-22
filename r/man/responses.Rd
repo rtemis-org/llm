@@ -18,6 +18,17 @@ Returns the assistant content from a single \code{Message}, from a flat list of 
 (e.g. the output of \link{llmapply} with \code{extract_responses = FALSE}), or from a list of lists of
 \code{Message} objects (e.g. the output of \code{map()} on an \code{Agent} with \code{extract_responses = FALSE}).
 }
+\examples{
+# Requires running Ollama server and gemma4:e4b model
+\dontrun{
+  llmapply(
+    c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
+    "gemma4:e4b",
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+    temperature = 0.2
+  ) |> responses()
+}
+}
 \author{
 EDG
 }

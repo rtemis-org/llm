@@ -19,9 +19,10 @@ data.table
 Get Ollama Model Info
 }
 \examples{
+# Requires a running Ollama server
 \dontrun{
-ollama_get_model_info()
-ollama_get_model_info(x = "gemma4:e4b")
+  ollama_get_model_info()
+  ollama_get_model_info(x = "gemma4:e4b")
 }
 }
 \author{

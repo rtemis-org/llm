@@ -16,6 +16,7 @@ Character vector: Model names.
 List Ollama Models
 }
 \examples{
+# Requires a running Ollama server
 \dontrun{
 ollama_list_models()
 }

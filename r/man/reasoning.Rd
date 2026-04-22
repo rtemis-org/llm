@@ -18,6 +18,17 @@ Returns the assistant's reasoning trace (if any). Only \code{LLMMessage} objects
 field; all other \code{Message} subclasses return \code{NA_character_}. Messages whose reasoning is unset
 (\code{NULL}) also return \code{NA_character_}.
 }
+\examples{
+# Requires running Ollama server and gemma4:e4b model
+\dontrun{
+  llmapply(
+    c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
+    "gemma4:e4b",
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+    temperature = 0.2
+  ) |> reasoning()
+}
+}
 \author{
 EDG
 }

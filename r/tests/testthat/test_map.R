@@ -85,7 +85,10 @@ test_that("reasoning() handles a flat list of Messages", {
     SystemMessage(content = "sys"),
     LLMMessage(content = "c", model_name = "m")
   )
-  testthat::expect_identical(reasoning(ms), c("r1", NA_character_, NA_character_))
+  testthat::expect_identical(
+    reasoning(ms),
+    c("r1", NA_character_, NA_character_)
+  )
 })
 
 test_that("reasoning() handles a list of lists of Messages", {
