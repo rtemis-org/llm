@@ -1,15 +1,16 @@
 Package: rtemis.llm
 Title: LLMs and Agentic AI
 Version: 0.7.2
-Date: 2026-04-21
+Date: 2026-04-22
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"), 
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
-Description: Provides an Agent class with support for reasoning, structured output, memory 
-    management, and tool use. Allows creation of custom LLM-based workflows and agentic AI systems 
-    using a functional user-facing frontend and an 'S7' backend. Includes llmapply() for quick batch
-    LLM inference. Supports 'Ollama', 'OpenAI'-compatible, and 'Anthropic'-compatible endpoints.
+Description: Provides functionality to interface with Large Language Models. Supports reasoning, 
+    structured output, memory management, and secure tool use. Allows creation of custom LLM-based 
+    workflows and agentic AI systems using a functional user-facing frontend and an S7 backend. 
+    Includes map() llmapply() for efficient batch inference. Supports 'Ollama', 'OpenAI'-compatible, 
+    and 'Anthropic'-compatible endpoints.
 License: GPL (>= 3)
-URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm-api/
+URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
