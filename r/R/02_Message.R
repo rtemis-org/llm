@@ -647,9 +647,12 @@ method(print, ToolMessage) <- function(x, output_type = NULL, ...) {
 #' @export
 #'
 #' @examples
-#' message <- Message(
-#'   content = "What is the weather like today?",
-#'   role = "user"
+#' # Requires running Ollama server and gemma4:e4b model
+#'   \dontrun{
+#'   llm <- create_Ollama("gemma4:e4b")
+#'   res <- generate(llm, "How can anything exist?")
+#'   as.list(res)
+#' }
 as.list.Message <- method(as.list, Message) <- function(x, ...) {
   as_list(x)
 }

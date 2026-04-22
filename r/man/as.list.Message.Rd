@@ -18,9 +18,12 @@ A list representation of the Message object
 Convert Message to List
 }
 \examples{
-message <- Message(
-  content = "What is the weather like today?",
-  role = "user"
+# Requires running Ollama server and gemma4:e4b model
+  \dontrun{
+  llm <- create_Ollama("gemma4:e4b")
+  res <- generate(llm, "How can anything exist?")
+  as.list(res)
+}
 }
 \author{
 EDG
