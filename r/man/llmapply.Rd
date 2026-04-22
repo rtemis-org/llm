@@ -2,57 +2,67 @@
 % Please edit documentation in R/map.R
 \name{llmapply}
 \alias{llmapply}
-\title{Batch submission of prompts to an LLM}
+\title{Apply an LLM over a vector of prompts}
 \usage{
 llmapply(
-  X,
-  system_prompt,
-  model_name = NULL,
-  backend = c("ollama", "claude", "openai"),
-  temperature = 0.3,
+  x,
+  model_or_llm,
+  backend = c("ollama", "openai", "claude"),
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
   output_schema = NULL,
   verbosity = 1L,
   extract_responses = TRUE,
-  agent = NULL,
   ...
 )
 }
 \arguments{
-\item{X}{A vector (atomic or list) to iterate over. Other objects will be coerced by
-\link[base:list]{base::as.list}. Each element will form the user prompt for a separate call to the LLM agent.}
+\item{x}{Character or list: Values to iterate over. Each element forms the user prompt for one
+call to the LLM.}
 
-\item{system_prompt}{Character: The system prompt to use for all calls.}
+\item{model_or_llm}{Character or LLM: Either the name of a model (a string) or a pre-built
+\code{LLM} object (for example from \link{create_Ollama}, \link{create_OpenAI}, or \link{create_Claude}).}
 
-\item{model_name}{Character: The name of the model to use.}
+\item{backend}{Character \{"ollama", "openai", "claude"\}: Backend to use when \code{model_or_llm}
+is a string. Ignored when \code{model_or_llm} is an \code{LLM} object.}
 
-\item{backend}{Character: The LLM backend to use. One of "ollama", "claude", or "openai".}
+\item{system_prompt}{Character: System prompt to use when building the \code{LLM} from a model name.
+Ignored when \code{model_or_llm} is an \code{LLM} object.}
 
-\item{output_schema}{\code{Schema} object, named list, or JSON string defining the expected structure
-of the LLM response.}
+\item{output_schema}{Optional Schema: Output schema to enforce, created with \link{schema}. When
+\code{model_or_llm} is a string, this is baked into the built \code{LLM}. When \code{model_or_llm} is a
+pre-built \code{LLM}, supplying this here is a conflict and will error.}
 
-\item{verbosity}{Integer: Verbosity level for messages.}
+\item{verbosity}{Integer [0, Inf): Verbosity level. The per-call verbosity is \code{verbosity - 1L}.}
 
-\item{extract_responses}{Logical: If \code{TRUE}, extract the content of the assistant message from
-the full response. If \code{FALSE}, return the list of full Message objects.}
+\item{extract_responses}{Logical: If \code{TRUE}, return a character vector of assistant responses
+(with \code{NA_character_} for missing assistant content). If \code{FALSE}, return the raw list of
+\code{Message} objects from each call.}
 
-\item{...}{Additional arguments passed to the \code{generate} method for the agent.}
-
-\item{name}{Character: Name for the agent.}
+\item{...}{Additional per-call arguments forwarded to \link{generate} (e.g. \code{temperature}, \code{top_p},
+\code{max_tokens}, \code{stop}, \code{think}, \code{top_k}, \code{seed}).}
 }
 \value{
-A list of \code{Message} objects or a list of structured responses returned by the agent
+If \code{extract_responses = TRUE}, a character vector the same length as \code{x}. Otherwise, a
+list of \code{Message} objects.
 }
 \description{
-Batch submission of prompts to an LLM
+\code{llmapply} is the \code{lapply}-style entry point for running a single prompt against an \code{LLM}
+repeatedly over a vector of inputs. Pass either a model name (in which case an \code{LLM} is built
+on the fly using \code{backend}, \code{system_prompt}, \code{output_schema}) or a pre-built \code{LLM} object.
+}
+\details{
+Per-call overrides such as \code{temperature}, \code{top_p}, \code{max_tokens}, \code{stop}, \code{think}, plus
+backend-specific options like \code{top_k} or \code{seed}, are forwarded via \code{...} to \link{generate}. Vectors
+passed via \code{...} are \strong{not} yet recycled across \code{x} — they are forwarded as-is to each call.
 }
 \examples{
-# Requires running Ollama server with the "gemma4:e4b" model
+# Requires running Ollama server and gemma4:e4b model
 \dontrun{
-  hex <- llmapply(
-     c("teal", "orange", "burgundy"),
-     system_prompt = "Return the hexadecimal code for the following color in format #FFFFFF",
-     model_name = "gemma4:e4b"
-   )
+  llmapply(
+    c("What is 2+2?", "What is the capital of France?"),
+    "gemma4:e4b",
+    temperature = 0.2
+  )
 }
 }
 \author{
