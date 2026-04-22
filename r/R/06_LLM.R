@@ -116,11 +116,7 @@ method(repr, Ollama) <- function(x, output_type = NULL) {
     if (!is.null(x@output_schema)) {
       paste0(
         fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(
-          as_list(x@output_schema),
-          pad = 2L,
-          output_type = output_type
-        )
+        repr(x@output_schema, pad = 15L, output_type = output_type)
       )
     }
   )
@@ -194,11 +190,7 @@ method(repr, OpenAI) <- function(x, output_type = NULL) {
     if (!is.null(x@output_schema)) {
       paste0(
         fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(
-          as_list(x@output_schema),
-          pad = 2L,
-          output_type = output_type
-        )
+        repr(x@output_schema, pad = 15L, output_type = output_type)
       )
     }
   )
@@ -272,11 +264,7 @@ method(repr, Claude) <- function(x, output_type = NULL) {
     if (!is.null(x@output_schema)) {
       paste0(
         fmt("Output Schema: \n", bold = TRUE, output_type = output_type),
-        repr_ls(
-          as_list(x@output_schema),
-          pad = 2L,
-          output_type = output_type
-        )
+        repr(x@output_schema, pad = 15L, output_type = output_type)
       )
     }
   )

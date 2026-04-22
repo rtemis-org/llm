@@ -51,24 +51,27 @@ Field <- S7::new_class(
 
 
 # %% repr.Field ----
-method(repr, Field) <- function(x, output_type = NULL) {
-  setNames(
-    list(
+method(repr, Field) <- function(x, pad = 0L, output_type = NULL) {
+  repr_ls(
+    setNames(
       list(
-        type = x@type,
-        description = x@description,
-        required = x@required
-      )
+        list(
+          type = x@type,
+          description = x@description,
+          required = x@required
+        )
+      ),
+      x@name
     ),
-    x@name
-  ) |>
-    repr_ls()
+    pad = pad,
+    output_type = output_type
+  )
 }
 
 
 # %% print.Field ----
 method(print, Field) <- function(x, output_type = NULL, ...) {
-  cat(repr(x, output_type), "\n")
+  cat(repr(x, output_type = output_type), "\n")
   invisible(x)
 }
 
@@ -144,7 +147,7 @@ Schema <- S7::new_class(
 
 
 # %% repr.Schema ----
-method(repr, Schema) <- function(x, output_type = NULL) {
+method(repr, Schema) <- function(x, pad = 0L, output_type = NULL) {
   out <- setNames(
     list(
       list(
@@ -165,13 +168,13 @@ method(repr, Schema) <- function(x, output_type = NULL) {
     ),
     x@name
   )
-  repr_ls(out, output_type)
+  repr_ls(out, pad = pad, output_type = output_type)
 }
 
 
 # %% print.Schema ----
 method(print, Schema) <- function(x, output_type = NULL, ...) {
-  cat(repr(x, output_type), "\n")
+  cat(repr(x, output_type = output_type), "\n")
   invisible(x)
 }
 
