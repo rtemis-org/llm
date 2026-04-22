@@ -30,8 +30,8 @@ method(repr, LLM) <- function(x, output_type = NULL) {
   paste0(
     repr_S7name("LLM", output_type = output_type),
     if (!is.null(x@name)) {
-      paste(
-        fmt("Name: ", bold = TRUE, output_type = output_type),
+      paste0(
+        fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
       )
@@ -91,8 +91,8 @@ method(repr, Ollama) <- function(x, output_type = NULL) {
   paste0(
     repr_S7name("Ollama", output_type = output_type),
     if (!is.null(x@name)) {
-      paste(
-        fmt("Name: ", bold = TRUE, output_type = output_type),
+      paste0(
+        fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
       )
@@ -173,7 +173,7 @@ method(repr, OpenAI) <- function(x, output_type = NULL) {
   paste0(
     repr_S7name("OpenAI", output_type = output_type),
     if (!is.null(x@name)) {
-      paste(
+      paste0(
         fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
@@ -251,7 +251,7 @@ method(repr, Claude) <- function(x, output_type = NULL) {
   paste0(
     repr_S7name("Claude", output_type = output_type),
     if (!is.null(x@name)) {
-      paste(
+      paste0(
         fmt("         Name: ", bold = TRUE, output_type = output_type),
         highlight(x@name, output_type = output_type),
         "\n"
