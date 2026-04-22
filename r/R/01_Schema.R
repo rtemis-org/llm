@@ -50,6 +50,29 @@ Field <- S7::new_class(
 )
 
 
+# %% repr.Field ----
+method(repr, Field) <- function(x, output_type = NULL) {
+  setNames(
+    list(
+      list(
+        type = x@type,
+        description = x@description,
+        required = x@required
+      )
+    ),
+    x@name
+  ) |>
+    repr_ls()
+}
+
+
+# %% print.Field ----
+method(print, Field) <- function(x, output_type = NULL) {
+  cat(repr(x, output_type), "\n")
+  invisible(x)
+}
+
+
 # %% Schema ----
 #' @title Schema Class
 #'
@@ -118,6 +141,39 @@ Schema <- S7::new_class(
     NULL
   }
 )
+
+
+# %% repr.Schema ----
+method(repr, Schema) <- function(x, output_type = NULL) {
+  out <- setNames(
+    list(
+      list(
+        description = x@description,
+        fields = sapply(x@fields, function(f) {
+          setNames(
+            list(
+              list(
+                type = f@type,
+                description = f@description,
+                required = f@required
+              )
+            ),
+            f@name
+          )
+        })
+      )
+    ),
+    x@name
+  )
+  repr_ls(out, output_type)
+}
+
+
+# %% print.Schema ----
+method(print, Schema) <- function(x, output_type = NULL) {
+  cat(repr(x, output_type), "\n")
+  invisible(x)
+}
 
 
 # %% as_list.Field ----
