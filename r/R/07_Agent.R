@@ -376,6 +376,10 @@ create_agent <- function(
 #'
 #' @param x `Agent` object
 #' @param prompt Character: The prompt to send to the agent.
+#' @param temperature Optional numeric \[0, 2\]: Per-call temperature override.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Per-call maximum tokens to generate.
+#' @param stop Optional character: Stop sequence(s).
 #' @param image_path Optional character: Path to an image to include in the prompt.
 #' @param think Optional logical: Whether to enable thinking (reasoning trace) for this call. Only
 #' supported by certain models.
@@ -386,6 +390,8 @@ create_agent <- function(
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
 #' @param verbosity Integer: Verbosity level.
+#' @param ... Backend-specific per-call options forwarded to the request builder
+#' (e.g. `top_k`, `seed`). See [generate].
 #'
 #' @return List of `Message` objects representing the conversation history.
 #'
@@ -400,13 +406,18 @@ create_agent <- function(
 method(generate, Agent) <- function(
   x,
   prompt,
+  temperature = NULL,
+  top_p = NULL,
+  max_tokens = NULL,
+  stop = NULL,
   image_path = NULL,
   think = NULL,
   output_schema = NULL,
   commit_to_memory = TRUE,
   use_tools = TRUE,
   echo = TRUE,
-  verbosity = 1L
+  verbosity = 1L,
+  ...
 ) {
   # Get output schema: First check function argument, then agent's default
   if (is.null(output_schema)) {
@@ -441,14 +452,30 @@ method(generate, Agent) <- function(
     verbosity = verbosity
   )
 
+  # Per-call overrides forwarded to every build_chat_request_body call
+  overrides <- list(
+    temperature = temperature,
+    top_p = top_p,
+    max_tokens = max_tokens,
+    stop = stop
+  )
+  extra <- list(...)
+  overrides <- c(overrides, extra)
+
   # {Initial Request Body}
-  request_body <- build_chat_request_body(
-    x@llmconfig,
-    state = running_state,
-    tools = x@tools,
-    output_schema = output_schema,
-    think = think,
-    use_tools = use_tools
+  request_body <- do.call(
+    build_chat_request_body,
+    c(
+      list(
+        x@llmconfig,
+        state = running_state,
+        tools = x@tools,
+        output_schema = output_schema,
+        think = think,
+        use_tools = use_tools
+      ),
+      overrides
+    )
   )
 
   msg(repr_bracket(x@llmconfig@model_name), "working...", verbosity = verbosity)
@@ -622,12 +649,18 @@ method(generate, Agent) <- function(
       if (verbosity > 0L) {
         msg("Sending tool responses back to agent...")
       }
-      followup_request_body <- build_chat_request_body(
-        x@llmconfig,
-        state = running_state,
-        tools = x@tools,
-        output_schema = output_schema,
-        use_tools = use_tools
+      followup_request_body <- do.call(
+        build_chat_request_body,
+        c(
+          list(
+            x@llmconfig,
+            state = running_state,
+            tools = x@tools,
+            output_schema = output_schema,
+            use_tools = use_tools
+          ),
+          overrides
+        )
       )
       # {>>} Perform follow-up request
       followup_resp <- perform_chat_request(

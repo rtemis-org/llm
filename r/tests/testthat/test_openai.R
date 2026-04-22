@@ -389,3 +389,35 @@ test_that("OpenAI-compatible response parsing extracts reasoning content parts",
   expect_equal(parsed[["content"]], "Visible answer part.")
   expect_equal(parsed[["reasoning"]], "Reasoning content part.")
 })
+
+
+# %% build_chat_request_body.OpenAIConfig per-call overrides ----
+test_that("OpenAI request body honors per-call overrides", {
+  config <- config_OpenAI(
+    model_name = "gpt-4o-mini",
+    api_key = "test-key",
+    temperature = 0.2,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(
+    config,
+    state = state,
+    temperature = 0.9,
+    top_p = 0.5,
+    max_tokens = 128L,
+    stop = c("\n\n"),
+    seed = 42L
+  )
+  expect_equal(body[["temperature"]], 0.9)
+  expect_equal(body[["top_p"]], 0.5)
+  expect_equal(body[["max_tokens"]], 128L)
+  expect_equal(body[["stop"]], "\n\n")
+  expect_equal(body[["seed"]], 42L)
+})

@@ -1,22 +1,45 @@
 # --- Generics -------------------------------------------------------------------------------------
+# %% map ----
+map <- new_generic("map", c("x", "f"), function(x, f, ...) S7_dispatch())
+
+
 # %% to_json ----
 to_json <- new_generic("to_json", "x")
 
 # %% generate ----
 #' Generate Method
 #'
-#' Generic method for generating text or structured output from LLMs and Agents
+#' Generic method for generating text or structured output from LLMs and Agents.
 #'
 #' @param x An object of class LLM or Agent.
 #' @param prompt Character: The prompt to pass to the model or agent.
+#' @param temperature Optional numeric \[0, 2\]: Per-call sampling temperature.
+#' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
+#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate. For Claude,
+#' this overrides the config-level value (which is required); for Ollama this maps to
+#' `options.num_predict`; for OpenAI-compatible backends this maps to `max_tokens`.
+#' @param stop Optional character: Stop sequence(s). Mapped to `stop_sequences` on Claude
+#' and `options.stop` on Ollama.
+#' @param think Optional logical or character: Whether to enable model thinking
+#' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
+#' @param output_schema Optional Schema: Output schema to enforce on this call's response.
+#' If omitted, the object's default schema (if any) is used.
 #' @param verbosity Integer: Verbosity level.
-#' @param ... Additional arguments for specific methods, see Details.
+#' @param ... Additional backend-specific per-call arguments. See Details.
 #'
 #' @details
-#' **OpenAI** & **Claude** extra arguments:
-#' - `think` Logical: Whether to return reasoning trace
+#' The system prompt is set once at agent (or LLM) construction time and is **not**
+#' overridable per call. Construct a new agent if you need a different system prompt.
 #'
-#' @return `Message` object or list.
+#' Backend-specific extra arguments accepted via `...`:
+#' - **Ollama**: `top_k` (integer), `seed` (integer)
+#' - **OpenAI**: `seed` (integer)
+#' - **Claude**: `top_k` (integer)
+#'
+#' Any argument set to `NULL` (the default) falls back to the value baked into the
+#' underlying `LLMConfig` at construction time.
+#'
+#' @return `Message` object or list of `Message` objects (for `Agent`).
 #'
 #' @author EDG
 #' @export
@@ -30,12 +53,23 @@ to_json <- new_generic("to_json", "x")
 #'       temperature = 0.2
 #'     )
 #'   )
-#'   generate(agent, "What is your name?")
+#'   generate(agent, "What is your name?", temperature = 0.7)
 #' }
 generate <- new_generic(
   "generate",
   "x",
-  function(x, prompt, verbosity = 1L, ...) {
+  function(
+    x,
+    prompt,
+    temperature = NULL,
+    top_p = NULL,
+    max_tokens = NULL,
+    stop = NULL,
+    think = NULL,
+    output_schema = NULL,
+    verbosity = 1L,
+    ...
+  ) {
     S7_dispatch()
   }
 )
@@ -296,3 +330,60 @@ AIThinking <- new_class(
     )
   }
 )
+
+# %% utils ----
+# %% .check_scalar_character() ----
+#' Check Scalar Character
+#'
+#' @param x Object: Object to check.
+#' @param name Character: Argument name to report.
+#'
+#' @return NULL, invisibly.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.check_scalar_character <- function(x, name) {
+  if (
+    !is.character(x) ||
+      length(x) != 1L ||
+      is.na(x) ||
+      !nzchar(trimws(x))
+  ) {
+    cli::cli_abort("{.var {name}} must be a non-empty character scalar.")
+  }
+  invisible(NULL)
+}
+
+
+# %% .is_named_list() ----
+#' Test Named List
+#'
+#' @param x Object: Object to test.
+#'
+#' @return Logical.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.is_named_list <- function(x) {
+  is.list(x) &&
+    length(x) == length(names(x)) &&
+    all(nzchar(names(x)))
+}
+
+
+# %% .clean_base_url() ----
+#' Clean Base URL
+#'
+#' @param x Character: Base URL.
+#'
+#' @return Character.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.clean_base_url <- function(x) {
+  .check_scalar_character(x, "base_url")
+  sub("/+$", "", trimws(x))
+}

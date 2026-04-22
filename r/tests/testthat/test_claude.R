@@ -482,3 +482,61 @@ test_that("ClaudeMessage preserves raw_content via metadata", {
   expect_equal(m@metadata[["raw_content"]], raw)
   expect_equal(m@metadata[["provider"]], "Anthropic")
 })
+
+
+# %% build_chat_request_body.ClaudeConfig per-call overrides ----
+test_that("Claude request body honors per-call overrides", {
+  config <- config_Claude(
+    model_name = "claude-sonnet-4-6",
+    api_key = "test-key",
+    temperature = 0.2,
+    max_tokens = 1024L,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(
+    config,
+    state = state,
+    temperature = 0.9,
+    top_p = 0.5,
+    max_tokens = 256L,
+    stop = c("\n\n", "END"),
+    top_k = 40L
+  )
+  expect_equal(body[["temperature"]], 0.9)
+  expect_equal(body[["top_p"]], 0.5)
+  expect_equal(body[["max_tokens"]], 256L)
+  expect_equal(body[["stop_sequences"]], c("\n\n", "END"))
+  expect_equal(body[["top_k"]], 40L)
+})
+
+
+# %% build_chat_request_body.ClaudeConfig defaults fall through ----
+test_that("Claude request body falls back to config when overrides are NULL", {
+  config <- config_Claude(
+    model_name = "claude-sonnet-4-6",
+    api_key = "test-key",
+    temperature = 0.2,
+    max_tokens = 1024L,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(config, state = state)
+  expect_equal(body[["temperature"]], 0.2)
+  expect_equal(body[["max_tokens"]], 1024L)
+  expect_false("top_p" %in% names(body))
+  expect_false("top_k" %in% names(body))
+  expect_false("stop_sequences" %in% names(body))
+})

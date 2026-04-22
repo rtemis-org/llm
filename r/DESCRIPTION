@@ -1,7 +1,7 @@
 Package: rtemis.llm
 Title: LLMs and Agentic AI
-Version: 0.7.1
-Date: 2026-04-20
+Version: 0.7.2
+Date: 2026-04-21
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"), 
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Provides an Agent class with support for reasoning, structured output, memory 
@@ -25,8 +25,6 @@ Suggests:
     keyring,
     testthat (>= 3.0.0),
     xml2
-Additional_repositories:
-    https://rtemis-org.r-universe.dev
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.1.0)

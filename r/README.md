@@ -33,7 +33,7 @@ Create an `Agent`
 agent <- create_agent(
   llmconfig = config_Ollama(
     model_name = "gemma4:26b",
-    temperature = 0.3,
+    temperature = 0.3
   ),
   system_prompt = "You are a meticulous research assistant.",
   name = "Kaimana"
@@ -44,7 +44,7 @@ agent
 **Output**
 ```
 <Agent>
-         Name: (Undefined)
+         Name: Kaimana
 System Prompt: You are a meticulous research assistant.
        Memory: Enabled
         Tools: (None)
@@ -54,7 +54,7 @@ System Prompt: You are a meticulous research assistant.
                temperature: 0.30
                    backend: ollama
                   base_url: http://localhost:11434
- 
+                     think: NULL
 ```
 
 Generate response

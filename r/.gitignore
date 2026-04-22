@@ -15,6 +15,9 @@ __dev/
 .Rhistory
 .Rapp.history
 
+# lintr
+.lintr
+
 # Session Data files
 .RData
 .RDataTmp
