@@ -49,7 +49,7 @@ responses <- function(x) {
         x,
         function(messages) {
           asst <- Filter(function(m) m@role == "assistant", messages)
-          if (length(asst) > 0L) asst[[1L]]@content else NA_character_
+          if (length(asst) > 0L) asst[[length(asst)]]@content else NA_character_
         },
         character(1L)
       )
@@ -115,7 +115,7 @@ reasoning <- function(x) {
         x,
         function(messages) {
           asst <- Filter(function(m) m@role == "assistant", messages)
-          if (length(asst) > 0L) one(asst[[1L]]) else NA_character_
+          if (length(asst) > 0L) one(asst[[length(asst)]]) else NA_character_
         },
         character(1L)
       )
@@ -226,8 +226,9 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #' # Requires running Ollama server and gemma4:e4b model
 #' \dontrun{
 #'   llmapply(
-#'     c("What is 2+2?", "What is the capital of France?"),
+#'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
 #'     "gemma4:e4b",
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
 #'     temperature = 0.2
 #'   )
 #' }
@@ -323,8 +324,19 @@ llmapply <- function(
 #'   list of lists of `Message` objects.
 #'
 #' @author EDG
-#' @keywords internal
-#' @noRd
+#' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   agentapply(
+#'     c("today", "yesterday", "tomorrow"),
+#'     "gemma4:e4b",
+#'     system_prompt = "Return the date in ISO format",
+#'     tools = list(tool_datetime),
+#'     temperature = 0.2
+#'   )
+#' }
 agentapply <- function(
   x,
   model_or_agent,

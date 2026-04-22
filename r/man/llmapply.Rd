@@ -59,8 +59,9 @@ passed via \code{...} are \strong{not} yet recycled across \code{x} — they are
 # Requires running Ollama server and gemma4:e4b model
 \dontrun{
   llmapply(
-    c("What is 2+2?", "What is the capital of France?"),
+    c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
     "gemma4:e4b",
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
     temperature = 0.2
   )
 }
