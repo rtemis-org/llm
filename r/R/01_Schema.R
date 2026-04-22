@@ -67,7 +67,7 @@ method(repr, Field) <- function(x, output_type = NULL) {
 
 
 # %% print.Field ----
-method(print, Field) <- function(x, output_type = NULL) {
+method(print, Field) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type), "\n")
   invisible(x)
 }
@@ -170,7 +170,7 @@ method(repr, Schema) <- function(x, output_type = NULL) {
 
 
 # %% print.Schema ----
-method(print, Schema) <- function(x, output_type = NULL) {
+method(print, Schema) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type), "\n")
   invisible(x)
 }
