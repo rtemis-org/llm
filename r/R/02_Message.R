@@ -325,7 +325,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
           col = col_llm,
           output_type = output_type
         ),
-        "",
+        " ",
         x@content
       )
     },
