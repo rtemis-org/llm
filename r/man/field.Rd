@@ -28,7 +28,7 @@ Field object
 Define a schema field
 }
 \examples{
-# `type`` defaults to "string", `required` defaults to TRUE
+# `type` defaults to "string", `required` defaults to TRUE
 field("lab_name", "Name of the lab test")
 field("normal_range_low", "Lower bound of normal range", type = "number")
 }

@@ -378,7 +378,7 @@ method(generate, Ollama) <- function(
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `seed` (integer).
 #'
-#' @return OpenAIMessage object.
+#' @return OpenAIMessage object
 #' @author EDG
 #'
 #' @noRd
@@ -459,7 +459,7 @@ method(generate, OpenAI) <- function(
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `top_k` (integer).
 #'
-#' @return ClaudeMessage object.
+#' @return ClaudeMessage object
 #' @author EDG
 #'
 #' @noRd
@@ -529,6 +529,8 @@ method(generate, Claude) <- function(
 # %% config_Ollama ----
 #' Create an OllamaConfig Object
 #'
+#' Creates an OllamaConfig object which can be passed to `create_agent()`
+#'
 #' @param model_name Character: The name of the LLM model to use. Must be an Ollama model.
 #' @param temperature Numeric: The temperature for the model.
 #' @param base_url Character: Base URL of Ollama server.
@@ -536,7 +538,7 @@ method(generate, Claude) <- function(
 #' for this config. Logical values target models like deepseek or qwen3; character values target
 #' gpt-oss. Can be overridden per call.
 #'
-#' @return OllamaConfig object.
+#' @return OllamaConfig object
 #'
 #' @author EDG
 #' @export
@@ -576,7 +578,7 @@ config_Ollama <- function(
 #' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
 #' Logical values target models like deepseek or qwen3; character values target gpt-oss.
 #'
-#' @return Ollama object.
+#' @return Ollama LLM object
 #'
 #' @author EDG
 #' @export
@@ -584,11 +586,12 @@ config_Ollama <- function(
 #' @examples
 #' # Requires running Ollama server and gemma4:e4b model
 #' \dontrun{
-#'   create_Ollama(
+#'   llm <- create_Ollama(
 #'     model_name = "gemma4:e4b",
 #'     system_prompt = "You are professor of Drum and Bass at the Institute of Advanced Beat Studies.",
 #'     temperature = 1.0
 #'   )
+#'   generate(llm, "What is your name and who made you?")
 #' }
 create_Ollama <- function(
   model_name,
@@ -617,6 +620,8 @@ create_Ollama <- function(
 # %% config_OpenAI ----
 #' Create an OpenAI-compatible Config Object
 #'
+#' Creates an OpenAIConfig object which can be passed to `create_agent()`
+#'
 #' @param model_name Character: The name of the LLM model to use.
 #' @param temperature Numeric \[0, 2\]: The temperature for the model.
 #' @param base_url Character: Base URL of the OpenAI-compatible server.
@@ -632,7 +637,7 @@ create_Ollama <- function(
 #' servers.
 #' @param validate_model Logical: Whether to validate model availability using the models endpoint.
 #'
-#' @return OpenAIConfig object.
+#' @return OpenAIConfig object
 #'
 #' @author EDG
 #' @export
@@ -698,7 +703,7 @@ config_OpenAI <- function(
 #' servers.
 #' @param validate_model Logical: Whether to validate model availability using the models endpoint.
 #'
-#' @return OpenAI object.
+#' @return OpenAI LLM object
 #'
 #' @author EDG
 #' @export
@@ -754,6 +759,8 @@ create_OpenAI <- function(
 # %% config_Claude ----
 #' Create a ClaudeConfig Object
 #'
+#' Creates a ClaudeConfig object which can be passed to `create_agent()`
+#'
 #' @param model_name Character: The name of the Claude model to use (for example
 #' `"claude-sonnet-4-6"`).
 #' @param temperature Numeric \[0, 2\]: The temperature for the model.
@@ -773,7 +780,7 @@ create_OpenAI <- function(
 #' set, each request enables extended thinking with this budget.
 #' @param validate_model Logical: Whether to validate model availability using `/models`.
 #'
-#' @return ClaudeConfig object.
+#' @return ClaudeConfig object
 #'
 #' @author EDG
 #' @export
@@ -843,7 +850,7 @@ config_Claude <- function(
 #' @param thinking_budget_tokens Optional integer \[1024, Inf): Extended-thinking budget.
 #' @param validate_model Logical: Whether to validate model availability using `/models`.
 #'
-#' @return Claude object.
+#' @return Claude LLM object
 #'
 #' @author EDG
 #' @export

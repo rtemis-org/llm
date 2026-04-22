@@ -58,7 +58,7 @@ servers.}
 \item{validate_model}{Logical: Whether to validate model availability using the models endpoint.}
 }
 \value{
-OpenAI object.
+OpenAI LLM object
 }
 \description{
 Create an OpenAI-compatible LLM Object

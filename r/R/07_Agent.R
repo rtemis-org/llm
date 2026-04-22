@@ -321,13 +321,14 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 # %% create_agent ----
 #' Create a rtemis.llm Agent
 #'
-#' @param llmconfig `LLMConfig`: The LLM configuration to use.
+#' @param llmconfig `LLMConfig`: The LLM configuration to use. Create using one of [config_Ollama],
+#'   [config_OpenAI], or [config_Claude].
 #' @param system_prompt Optional character: The system prompt to use.
 #' @param use_memory Logical: Whether to use conversation memory.
 #' @param tools Optional list of Tool objects: The tools available to the agent.
 #' @param max_tool_rounds Integer: Maximum number of tool call rounds per query.
-#' @param output_schema Optional Schema: The output schema to enforce on the agent's response created
-#' using [schema].
+#' @param output_schema Optional Schema: The output schema to enforce on the agent's response
+#'   created using [schema] and [field].
 #' @param name Optional character: The name of the agent.
 #' @param verbosity Integer: Verbosity level.
 #'

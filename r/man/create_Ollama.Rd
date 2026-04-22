@@ -31,7 +31,7 @@ create_Ollama(
 Logical values target models like deepseek or qwen3; character values target gpt-oss.}
 }
 \value{
-Ollama object.
+Ollama LLM object
 }
 \description{
 Create an Ollama Object
@@ -39,11 +39,12 @@ Create an Ollama Object
 \examples{
 # Requires running Ollama server and gemma4:e4b model
 \dontrun{
-  create_Ollama(
+  llm <- create_Ollama(
     model_name = "gemma4:e4b",
     system_prompt = "You are professor of Drum and Bass at the Institute of Advanced Beat Studies.",
     temperature = 1.0
   )
+  generate(llm, "What is your name and who made you?")
 }
 }
 \author{

@@ -23,10 +23,10 @@ for this config. Logical values target models like deepseek or qwen3; character 
 gpt-oss. Can be overridden per call.}
 }
 \value{
-OllamaConfig object.
+OllamaConfig object
 }
 \description{
-Create an OllamaConfig Object
+Creates an OllamaConfig object which can be passed to \code{create_agent()}
 }
 \examples{
 # Requires running Ollama server and gemma4:e4b model

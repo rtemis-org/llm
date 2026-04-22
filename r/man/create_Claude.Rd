@@ -61,7 +61,7 @@ implemented by forcing a single synthetic tool call whose \code{input_schema} is
 \item{validate_model}{Logical: Whether to validate model availability using \verb{/models}.}
 }
 \value{
-Claude object.
+Claude LLM object
 }
 \description{
 Create a Claude LLM Object

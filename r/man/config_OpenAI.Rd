@@ -49,10 +49,10 @@ servers.}
 \item{validate_model}{Logical: Whether to validate model availability using the models endpoint.}
 }
 \value{
-OpenAIConfig object.
+OpenAIConfig object
 }
 \description{
-Create an OpenAI-compatible Config Object
+Creates an OpenAIConfig object which can be passed to \code{create_agent()}
 }
 \examples{
 cfg <- config_OpenAI(

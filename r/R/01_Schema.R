@@ -276,7 +276,7 @@ method(to_json, Schema) <- function(x) {
 #' @export
 #'
 #' @examples
-#' # `type`` defaults to "string", `required` defaults to TRUE
+#' # `type` defaults to "string", `required` defaults to TRUE
 #' field("lab_name", "Name of the lab test")
 #' field("normal_range_low", "Lower bound of normal range", type = "number")
 field <- function(
@@ -299,7 +299,7 @@ field <- function(
 #' Define output schema for LLM responses
 #'
 #' @param name Optional Character: The name of the schema.
-#' @param ... Field objects defining the schema fields.
+#' @param ... Field objects defining the schema fields. Create using [field].
 #' @param description Optional Character: A brief description of the schema.
 #'
 #' @return Schema object, named list, or JSON string.

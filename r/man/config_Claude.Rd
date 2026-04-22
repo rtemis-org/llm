@@ -55,10 +55,10 @@ set, each request enables extended thinking with this budget.}
 \item{validate_model}{Logical: Whether to validate model availability using \verb{/models}.}
 }
 \value{
-ClaudeConfig object.
+ClaudeConfig object
 }
 \description{
-Create a ClaudeConfig Object
+Creates a ClaudeConfig object which can be passed to \code{create_agent()}
 }
 \examples{
 cfg <- config <- config_Claude(

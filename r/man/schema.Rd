@@ -9,7 +9,7 @@ schema(name = NULL, ..., description = NULL)
 \arguments{
 \item{name}{Optional Character: The name of the schema.}
 
-\item{...}{Field objects defining the schema fields.}
+\item{...}{Field objects defining the schema fields. Create using \link{field}.}
 
 \item{description}{Optional Character: A brief description of the schema.}
 }

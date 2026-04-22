@@ -16,7 +16,8 @@ create_agent(
 )
 }
 \arguments{
-\item{llmconfig}{\code{LLMConfig}: The LLM configuration to use.}
+\item{llmconfig}{\code{LLMConfig}: The LLM configuration to use. Create using one of \link{config_Ollama},
+\link{config_OpenAI}, or \link{config_Claude}.}
 
 \item{system_prompt}{Optional character: The system prompt to use.}
 
@@ -26,8 +27,8 @@ create_agent(
 
 \item{max_tool_rounds}{Integer: Maximum number of tool call rounds per query.}
 
-\item{output_schema}{Optional Schema: The output schema to enforce on the agent's response created
-using \link{schema}.}
+\item{output_schema}{Optional Schema: The output schema to enforce on the agent's response
+created using \link{schema} and \link{field}.}
 
 \item{name}{Optional character: The name of the agent.}
 
