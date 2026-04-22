@@ -3,7 +3,8 @@
 #' Map
 #'
 #' @param x A character vector or list to map over.
-#' @param f An `LLM` or `Agent` object
+#' @param f An `LLM` or `Agent` object.
+#' @param ... Additional arguments passed to `generate()`.
 #'
 #' @details
 #' Use [responses] to retrieve just the content from the assistant messages, or [reasoning] to

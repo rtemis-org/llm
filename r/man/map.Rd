@@ -9,7 +9,9 @@ map(x, f, ...)
 \arguments{
 \item{x}{A character vector or list to map over.}
 
-\item{f}{An \code{LLM} or \code{Agent} object}
+\item{f}{An \code{LLM} or \code{Agent} object.}
+
+\item{...}{Additional arguments passed to \code{generate()}.}
 }
 \value{
 A list of \code{Message} objects (for \code{LLM}) or list of lists of \code{Message} objects
