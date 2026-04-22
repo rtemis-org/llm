@@ -1,5 +1,31 @@
 # --- Generics -------------------------------------------------------------------------------------
 # %% map ----
+#' Map
+#'
+#' @param x A character vector or list to map over.
+#' @param f An `LLM` or `Agent` object
+#'
+#' @details
+#' Use [responses] to retrieve just the content from the assistant messages, or [reasoning] to
+#' retrieve the reasoning traces (if enabled).
+#'
+#' @return A list of `Message` objects (for `LLM`) or list of lists of `Message` objects
+#' (for `Agent`).
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' # Requires running Ollama server and gemma4:e4b model
+#' \dontrun{
+#'   llm <- create_Ollama(
+#'     "gemma4:e4b",
+#'     system_prompt = "Convert color to hex code using the format #FFFFFF"
+#'   )
+#'   x <- c("ocean teal", "california poppy orange", "bougainvillea pink")
+#'   hex <- map(x, llm)
+#'   hex
+#' }
 map <- new_generic("map", c("x", "f"), function(x, f, ...) S7_dispatch())
 
 
