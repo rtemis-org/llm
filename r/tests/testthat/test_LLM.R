@@ -119,7 +119,6 @@ test_that("OllamaConfig rejects invalid think values", {
   )
 }) # /OllamaConfig think invalid
 
-
 # %% generate.Ollama ----
 # Slow test, uncomment to run
 # res <- llm |>
