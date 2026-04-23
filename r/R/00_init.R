@@ -419,3 +419,22 @@ AIThinking <- new_class(
   .check_scalar_character(x, "base_url")
   sub("/+$", "", trimws(x))
 }
+
+# %% available_tools ----
+#' Print built-in tools available for use by agents
+#'
+#' Prints a list of built-in tool names and their descriptions
+#'
+#' @author EDG
+#' @export
+available_tools <- function() {
+  tools <- list(
+    datetime = "Get the current date and time.",
+    wikipedia = "Search Wikipedia for a query and return a summary",
+    semanticscholar = "Search Semantic Scholar for papers matching a query",
+    arxiv = "Search arXiv for papers matching a query",
+    duckduckgoia = "Search DuckDuckGo Instant Answers for a query"
+  )
+  cat(fmt("\n  Available built-in tools for agents:\n\n"))
+  cat(repr_ls(tools, item_format = highlight, print_class = FALSE), "\n")
+}
