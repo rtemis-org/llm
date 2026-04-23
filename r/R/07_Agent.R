@@ -615,7 +615,7 @@ method(generate, Agent) <- function(
         }
         # {/\!} Resolve tool function:
         #   - Built-in: hash-verify via validate_function(), resolve from package namespace.
-        #   - Custom  : use caller-supplied impl; audit the invocation.
+        #   - Custom  : use caller-supplied impl.
         tool_obj <- x@tools[[
           which(sapply(x@tools, function(t) t@function_name) == tool_names[i])[
             1L
@@ -626,11 +626,6 @@ method(generate, Agent) <- function(
           validate_function(tool_names[i])
           fn <- get(tool_names[i], envir = asNamespace("rtemis.llm"))
         } else {
-          report_custom_tool_invocation(
-            agent = x,
-            tool_requested = tool_names[i],
-            logfile = logfile
-          )
           fn <- tool_obj@impl
         }
 
