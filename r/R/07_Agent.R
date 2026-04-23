@@ -86,6 +86,20 @@ Agent <- new_class(
   validator = function(self) {
     check_scalar_logical(self@allow_custom_tools, "allow_custom_tools")
     if (!is.null(self@tools)) {
+      fn_names <- vapply(
+        self@tools,
+        function(t) {
+          if (!S7_inherits(t, Tool)) NA_character_ else t@function_name
+        },
+        character(1)
+      )
+      dups <- unique(fn_names[duplicated(fn_names) & !is.na(fn_names)])
+      if (length(dups) > 0L) {
+        cli::cli_abort(c(
+          "Duplicate tool {.field function_name}: {.val {dups}}.",
+          i = "Each tool on an agent must have a unique {.field function_name} so dispatch is deterministic."
+        ))
+      }
       for (tool in self@tools) {
         # Check that each tool is a Tool object
         if (!S7_inherits(tool, Tool)) {
@@ -624,7 +638,11 @@ method(generate, Agent) <- function(
         is_builtin <- tool_obj@function_name %in% AVAILABLE_TOOLS
         if (is_builtin) {
           validate_function(tool_names[i])
-          fn <- get(tool_names[i], envir = asNamespace("rtemis.llm"))
+          fn <- get(
+            tool_names[i],
+            envir = asNamespace("rtemis.llm"),
+            inherits = FALSE
+          )
         } else {
           fn <- tool_obj@impl
         }
