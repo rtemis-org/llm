@@ -23,7 +23,7 @@
 #' @field output_schema Optional Schema: The output schema to enforce on the agent's response.
 #' @field name Optional character: The name of the agent.
 #' @field allow_custom_tools Logical: If TRUE, the agent may carry tools whose `function_name` is
-#'   not in the package allowlist (`tool_DB`). Such tools must supply their own `impl`. The caller
+#'   not in the package allowlist (`AVAILABLE_TOOLS`). Such tools must supply their own `impl`. The caller
 #'   vouches for the code in any custom tool.
 #' @field logfile Optional character: Path to the agent's security/audit log. If NULL, the package
 #'   default (`KMN_LOG_FILE`, resolved relative to `getwd()`) is used. Can be overridden per call
@@ -91,7 +91,7 @@ Agent <- new_class(
         if (!S7_inherits(tool, Tool)) {
           cli::cli_abort("All elements of 'tools' must be Tool objects.")
         }
-        is_builtin <- tool@function_name %in% tool_DB[["function_name"]]
+        is_builtin <- tool@function_name %in% AVAILABLE_TOOLS
         if (is_builtin) {
           if (!is.null(tool@impl)) {
             cli::cli_abort(c(
@@ -621,7 +621,7 @@ method(generate, Agent) <- function(
             1L
           ]
         ]]
-        is_builtin <- tool_obj@function_name %in% tool_DB[["function_name"]]
+        is_builtin <- tool_obj@function_name %in% AVAILABLE_TOOLS
         if (is_builtin) {
           validate_function(tool_names[i])
           fn <- get(tool_names[i], envir = asNamespace("rtemis.llm"))
