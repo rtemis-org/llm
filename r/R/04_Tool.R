@@ -212,19 +212,17 @@ create_tool <- function(
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'   add_numbers <- function(x, y) x + y
-#'   tool_addition <- create_custom_tool(
-#'     name = "Addition",
-#'     function_name = "add_numbers",
-#'     description = "Performs arithmetic addition of two numbers.",
-#'     parameters = list(
-#'       tool_param("x", "number", "The first number to add", required = TRUE),
-#'       tool_param("y", "number", "The second number to add", required = TRUE)
-#'     ),
-#'     impl = add_numbers
-#'   )
-#' }
+#' add_numbers <- function(x, y) x + y
+#' tool_addition <- create_custom_tool(
+#'   name = "Addition",
+#'   function_name = "add_numbers",
+#'   description = "Performs arithmetic addition of two numbers.",
+#'   parameters = list(
+#'     tool_param("x", "number", "The first number to add", required = TRUE),
+#'     tool_param("y", "number", "The second number to add", required = TRUE)
+#'   ),
+#'   impl = add_numbers
+#' )
 create_custom_tool <- function(
   name,
   function_name,

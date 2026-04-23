@@ -30,19 +30,17 @@ code. An agent will refuse to carry a custom tool unless it is constructed
 with \code{allow_custom_tools = TRUE}.
 }
 \examples{
-\dontrun{
-  add_numbers <- function(x, y) x + y
-  tool_addition <- create_custom_tool(
-    name = "Addition",
-    function_name = "add_numbers",
-    description = "Performs arithmetic addition of two numbers.",
-    parameters = list(
-      tool_param("x", "number", "The first number to add", required = TRUE),
-      tool_param("y", "number", "The second number to add", required = TRUE)
-    ),
-    impl = add_numbers
-  )
-}
+add_numbers <- function(x, y) x + y
+tool_addition <- create_custom_tool(
+  name = "Addition",
+  function_name = "add_numbers",
+  description = "Performs arithmetic addition of two numbers.",
+  parameters = list(
+    tool_param("x", "number", "The first number to add", required = TRUE),
+    tool_param("y", "number", "The second number to add", required = TRUE)
+  ),
+  impl = add_numbers
+)
 }
 \author{
 EDG
