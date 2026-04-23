@@ -1,4 +1,9 @@
 # --- Generics -------------------------------------------------------------------------------------
+
+# %% get_model_name ----
+get_model_name <- new_generic("get_model_name", "x")
+
+
 # %% map ----
 #' Map
 #'
