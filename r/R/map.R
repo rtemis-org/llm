@@ -157,7 +157,13 @@ reasoning <- function(x) {
 # Internal: shared iteration body for map methods. Uses cli progress bar and forwards
 # backend-specific per-call args via `...` to `generate()`.
 .map_iter <- function(x, f, verbosity, ...) {
-  lapply(
+  msg(
+    repr_bracket(get_model_name(f)),
+    "working...",
+    caller_id = 2L,
+    verbosity = verbosity
+  )
+  out <- lapply(
     cli::cli_progress_along(
       x,
       "Processing",
@@ -167,6 +173,13 @@ reasoning <- function(x) {
       generate(f, x[[i]], verbosity = verbosity - 1L, ...)
     }
   )
+  msg(
+    repr_bracket(get_model_name(f)),
+    "done.",
+    caller_id = 2L,
+    verbosity = verbosity
+  )
+  out
 }
 
 
