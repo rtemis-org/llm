@@ -628,7 +628,8 @@ method(generate, Agent) <- function(
         } else {
           report_custom_tool_invocation(
             agent = x,
-            tool_requested = tool_names[i]
+            tool_requested = tool_names[i],
+            logfile = logfile
           )
           fn <- tool_obj@impl
         }
