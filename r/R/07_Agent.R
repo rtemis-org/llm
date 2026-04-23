@@ -504,7 +504,7 @@ method(generate, Agent) <- function(
       metadata = res[["metadata"]]
     ),
     echo = echo,
-    verbosity = verbosity
+    verbosity = verbosity - 1L
   )
 
   n_completed_tool_rounds <- 0L
@@ -587,7 +587,7 @@ method(generate, Agent) <- function(
             tool_response = tool_responses[[i]]
           ),
           echo = echo,
-          verbosity = verbosity
+          verbosity = verbosity - 1L
         )
       }
 
@@ -642,7 +642,7 @@ method(generate, Agent) <- function(
             content = tool_response_prompt
           ),
           echo = echo,
-          verbosity = verbosity
+          verbosity = verbosity - 1L
         )
       }
 
@@ -685,7 +685,7 @@ method(generate, Agent) <- function(
           metadata = res[["metadata"]]
         ),
         echo = echo,
-        verbosity = verbosity
+        verbosity = verbosity - 1L
       )
     } else {
       # No tool calls, break

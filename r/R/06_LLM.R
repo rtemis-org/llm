@@ -305,7 +305,7 @@ method(generate, Ollama) <- function(
   stop = NULL,
   think = NULL,
   output_schema = NULL,
-  verbosity = 0L,
+  verbosity = 1L,
   ...
 ) {
   # Check input
@@ -391,7 +391,7 @@ method(generate, OpenAI) <- function(
   stop = NULL,
   think = NULL,
   output_schema = NULL,
-  verbosity = 0L,
+  verbosity = 1L,
   ...
 ) {
   check_inherits(prompt, "character")
@@ -472,7 +472,7 @@ method(generate, Claude) <- function(
   stop = NULL,
   think = NULL,
   output_schema = NULL,
-  verbosity = 0L,
+  verbosity = 1L,
   ...
 ) {
   check_inherits(prompt, "character")
