@@ -172,6 +172,12 @@ method(print, Agent) <- function(x, output_type = NULL, ...) {
 }
 
 
+# %% get_model_name.Agent ----
+method(get_model_name, Agent) <- function(x) {
+  x@llmconfig@model_name
+}
+
+
 # %% create_llm_message.Agent ----
 #' create_llm_message method for `Agent`
 #'

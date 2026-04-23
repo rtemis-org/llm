@@ -50,6 +50,12 @@ method(print, LLM) <- function(x, output_type = NULL, ...) {
 } # /print.LLM
 
 
+# %% get_model_name.LLM ----
+method(get_model_name, LLM) <- function(x) {
+  x@config@model_name
+}
+
+
 # %% Ollama ----
 #' @title Ollama Class
 #'
