@@ -62,6 +62,8 @@ get_keychain_secret <- function(
 #' @param agent `Agent`: The agent that triggered the incident.
 #' @param issue Character: Description of the security issue.
 #' @param tool_requested Character: The unauthorized tool that was requested.
+#' @param logfile Character: Path to the log file to append the incident to.
+#'   Defaults to `KMN_LOG_FILE`.
 #'
 #' @return NULL. Called for side effect of logging.
 #'
