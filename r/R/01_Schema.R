@@ -64,6 +64,7 @@ method(repr, Field) <- function(x, pad = 0L, output_type = NULL) {
       x@name
     ),
     pad = pad,
+    print_class = FALSE,
     output_type = output_type
   )
 }
@@ -168,7 +169,7 @@ method(repr, Schema) <- function(x, pad = 0L, output_type = NULL) {
     ),
     x@name
   )
-  repr_ls(out, pad = pad, output_type = output_type)
+  repr_ls(out, pad = pad, print_class = FALSE, output_type = output_type)
 }
 
 

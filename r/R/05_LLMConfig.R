@@ -464,8 +464,8 @@ method(repr, LLMConfig) <- function(x, pad = 0L, output_type = NULL) {
       as_list(x),
       pad = pad,
       print_class = FALSE,
-      output_type = output_type,
-      limit = 20L
+      limit = 20L,
+      output_type = output_type
     )
   )
 } # /repr.LLMConfig
