@@ -6,8 +6,16 @@
 \usage{
 available_tools()
 }
+\value{
+Invisibly, a named list of \code{Tool} objects keyed by their R handle.
+}
 \description{
-Prints a list of built-in tool names and their descriptions
+Prints the R handle (\verb{tool_*}), the \code{function_name} the model sees, and the
+description of every built-in \code{Tool} exported by the package. Derived at
+call time from the namespace — no hardcoded list.
+}
+\examples{
+available_tools()
 }
 \author{
 EDG
