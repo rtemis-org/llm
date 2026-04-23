@@ -195,8 +195,8 @@ create_tool <- function(
 #' Define a user-supplied tool for an agent. Unlike [create_tool], the caller
 #' provides the R function to invoke (`impl`). Custom tools are outside the
 #' package's allowlist-and-hash enforcement, so the caller vouches for the
-#' code. An agent will refuse to carry a custom tool unless it is constructed
-#' with `allow_custom_tools = TRUE`.
+#' code. An agent will refuse to carry a custom tool unless the agent is
+#' created with `allow_custom_tools = TRUE` (see [create_agent]).
 #'
 #' @param name Character: The name of the tool, e.g. "Addition".
 #' @param function_name Character: The name to expose to the model, e.g. "add_numbers".
