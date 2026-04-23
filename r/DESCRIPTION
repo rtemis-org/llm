@@ -1,7 +1,7 @@
 Package: rtemis.llm
 Title: LLMs and Agentic AI
-Version: 0.7.2
-Date: 2026-04-22
+Version: 0.8.0
+Date: 2026-04-23
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"), 
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Provides functionality to interface with Large Language Models. Supports reasoning, 
@@ -17,10 +17,10 @@ RoxygenNote: 7.3.3
 Imports:
     rtemis.core,
     S7,
-    data.table
+    data.table,
+    digest
 Suggests:
     cli,
-    digest,
     httr2,
     jsonlite,
     keyring,
