@@ -59,7 +59,8 @@ get_keychain_secret <- function(
 report_agent_unauthorized_tool <- function(
   agent,
   issue,
-  tool_requested
+  tool_requested,
+  logfile = KMN_LOG_FILE
 ) {
   log_entry <- list(
     timestamp = Sys.time(),
@@ -68,7 +69,7 @@ report_agent_unauthorized_tool <- function(
     tool_requested = tool_requested
   )
   log_line <- jsonlite::toJSON(log_entry, auto_unbox = TRUE)
-  cat(log_line, file = KMN_LOG_FILE, append = TRUE, sep = "\n")
+  cat(log_line, file = logfile, append = TRUE, sep = "\n")
   invisible(NULL)
 }
 
