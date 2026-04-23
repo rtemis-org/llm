@@ -416,7 +416,7 @@ method(generate, Agent) <- function(
   output_schema = NULL,
   commit_to_memory = TRUE,
   use_tools = TRUE,
-  echo = TRUE,
+  echo = FALSE,
   verbosity = 1L,
   ...
 ) {
@@ -438,7 +438,7 @@ method(generate, Agent) <- function(
         content = x@system_prompt
       ),
       echo = echo,
-      verbosity = verbosity
+      verbosity = verbosity - 1L
     )
   }
   running_state <- if (update_state) x@state else .tempState
@@ -450,7 +450,7 @@ method(generate, Agent) <- function(
       image_path = image_path
     ),
     echo = echo,
-    verbosity = verbosity
+    verbosity = verbosity - 1L
   )
 
   # Per-call overrides forwarded to every build_chat_request_body call

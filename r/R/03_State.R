@@ -74,8 +74,8 @@ InProcessAgentMemory <- new_class(
 method(append_message, InProcessAgentMemory) <- function(
   x,
   message,
-  echo = TRUE,
-  verbosity = 1L
+  echo = FALSE,
+  verbosity = 0L
 ) {
   # Check message inherits from Message
   S7::check_is_S7(message, Message)
