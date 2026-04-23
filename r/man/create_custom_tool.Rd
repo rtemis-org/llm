@@ -26,8 +26,8 @@ Tool object with \code{impl} populated.
 Define a user-supplied tool for an agent. Unlike \link{create_tool}, the caller
 provides the R function to invoke (\code{impl}). Custom tools are outside the
 package's allowlist-and-hash enforcement, so the caller vouches for the
-code. An agent will refuse to carry a custom tool unless it is constructed
-with \code{allow_custom_tools = TRUE}.
+code. An agent will refuse to carry a custom tool unless the agent is
+created with \code{allow_custom_tools = TRUE} (see \link{create_agent}).
 }
 \examples{
 add_numbers <- function(x, y) x + y
