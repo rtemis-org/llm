@@ -92,6 +92,9 @@ tool_param <- function(
 #' @field function_name Character: The name of the function to call.
 #' @field description Character: The description of the tool.
 #' @field parameters List of ToolParameter: The parameters of the tool.
+#' @field impl Optional function: The user-supplied implementation for custom
+#'   (non-allowlisted) tools. NULL for built-in tools, which are resolved from
+#'   the `rtemis.llm` namespace and hash-verified at dispatch.
 #'
 #' @author EDG
 #' @noRd
@@ -101,7 +104,8 @@ Tool <- new_class(
     name = class_character,
     function_name = class_character,
     description = class_character,
-    parameters = class_list
+    parameters = class_list,
+    impl = optional(class_function)
   ),
   validator = function(self) {
     for (param in self@parameters) {
@@ -179,7 +183,64 @@ create_tool <- function(
     name = name,
     function_name = function_name,
     description = description,
-    parameters = parameters
+    parameters = parameters,
+    impl = NULL
+  )
+}
+
+
+# %% create_custom_tool ----
+#' create_custom_tool
+#'
+#' Define a user-supplied tool for an agent. Unlike [create_tool], the caller
+#' provides the R function to invoke (`impl`). Custom tools are outside the
+#' package's allowlist-and-hash enforcement, so the caller vouches for the
+#' code. An agent will refuse to carry a custom tool unless the agent is
+#' created with `allow_custom_tools = TRUE` (see [create_agent]).
+#'
+#' @param name Character: The name of the tool, e.g. "Addition".
+#' @param function_name Character: The name to expose to the model, e.g. "add_numbers".
+#' @param description Character: The description of the tool.
+#' @param parameters List of `ToolParameter`: The parameters of the tool, each defined using
+#'   [tool_param].
+#' @param impl Function: The R function to invoke when the tool is called. Its formal argument
+#'   names must match the `name` fields of `parameters`.
+#'
+#' @return Tool object with `impl` populated.
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' add_numbers <- function(x, y) x + y
+#' tool_addition <- create_custom_tool(
+#'   name = "Addition",
+#'   function_name = "add_numbers",
+#'   description = "Performs arithmetic addition of two numbers.",
+#'   parameters = list(
+#'     tool_param("x", "number", "The first number to add", required = TRUE),
+#'     tool_param("y", "number", "The second number to add", required = TRUE)
+#'   ),
+#'   impl = add_numbers
+#' )
+create_custom_tool <- function(
+  name,
+  function_name,
+  description,
+  parameters = list(),
+  impl
+) {
+  if (missing(impl) || !is.function(impl)) {
+    cli::cli_abort(
+      "{.arg impl} must be a function. Use {.fn create_tool} for built-in tools."
+    )
+  }
+  Tool(
+    name = name,
+    function_name = function_name,
+    description = description,
+    parameters = parameters,
+    impl = impl
   )
 }
 

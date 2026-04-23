@@ -419,3 +419,50 @@ AIThinking <- new_class(
   .check_scalar_character(x, "base_url")
   sub("/+$", "", trimws(x))
 }
+
+# %% available_tools ----
+#' Print built-in tools available for use by agents
+#'
+#' Prints the R handle (`tool_*`), the `function_name` the model sees, and the
+#' description of every built-in `Tool` exported by the package. Derived at
+#' call time from the namespace — no hardcoded list.
+#'
+#' @return Invisibly, a named list of `Tool` objects keyed by their R handle.
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' available_tools()
+available_tools <- function() {
+  ns <- asNamespace("rtemis.llm")
+  exports <- getNamespaceExports(ns)
+  is_tool_export <- vapply(
+    exports,
+    function(nm) {
+      obj <- get(nm, envir = ns, inherits = FALSE)
+      S7_inherits(obj, Tool)
+    },
+    logical(1)
+  )
+  tool_handles <- sort(exports[is_tool_export])
+  tools <- stats::setNames(
+    lapply(tool_handles, get, envir = ns, inherits = FALSE),
+    tool_handles
+  )
+  cat(fmt("\n  Built-in tools:\n\n"))
+  for (handle in tool_handles) {
+    tool <- tools[[handle]]
+    cat(
+      "  - ",
+      highlight(handle),
+      " (function_name: ",
+      tool@function_name,
+      ")\n      ",
+      tool@description,
+      "\n\n",
+      sep = ""
+    )
+  }
+  invisible(tools)
+}

@@ -17,6 +17,8 @@ rtemis.llm_version <- packageVersion("rtemis.llm")
 .onLoad <- function(libname, pkgname) {
   # S7
   S7::methods_register()
+  # Capture trusted hashes of built-in tool functions at load time
+  .warm_tool_hash_cache()
 } # /onLoad
 
 .onAttach <- function(libname, pkgname) {

@@ -12,6 +12,8 @@ create_agent(
   max_tool_rounds = 3L,
   output_schema = NULL,
   name = NULL,
+  allow_custom_tools = FALSE,
+  logfile = NULL,
   verbosity = 1L
 )
 }
@@ -31,6 +33,16 @@ create_agent(
 created using \link{schema} and \link{field}.}
 
 \item{name}{Optional character: The name of the agent.}
+
+\item{allow_custom_tools}{Logical: If TRUE, allow the agent to carry tools whose
+\code{function_name} is not in the package allowlist. Such tools must be built via
+\link{create_custom_tool} and supply their own function body. The caller vouches for that
+code: built-in package guarantees (allowlist + hash verification) do not apply to it.
+Defaults to FALSE.}
+
+\item{logfile}{Optional character: Path to the agent's security/audit log. If NULL, the
+package default (\code{"rtemis.llm_security_log.jsonl"} relative to \code{getwd()}) is used. Can be
+overridden per call via the \code{logfile} argument to \link{generate}.}
 
 \item{verbosity}{Integer: Verbosity level.}
 }

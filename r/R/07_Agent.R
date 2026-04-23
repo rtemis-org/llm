@@ -22,6 +22,12 @@
 #' @field max_tool_rounds Integer: Maximum number of tool call rounds per query.
 #' @field output_schema Optional Schema: The output schema to enforce on the agent's response.
 #' @field name Optional character: The name of the agent.
+#' @field allow_custom_tools Logical: If TRUE, the agent may carry tools whose `function_name` is
+#'   not in the package allowlist (`AVAILABLE_TOOLS`). Such tools must supply their own `impl`. The caller
+#'   vouches for the code in any custom tool.
+#' @field logfile Optional character: Path to the agent's security/audit log. If NULL, the package
+#'   default (`KMN_LOG_FILE`, resolved relative to `getwd()`) is used. Can be overridden per call
+#'   on [generate].
 #'
 #' @author EDG
 #' @noRd
@@ -35,7 +41,9 @@ Agent <- new_class(
     tools = optional(S7::class_list),
     max_tool_rounds = class_integer,
     output_schema = optional(Schema),
-    name = optional(S7::class_character)
+    name = optional(S7::class_character),
+    allow_custom_tools = class_logical,
+    logfile = optional(S7::class_character)
   ),
   constructor = function(
     llmconfig,
@@ -46,6 +54,8 @@ Agent <- new_class(
     max_tool_rounds = 3L,
     output_schema = NULL,
     name = NULL,
+    allow_custom_tools = FALSE,
+    logfile = NULL,
     verbosity = 1L
   ) {
     # Initialize messages with system prompt within state environment
@@ -68,21 +78,54 @@ Agent <- new_class(
       tools = tools,
       max_tool_rounds = max_tool_rounds,
       output_schema = output_schema,
-      name = name
+      name = name,
+      allow_custom_tools = allow_custom_tools,
+      logfile = logfile
     )
   },
   validator = function(self) {
+    check_scalar_logical(self@allow_custom_tools, "allow_custom_tools")
     if (!is.null(self@tools)) {
+      fn_names <- vapply(
+        self@tools,
+        function(t) {
+          if (!S7_inherits(t, Tool)) NA_character_ else t@function_name
+        },
+        character(1)
+      )
+      dups <- unique(fn_names[duplicated(fn_names) & !is.na(fn_names)])
+      if (length(dups) > 0L) {
+        cli::cli_abort(c(
+          "Duplicate tool {.field function_name}: {.val {dups}}.",
+          i = "Each tool on an agent must have a unique {.field function_name} so dispatch is deterministic."
+        ))
+      }
       for (tool in self@tools) {
         # Check that each tool is a Tool object
         if (!S7_inherits(tool, Tool)) {
           cli::cli_abort("All elements of 'tools' must be Tool objects.")
         }
-        # Check that tool is part of allowed tools in tool_DB
-        if (!tool@function_name %in% tool_DB[["function_name"]]) {
-          cli::cli_abort(
-            "Tool '{tool@function_name}' is not part of the allowed tool set."
-          )
+        is_builtin <- tool@function_name %in% AVAILABLE_TOOLS
+        if (is_builtin) {
+          if (!is.null(tool@impl)) {
+            cli::cli_abort(c(
+              "Built-in tool {.val {tool@function_name}} must not supply {.arg impl}.",
+              i = "Built-in tools are resolved from the package namespace and hash-verified."
+            ))
+          }
+        } else {
+          if (!self@allow_custom_tools) {
+            cli::cli_abort(c(
+              "Tool {.val {tool@function_name}} is not part of the allowed tool set.",
+              i = "To use custom tools, pass {.code allow_custom_tools = TRUE} to {.fn create_agent}."
+            ))
+          }
+          if (is.null(tool@impl)) {
+            cli::cli_abort(c(
+              "Custom tool {.val {tool@function_name}} must supply {.arg impl}.",
+              i = "Use {.fn create_custom_tool} to construct it."
+            ))
+          }
         }
       }
     }
@@ -135,9 +178,11 @@ method(repr, Agent) <- function(x, pad = 0L, output_type = NULL) {
           sapply(
             x@tools,
             function(tool) {
+              is_custom <- !is.null(tool@impl)
               paste0(
                 "               - ",
                 fmt(tool@function_name, bold = TRUE, output_type = output_type),
+                if (is_custom) " (custom)" else "",
                 ": ",
                 tool@description
               )
@@ -336,6 +381,14 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response
 #'   created using [schema] and [field].
 #' @param name Optional character: The name of the agent.
+#' @param allow_custom_tools Logical: If TRUE, allow the agent to carry tools whose
+#'   `function_name` is not in the package allowlist. Such tools must be built via
+#'   [create_custom_tool] and supply their own function body. The caller vouches for that
+#'   code: built-in package guarantees (allowlist + hash verification) do not apply to it.
+#'   Defaults to FALSE.
+#' @param logfile Optional character: Path to the agent's security/audit log. If NULL, the
+#'   package default (`"rtemis.llm_security_log.jsonl"` relative to `getwd()`) is used. Can be
+#'   overridden per call via the `logfile` argument to [generate].
 #' @param verbosity Integer: Verbosity level.
 #'
 #' @return `Agent` object
@@ -363,17 +416,28 @@ create_agent <- function(
   max_tool_rounds = 3L,
   output_schema = NULL,
   name = NULL,
+  allow_custom_tools = FALSE,
+  logfile = NULL,
   verbosity = 1L
 ) {
-  Agent(
+  agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
     use_memory = use_memory,
     tools = tools,
     max_tool_rounds = max_tool_rounds,
     output_schema = output_schema,
-    name = name
+    name = name,
+    allow_custom_tools = allow_custom_tools,
+    logfile = logfile
   )
+  if (allow_custom_tools && verbosity > 0L) {
+    cli::cli_inform(c(
+      "!" = "Agent created with {.code allow_custom_tools = TRUE}.",
+      i = "Custom tools bypass the package's allowlist and hash verification."
+    ))
+  }
+  agent
 }
 
 
@@ -396,6 +460,8 @@ create_agent <- function(
 #' @param commit_to_memory Logical: Whether to commit this interaction to the agent's memory.
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
+#' @param logfile Optional character: Per-call override for the audit/security log path. If NULL,
+#'   falls back to the agent's `logfile` field, then to the package default.
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Backend-specific per-call options forwarded to the request builder
 #' (e.g. `top_k`, `seed`). See [generate].
@@ -423,6 +489,7 @@ method(generate, Agent) <- function(
   commit_to_memory = TRUE,
   use_tools = TRUE,
   echo = FALSE,
+  logfile = NULL,
   verbosity = 1L,
   ...
 ) {
@@ -430,6 +497,8 @@ method(generate, Agent) <- function(
   if (is.null(output_schema)) {
     output_schema <- x@output_schema
   }
+  # Resolve logfile: per-call arg > agent field > package default
+  logfile <- logfile %||% x@logfile %||% KMN_LOG_FILE
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
@@ -550,15 +619,33 @@ method(generate, Agent) <- function(
           report_agent_unauthorized_tool(
             agent = x,
             issue = "Unauthorized tool request",
-            tool_requested = tool_names[i]
+            tool_requested = tool_names[i],
+            logfile = logfile
           )
           cli::cli_abort(c(
             "Agent requested tool '{.val {tool_names[i]}}' which is not in the agent's tool list.",
             i = "This incident has been reported."
           ))
         }
-        # {/\!} Validate tool function: Throws error if hash does not match
-        validate_function(tool_names[i])
+        # {/\!} Resolve tool function:
+        #   - Built-in: hash-verify via validate_function(), resolve from package namespace.
+        #   - Custom  : use caller-supplied impl.
+        tool_obj <- x@tools[[
+          which(sapply(x@tools, function(t) t@function_name) == tool_names[i])[
+            1L
+          ]
+        ]]
+        is_builtin <- tool_obj@function_name %in% AVAILABLE_TOOLS
+        if (is_builtin) {
+          validate_function(tool_names[i])
+          fn <- get(
+            tool_names[i],
+            envir = asNamespace("rtemis.llm"),
+            inherits = FALSE
+          )
+        } else {
+          fn <- tool_obj@impl
+        }
 
         # {>_} Call tool
         msg("Invoking tool:", highlight(tool_names[i]), verbosity = verbosity)
@@ -570,7 +657,6 @@ method(generate, Agent) <- function(
             i = "Check the tool schema and model tool-call response."
           ))
         }
-        fn <- get(tool_names[i], envir = asNamespace("rtemis.llm"))
         # Force output_type = "json" where supported
         if ("output_type" %in% names(formals(fn))) {
           args[["output_type"]] <- "json"
