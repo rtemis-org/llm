@@ -22,7 +22,8 @@ Claude endpoints.
 Useful links:
 \itemize{
   \item \url{https://www.rtemis.org}
-  \item \url{https://docs.rtemis.org/r/llm-api/}
+  \item \url{https://docs.rtemis.org/r/llm}
+  \item \url{https://docs.rtemis.org/r/llm-api}
 }
 
 }
