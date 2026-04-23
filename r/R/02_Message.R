@@ -315,7 +315,7 @@ method(repr, LLMMessage) <- function(x, output_type = NULL) {
         ),
         " ",
         x@reasoning,
-        "\n"
+        "\n\n"
       )
     },
     if (!is.null(x@content) && nchar(trimws(x@content)) > 0L) {
