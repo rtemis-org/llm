@@ -1,28 +1,27 @@
 Package: rtemis.llm
-Title: LLMs and Agentic AI
+Title: Large Language Models and Agentic AI
 Version: 0.8.0
 Date: 2026-04-23
-Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"), 
+Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
-Description: Provides functionality to interface with Large Language Models. Supports reasoning, 
-    structured output, memory management, and secure tool use. Allows creation of custom LLM-based 
-    workflows and agentic AI systems using a functional user-facing frontend and an S7 backend. 
-    Includes map() llmapply() for efficient batch inference. Supports 'Ollama', 'OpenAI'-compatible, 
-    and 'Anthropic'-compatible endpoints.
+Description: Unified interface for creating LLM and Agent objects, generating responses and 
+    performing batch inference based on a type-checked and validated 'S7' backend. Features 
+    reasoning, structured output, memory management, and tool use. Supports 'Ollama', 
+    'OpenAI'-compatible, and 'Anthropic'-compatible endpoints.
 License: GPL (>= 3)
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
-    rtemis.core,
-    S7,
-    data.table,
-    digest
-Suggests:
     cli,
+    data.table,
+    digest,
     httr2,
     jsonlite,
+    rtemis.core,
+    S7
+Suggests:
     keyring,
     testthat (>= 3.0.0),
     xml2
