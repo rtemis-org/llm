@@ -7,7 +7,7 @@
 agentapply(
   x,
   model_or_agent,
-  backend = c("ollama", "openai", "claude"),
+  backend = c("ollama", "openai", "anthropic"),
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   tools = NULL,
   use_memory = FALSE,
@@ -24,7 +24,7 @@ agentapply(
 \item{model_or_agent}{Character or Agent: Either the name of a model (a string) or a pre-built
 \code{Agent} object from \link{create_agent}.}
 
-\item{backend}{Character \{"ollama", "openai", "claude"\}: Backend to use when
+\item{backend}{Character \{"ollama", "openai", "anthropic"\}: Backend to use when
 \code{model_or_agent} is a string. Ignored when \code{model_or_agent} is an \code{Agent} object.}
 
 \item{system_prompt}{Character: System prompt for the on-the-fly \code{Agent}.}

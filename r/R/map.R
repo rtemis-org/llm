@@ -236,8 +236,8 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #' @param x Character or list: Values to iterate over. Each element forms the user prompt for one
 #'   call to the LLM.
 #' @param model_or_llm Character or LLM: Either the name of a model (a string) or a pre-built
-#'   `LLM` object (for example from [create_Ollama], [create_OpenAI], or [create_Claude]).
-#' @param backend Character \{"ollama", "openai", "claude"\}: Backend to use when `model_or_llm`
+#'   `LLM` object (for example from [create_Ollama], [create_OpenAI], or [create_Anthropic]).
+#' @param backend Character \{"ollama", "openai", "anthropic"\}: Backend to use when `model_or_llm`
 #'   is a string. Ignored when `model_or_llm` is an `LLM` object.
 #' @param system_prompt Character: System prompt to use when building the `LLM` from a model name.
 #'   Ignored when `model_or_llm` is an `LLM` object.
@@ -270,7 +270,7 @@ method(map, list(class_list, LLM | Agent)) <- function(
 llmapply <- function(
   x,
   model_or_llm,
-  backend = c("ollama", "openai", "claude"),
+  backend = c("ollama", "openai", "anthropic"),
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   output_schema = NULL,
   verbosity = 1L,
@@ -309,7 +309,7 @@ llmapply <- function(
         system_prompt = system_prompt,
         output_schema = output_schema
       ),
-      claude = create_Claude(
+      anthropic = create_Anthropic(
         model_name = model_or_llm,
         system_prompt = system_prompt,
         output_schema = output_schema
@@ -343,7 +343,7 @@ llmapply <- function(
 #' @param x Character or list: Values to iterate over.
 #' @param model_or_agent Character or Agent: Either the name of a model (a string) or a pre-built
 #'   `Agent` object from [create_agent].
-#' @param backend Character \{"ollama", "openai", "claude"\}: Backend to use when
+#' @param backend Character \{"ollama", "openai", "anthropic"\}: Backend to use when
 #'   `model_or_agent` is a string. Ignored when `model_or_agent` is an `Agent` object.
 #' @param system_prompt Character: System prompt for the on-the-fly `Agent`.
 #' @param tools Optional list of Tool objects: Tools available to the on-the-fly `Agent`.
@@ -375,7 +375,7 @@ llmapply <- function(
 agentapply <- function(
   x,
   model_or_agent,
-  backend = c("ollama", "openai", "claude"),
+  backend = c("ollama", "openai", "anthropic"),
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   tools = NULL,
   use_memory = FALSE,
@@ -416,7 +416,7 @@ agentapply <- function(
       backend,
       ollama = config_Ollama(model_name = model_or_agent),
       openai = config_OpenAI(model_name = model_or_agent),
-      claude = config_Claude(model_name = model_or_agent)
+      anthropic = config_Anthropic(model_name = model_or_agent)
     )
     agent <- create_agent(
       llmconfig = llmconfig,

@@ -7,7 +7,7 @@
 llmapply(
   x,
   model_or_llm,
-  backend = c("ollama", "openai", "claude"),
+  backend = c("ollama", "openai", "anthropic"),
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   output_schema = NULL,
   verbosity = 1L,
@@ -20,9 +20,9 @@ llmapply(
 call to the LLM.}
 
 \item{model_or_llm}{Character or LLM: Either the name of a model (a string) or a pre-built
-\code{LLM} object (for example from \link{create_Ollama}, \link{create_OpenAI}, or \link{create_Claude}).}
+\code{LLM} object (for example from \link{create_Ollama}, \link{create_OpenAI}, or \link{create_Anthropic}).}
 
-\item{backend}{Character \{"ollama", "openai", "claude"\}: Backend to use when \code{model_or_llm}
+\item{backend}{Character \{"ollama", "openai", "anthropic"\}: Backend to use when \code{model_or_llm}
 is a string. Ignored when \code{model_or_llm} is an \code{LLM} object.}
 
 \item{system_prompt}{Character: System prompt to use when building the \code{LLM} from a model name.

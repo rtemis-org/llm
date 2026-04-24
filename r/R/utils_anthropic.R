@@ -3,15 +3,15 @@
 # Tool use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use
 # Extended thinking: https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
 
-CLAUDE_STRUCTURED_OUTPUT_TOOL_NAME <- "respond_with_structured_output"
-CLAUDE_STRUCTURED_OUTPUT_TOOL_DESCRIPTION <-
+ANTHROPIC_STRUCTURED_OUTPUT_TOOL_NAME <- "respond_with_structured_output"
+ANTHROPIC_STRUCTURED_OUTPUT_TOOL_DESCRIPTION <-
   "Respond with the structured output requested by the caller."
 
 
-# %% resolve_claude_api_key() ----
-#' Resolve Claude API Key
+# %% resolve_anthropic_api_key() ----
+#' Resolve Anthropic API Key
 #'
-#' @param config ClaudeConfig: Configuration object.
+#' @param config AnthropicConfig: Configuration object.
 #' @param error_if_missing Logical: Whether to abort if no key is found.
 #'
 #' @return Optional character.
@@ -19,7 +19,7 @@ CLAUDE_STRUCTURED_OUTPUT_TOOL_DESCRIPTION <-
 #' @author EDG
 #' @keywords internal
 #' @noRd
-resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
+resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
   api_key <- config@api_key
   if (is.null(api_key) && nzchar(config@api_key_env)) {
     env_key <- Sys.getenv(config@api_key_env, unset = "")
@@ -41,19 +41,19 @@ resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
 }
 
 
-# %% .add_claude_headers() ----
-#' Add Claude Headers
+# %% .add_anthropic_headers() ----
+#' Add Anthropic Headers
 #'
 #' @param req httr2_request: Request object.
-#' @param config ClaudeConfig: Configuration object.
+#' @param config AnthropicConfig: Configuration object.
 #'
 #' @return httr2_request.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.add_claude_headers <- function(req, config) {
-  api_key <- resolve_claude_api_key(config)
+.add_anthropic_headers <- function(req, config) {
+  api_key <- resolve_anthropic_api_key(config)
   req <- httr2::req_headers(
     req,
     `x-api-key` = api_key,
@@ -72,8 +72,8 @@ resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
 }
 
 
-# %% .check_claude_response() ----
-#' Check Claude HTTP Response
+# %% .check_anthropic_response() ----
+#' Check Anthropic HTTP Response
 #'
 #' @param resp httr2_response: Response object.
 #'
@@ -82,7 +82,7 @@ resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.check_claude_response <- function(resp) {
+.check_anthropic_response <- function(resp) {
   if (!httr2::resp_is_error(resp)) {
     return(invisible(NULL))
   }
@@ -105,8 +105,8 @@ resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
 }
 
 
-# %% clean_claude_schema() ----
-#' Clean Claude Tool Input Schema
+# %% clean_anthropic_schema() ----
+#' Clean Anthropic Tool Input Schema
 #'
 #' @param x List: JSON schema.
 #'
@@ -115,7 +115,7 @@ resolve_claude_api_key <- function(config, error_if_missing = TRUE) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-clean_claude_schema <- function(x) {
+clean_anthropic_schema <- function(x) {
   if (!is.list(x)) {
     cli::cli_abort("{.var output_schema} must be a JSON Schema list.")
   }
@@ -127,7 +127,7 @@ clean_claude_schema <- function(x) {
         i = "Use {.fun schema} and {.fun field} to create an output schema."
       ))
     }
-    x[["properties"]] <- lapply(x[["properties"]], clean_claude_schema)
+    x[["properties"]] <- lapply(x[["properties"]], clean_anthropic_schema)
     required <- if (is.null(x[["required"]])) {
       character()
     } else {
@@ -135,14 +135,14 @@ clean_claude_schema <- function(x) {
     }
     x[["required"]] <- I(required)
   } else if (!is.null(x[["items"]]) && is.list(x[["items"]])) {
-    x[["items"]] <- clean_claude_schema(x[["items"]])
+    x[["items"]] <- clean_anthropic_schema(x[["items"]])
   }
   x
 }
 
 
-# %% .tool_to_claude_schema() ----
-#' Convert Tool To Claude Tool Schema
+# %% .tool_to_anthropic_schema() ----
+#' Convert Tool To Anthropic Tool Schema
 #'
 #' @param tool Tool: Tool object.
 #'
@@ -151,9 +151,9 @@ clean_claude_schema <- function(x) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.tool_to_claude_schema <- function(tool) {
+.tool_to_anthropic_schema <- function(tool) {
   if (!S7_inherits(tool, Tool)) {
-    cli::cli_abort(".tool_to_claude_schema() expects a {.cls Tool} object.")
+    cli::cli_abort(".tool_to_anthropic_schema() expects a {.cls Tool} object.")
   }
   required <- sapply(
     Filter(function(p) p@required, tool@parameters),
@@ -185,8 +185,8 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_structured_output_tool() ----
-#' Build Claude Structured-Output Tool Spec
+# %% .anthropic_structured_output_tool() ----
+#' Build Anthropic Structured-Output Tool Spec
 #'
 #' @param output_schema List: JSON schema for the forced tool input.
 #'
@@ -195,26 +195,26 @@ clean_claude_schema <- function(x) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_structured_output_tool <- function(output_schema) {
+.anthropic_structured_output_tool <- function(output_schema) {
   list(
-    name = CLAUDE_STRUCTURED_OUTPUT_TOOL_NAME,
-    description = CLAUDE_STRUCTURED_OUTPUT_TOOL_DESCRIPTION,
-    input_schema = clean_claude_schema(output_schema)
+    name = ANTHROPIC_STRUCTURED_OUTPUT_TOOL_NAME,
+    description = ANTHROPIC_STRUCTURED_OUTPUT_TOOL_DESCRIPTION,
+    input_schema = clean_anthropic_schema(output_schema)
   )
 }
 
 
-# %% .claude_tool_use_block_to_call() ----
-#' Convert Claude tool_use Block To R-Level Tool Call
+# %% .anthropic_tool_use_block_to_call() ----
+#' Convert Anthropic tool_use Block To R-Level Tool Call
 #'
-#' @param block List: Claude `tool_use` content block.
+#' @param block List: Anthropic `tool_use` content block.
 #'
 #' @return Named list matching the Agent loop's expected tool-call shape.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_tool_use_block_to_call <- function(block) {
+.anthropic_tool_use_block_to_call <- function(block) {
   input <- block[["input"]]
   if (is.null(input)) {
     input <- list()
@@ -230,8 +230,8 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_tool_call_to_use_block() ----
-#' Convert R-Level Tool Call To Claude tool_use Block
+# %% .anthropic_tool_call_to_use_block() ----
+#' Convert R-Level Tool Call To Anthropic tool_use Block
 #'
 #' @param tool_call List: Tool call as stored on an `LLMMessage`.
 #'
@@ -240,7 +240,7 @@ clean_claude_schema <- function(x) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_tool_call_to_use_block <- function(tool_call) {
+.anthropic_tool_call_to_use_block <- function(tool_call) {
   input <- tool_call[["function"]][["arguments"]]
   if (is.character(input) && length(input) == 1L) {
     input <- tryCatch(
@@ -263,17 +263,17 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_assistant_blocks_from_message() ----
-#' Build Claude Assistant Content Blocks From LLMMessage
+# %% .anthropic_assistant_blocks_from_message() ----
+#' Build Anthropic Assistant Content Blocks From LLMMessage
 #'
 #' @param msg LLMMessage: Assistant message.
 #'
-#' @return List of Claude content blocks.
+#' @return List of Anthropic content blocks.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_assistant_blocks_from_message <- function(msg) {
+.anthropic_assistant_blocks_from_message <- function(msg) {
   raw <- msg@metadata[["raw_content"]]
   if (is.list(raw) && length(raw) > 0L) {
     return(raw)
@@ -287,7 +287,7 @@ clean_claude_schema <- function(x) {
   }
   if (!is.null(msg@tool_calls) && length(msg@tool_calls) > 0L) {
     for (tc in msg@tool_calls) {
-      blocks[[length(blocks) + 1L]] <- .claude_tool_call_to_use_block(tc)
+      blocks[[length(blocks) + 1L]] <- .anthropic_tool_call_to_use_block(tc)
     }
   }
   if (length(blocks) == 0L) {
@@ -297,17 +297,17 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_text_from_content() ----
-#' Extract Visible Text From Claude Content Array
+# %% .anthropic_text_from_content() ----
+#' Extract Visible Text From Anthropic Content Array
 #'
-#' @param content List: Claude assistant content array.
+#' @param content List: Anthropic assistant content array.
 #'
 #' @return Character.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_text_from_content <- function(content) {
+.anthropic_text_from_content <- function(content) {
   if (is.null(content) || length(content) == 0L) {
     return("")
   }
@@ -328,17 +328,17 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_reasoning_from_content() ----
-#' Extract Reasoning From Claude Content Array
+# %% .anthropic_reasoning_from_content() ----
+#' Extract Reasoning From Anthropic Content Array
 #'
-#' @param content List: Claude assistant content array.
+#' @param content List: Anthropic assistant content array.
 #'
 #' @return Optional character.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_reasoning_from_content <- function(content) {
+.anthropic_reasoning_from_content <- function(content) {
   if (is.null(content) || length(content) == 0L) {
     return(NULL)
   }
@@ -382,17 +382,17 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% .claude_tool_calls_from_content() ----
-#' Extract Tool Calls From Claude Content Array
+# %% .anthropic_tool_calls_from_content() ----
+#' Extract Tool Calls From Anthropic Content Array
 #'
-#' @param content List: Claude assistant content array.
+#' @param content List: Anthropic assistant content array.
 #'
 #' @return Optional list of tool-call structures.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_tool_calls_from_content <- function(content) {
+.anthropic_tool_calls_from_content <- function(content) {
   if (is.null(content) || length(content) == 0L) {
     return(NULL)
   }
@@ -400,7 +400,7 @@ clean_claude_schema <- function(x) {
     content,
     function(block) {
       if (identical(block[["type"]], "tool_use")) {
-        return(.claude_tool_use_block_to_call(block))
+        return(.anthropic_tool_use_block_to_call(block))
       }
       NULL
     }
@@ -414,10 +414,10 @@ clean_claude_schema <- function(x) {
 }
 
 
-# %% resolve_claude_thinking_budget() ----
-#' Resolve Claude Thinking Budget
+# %% resolve_anthropic_thinking_budget() ----
+#' Resolve Anthropic Thinking Budget
 #'
-#' @param config ClaudeConfig: Configuration object.
+#' @param config AnthropicConfig: Configuration object.
 #' @param think Optional logical: Per-call override.
 #'
 #' @return Optional integer.
@@ -425,7 +425,7 @@ clean_claude_schema <- function(x) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-resolve_claude_thinking_budget <- function(config, think = NULL) {
+resolve_anthropic_thinking_budget <- function(config, think = NULL) {
   if (is.null(think)) {
     return(config@thinking_budget_tokens)
   }
@@ -437,15 +437,15 @@ resolve_claude_thinking_budget <- function(config, think = NULL) {
   }
   if (is.null(config@thinking_budget_tokens)) {
     cli::cli_abort(c(
-      "{.var think = TRUE} requires a thinking budget for Claude.",
-      i = "Set {.arg thinking_budget_tokens} on {.fun config_Claude} (minimum {.val {CLAUDE_THINKING_MIN_BUDGET}})."
+      "{.var think = TRUE} requires a thinking budget for Anthropic.",
+      i = "Set {.arg thinking_budget_tokens} on {.fun config_Anthropic} (minimum {.val {ANTHROPIC_THINKING_MIN_BUDGET}})."
     ))
   }
   config@thinking_budget_tokens
 }
 
 
-# %% .claude_system_from_state() ----
+# %% .anthropic_system_from_state() ----
 #' Extract Top-Level System Prompt From State
 #'
 #' @param state AgentMemory: Agent memory.
@@ -455,7 +455,7 @@ resolve_claude_thinking_budget <- function(config, think = NULL) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.claude_system_from_state <- function(state) {
+.anthropic_system_from_state <- function(state) {
   for (msg in get_messages(state)) {
     if (S7_inherits(msg, SystemMessage)) {
       return(msg@content)
@@ -465,8 +465,8 @@ resolve_claude_thinking_budget <- function(config, think = NULL) {
 }
 
 
-# %% claude_list_models() ----
-#' List Claude (Anthropic) Models
+# %% anthropic_list_models() ----
+#' List Anthropic (Anthropic) Models
 #'
 #' @param base_url Character: Base URL of the Anthropic API.
 #' @param api_key Optional character: API key.
@@ -482,19 +482,19 @@ resolve_claude_thinking_budget <- function(config, think = NULL) {
 #' @examples
 #' # Requires running Anthropic-compatible server with /models endpoint
 #' \dontrun{
-#'   claude_list_models(
+#'   anthropic_list_models(
 #'     base_url = "http://localhost:1234/v1",
 #'    api_key = "test-key"
 #'   )
 #' }
-claude_list_models <- function(
-  base_url = CLAUDE_URL_DEFAULT,
+anthropic_list_models <- function(
+  base_url = ANTHROPIC_URL_DEFAULT,
   api_key = NULL,
-  api_key_env = CLAUDE_API_KEY_ENV_DEFAULT,
+  api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
   keychain_service = NULL,
-  anthropic_version = CLAUDE_API_VERSION_DEFAULT
+  anthropic_version = ANTHROPIC_API_VERSION_DEFAULT
 ) {
-  config <- ClaudeConfig(
+  config <- AnthropicConfig(
     model_name = "models",
     temperature = TEMPERATURE_DEFAULT,
     base_url = base_url,
@@ -510,9 +510,9 @@ claude_list_models <- function(
     req <- httr2::request(url) |>
       httr2::req_method("GET") |>
       httr2::req_user_agent("rtemis (www.rtemis.org)") |>
-      .add_claude_headers(config)
+      .add_anthropic_headers(config)
     resp <- httr2::req_perform(req)
-    .check_claude_response(resp)
+    .check_anthropic_response(resp)
     res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
     if (is.null(res[["data"]])) {
       cli::cli_abort(c(
@@ -537,8 +537,8 @@ claude_list_models <- function(
 }
 
 
-# %% claude_check_model() ----
-#' Check Claude Model Is Available
+# %% anthropic_check_model() ----
+#' Check Anthropic Model Is Available
 #'
 #' @param x Character: Name of the model.
 #' @param base_url Character: Base URL of the Anthropic API.
@@ -555,21 +555,21 @@ claude_list_models <- function(
 #' @examples
 #' # Requires running Anthropic-compatible server with /models endpoint
 #' \dontrun{
-#'   claude_check_model(
+#'   anthropic_check_model(
 #'     x = "test-model",
 #'     base_url = "http://localhost:1234/v1",
 #'     api_key = "test-key"
 #'   )
 #' }
-claude_check_model <- function(
+anthropic_check_model <- function(
   x,
-  base_url = CLAUDE_URL_DEFAULT,
+  base_url = ANTHROPIC_URL_DEFAULT,
   api_key = NULL,
-  api_key_env = CLAUDE_API_KEY_ENV_DEFAULT,
+  api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
   keychain_service = NULL,
-  anthropic_version = CLAUDE_API_VERSION_DEFAULT
+  anthropic_version = ANTHROPIC_API_VERSION_DEFAULT
 ) {
-  models <- claude_list_models(
+  models <- anthropic_list_models(
     base_url = base_url,
     api_key = api_key,
     api_key_env = api_key_env,

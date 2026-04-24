@@ -19,7 +19,7 @@ create_agent(
 }
 \arguments{
 \item{llmconfig}{\code{LLMConfig}: The LLM configuration to use. Create using one of \link{config_Ollama},
-\link{config_OpenAI}, or \link{config_Claude}.}
+\link{config_OpenAI}, or \link{config_Anthropic}.}
 
 \item{system_prompt}{Optional character: The system prompt to use.}
 

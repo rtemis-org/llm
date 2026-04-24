@@ -486,16 +486,16 @@ method(build_tool_message, OpenAIConfig) <- function(
 }
 
 
-# %% build_chat_messages.ClaudeConfig ----
-#' Build Claude Chat Messages
+# %% build_chat_messages.AnthropicConfig ----
+#' Build Anthropic Chat Messages
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param state AgentMemory: Agent memory.
 #'
-#' @return List of Claude-shaped message lists.
+#' @return List of Anthropic-shaped message lists.
 #'
 #' @details
-#' System messages are filtered out because Claude passes system as a top-level
+#' System messages are filtered out because Anthropic passes system as a top-level
 #' `system` field. Consecutive `ToolMessage`s are merged into a single user
 #' message containing multiple `tool_result` content blocks, as required by the
 #' Anthropic Messages API.
@@ -503,7 +503,7 @@ method(build_tool_message, OpenAIConfig) <- function(
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(build_chat_messages, ClaudeConfig) <- function(x, state) {
+method(build_chat_messages, AnthropicConfig) <- function(x, state) {
   msgs <- get_messages(state)
   out <- list()
   pending_tool_results <- list()
@@ -524,7 +524,7 @@ method(build_chat_messages, ClaudeConfig) <- function(x, state) {
     if (S7_inherits(msg, ToolMessage)) {
       if (is.null(msg@tool_call_id)) {
         cli::cli_abort(c(
-          "Claude tool messages require {.field tool_call_id}.",
+          "Anthropic tool messages require {.field tool_call_id}.",
           i = "Use provider adapter tool handling to append tool responses."
         ))
       }
@@ -539,14 +539,14 @@ method(build_chat_messages, ClaudeConfig) <- function(x, state) {
     if (S7_inherits(msg, LLMMessage)) {
       out[[length(out) + 1L]] <- list(
         role = "assistant",
-        content = .claude_assistant_blocks_from_message(msg)
+        content = .anthropic_assistant_blocks_from_message(msg)
       )
       next
     }
     if (S7_inherits(msg, InputMessage)) {
       if (!is.null(msg@image_path)) {
         cli::cli_abort(c(
-          "Claude image inputs are not implemented yet.",
+          "Anthropic image inputs are not implemented yet.",
           i = "Use a text-only prompt or add a provider-specific image adapter first."
         ))
       }
@@ -574,10 +574,10 @@ method(build_chat_messages, ClaudeConfig) <- function(x, state) {
 }
 
 
-# %% build_response_format.ClaudeConfig ----
-#' Build Claude Response Format
+# %% build_response_format.AnthropicConfig ----
+#' Build Anthropic Response Format
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param output_schema Optional Schema: Output schema.
 #'
 #' @return Optional named list with `tools` and `tool_choice` fields.
@@ -585,7 +585,7 @@ method(build_chat_messages, ClaudeConfig) <- function(x, state) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(build_response_format, ClaudeConfig) <- function(
+method(build_response_format, AnthropicConfig) <- function(
   x,
   output_schema = NULL
 ) {
@@ -594,20 +594,20 @@ method(build_response_format, ClaudeConfig) <- function(
   }
   list(
     tools = list(
-      .claude_structured_output_tool(as_list(output_schema))
+      .anthropic_structured_output_tool(as_list(output_schema))
     ),
     tool_choice = list(
       type = "tool",
-      name = CLAUDE_STRUCTURED_OUTPUT_TOOL_NAME
+      name = ANTHROPIC_STRUCTURED_OUTPUT_TOOL_NAME
     )
   )
 }
 
 
-# %% build_chat_request_body.ClaudeConfig ----
-#' Build Claude Chat Request Body
+# %% build_chat_request_body.AnthropicConfig ----
+#' Build Anthropic Chat Request Body
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param state AgentMemory: Agent memory.
 #' @param tools Optional list: Tools.
 #' @param output_schema Optional Schema: Output schema.
@@ -624,7 +624,7 @@ method(build_response_format, ClaudeConfig) <- function(
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(build_chat_request_body, ClaudeConfig) <- function(
+method(build_chat_request_body, AnthropicConfig) <- function(
   x,
   state,
   tools = NULL,
@@ -652,13 +652,13 @@ method(build_chat_request_body, ClaudeConfig) <- function(
   if (!is.null(stop)) {
     request_body[["stop_sequences"]] <- as.character(stop)
   }
-  system_prompt <- .claude_system_from_state(state)
+  system_prompt <- .anthropic_system_from_state(state)
   if (!is.null(system_prompt) && nzchar(system_prompt)) {
     request_body[["system"]] <- system_prompt
   }
   tool_specs <- list()
   if (!is.null(tools) && use_tools) {
-    tool_specs <- lapply(tools, .tool_to_claude_schema)
+    tool_specs <- lapply(tools, .tool_to_anthropic_schema)
   }
   response_format <- build_response_format(x, output_schema)
   if (!is.null(response_format)) {
@@ -668,7 +668,7 @@ method(build_chat_request_body, ClaudeConfig) <- function(
   if (length(tool_specs) > 0L) {
     request_body[["tools"]] <- tool_specs
   }
-  budget <- resolve_claude_thinking_budget(x, think = think)
+  budget <- resolve_anthropic_thinking_budget(x, think = think)
   if (!is.null(budget)) {
     request_body[["thinking"]] <- list(
       type = "enabled",
@@ -682,10 +682,10 @@ method(build_chat_request_body, ClaudeConfig) <- function(
 }
 
 
-# %% perform_chat_request.ClaudeConfig ----
-#' Perform Claude Chat Request
+# %% perform_chat_request.AnthropicConfig ----
+#' Perform Anthropic Chat Request
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param request_body List: Request body.
 #' @param verbosity Integer: Verbosity level.
 #'
@@ -694,7 +694,7 @@ method(build_chat_request_body, ClaudeConfig) <- function(
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(perform_chat_request, ClaudeConfig) <- function(
+method(perform_chat_request, AnthropicConfig) <- function(
   x,
   request_body,
   verbosity = 1L
@@ -703,17 +703,17 @@ method(perform_chat_request, ClaudeConfig) <- function(
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
-    .add_claude_headers(x)
+    .add_anthropic_headers(x)
   resp <- httr2::req_perform(req, verbosity = max(verbosity - 1L, 0L))
-  .check_claude_response(resp)
+  .check_anthropic_response(resp)
   resp
 }
 
 
-# %% parse_chat_response.ClaudeConfig ----
-#' Parse Claude Chat Response
+# %% parse_chat_response.AnthropicConfig ----
+#' Parse Anthropic Chat Response
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param resp httr2_response: Response object.
 #'
 #' @return Named list with normalized response fields.
@@ -721,15 +721,15 @@ method(perform_chat_request, ClaudeConfig) <- function(
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(parse_chat_response, ClaudeConfig) <- function(x, resp) {
+method(parse_chat_response, AnthropicConfig) <- function(x, resp) {
   res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   content_blocks <- res[["content"]]
   if (is.null(content_blocks)) {
     content_blocks <- list()
   }
-  text_content <- .claude_text_from_content(content_blocks)
-  reasoning <- .claude_reasoning_from_content(content_blocks)
-  tool_calls <- .claude_tool_calls_from_content(content_blocks)
+  text_content <- .anthropic_text_from_content(content_blocks)
+  reasoning <- .anthropic_reasoning_from_content(content_blocks)
+  tool_calls <- .anthropic_tool_calls_from_content(content_blocks)
   stop_reason <- res[["stop_reason"]]
   refusal <- if (identical(stop_reason, "refusal")) {
     text_content
@@ -750,10 +750,10 @@ method(parse_chat_response, ClaudeConfig) <- function(x, resp) {
 }
 
 
-# %% decode_tool_arguments.ClaudeConfig ----
-#' Decode Claude Tool Arguments
+# %% decode_tool_arguments.AnthropicConfig ----
+#' Decode Anthropic Tool Arguments
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param tool_call List: Tool call.
 #'
 #' @return Named list.
@@ -761,7 +761,7 @@ method(parse_chat_response, ClaudeConfig) <- function(x, resp) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(decode_tool_arguments, ClaudeConfig) <- function(x, tool_call) {
+method(decode_tool_arguments, AnthropicConfig) <- function(x, tool_call) {
   args <- tool_call[["function"]][["arguments"]]
   if (is.character(args) && length(args) == 1L) {
     args <- tryCatch(
@@ -779,7 +779,7 @@ method(decode_tool_arguments, ClaudeConfig) <- function(x, tool_call) {
   }
   if (!is.list(args)) {
     cli::cli_abort(c(
-      "Decoded Claude tool arguments must be a named list.",
+      "Decoded Anthropic tool arguments must be a named list.",
       i = "Check that the model returned a JSON object for tool input."
     ))
   }
@@ -787,10 +787,10 @@ method(decode_tool_arguments, ClaudeConfig) <- function(x, tool_call) {
 }
 
 
-# %% build_tool_message.ClaudeConfig ----
-#' Build Claude Tool Message
+# %% build_tool_message.AnthropicConfig ----
+#' Build Anthropic Tool Message
 #'
-#' @param x ClaudeConfig: Claude configuration.
+#' @param x AnthropicConfig: Anthropic configuration.
 #' @param tool_call List: Tool call.
 #' @param tool_name Character: Tool name.
 #' @param tool_response Object: Tool response.
@@ -800,7 +800,7 @@ method(decode_tool_arguments, ClaudeConfig) <- function(x, tool_call) {
 #' @author EDG
 #' @keywords internal
 #' @noRd
-method(build_tool_message, ClaudeConfig) <- function(
+method(build_tool_message, AnthropicConfig) <- function(
   x,
   tool_call,
   tool_name,
@@ -809,7 +809,7 @@ method(build_tool_message, ClaudeConfig) <- function(
   tool_call_id <- tool_call[["id"]]
   if (is.null(tool_call_id)) {
     cli::cli_abort(c(
-      "Claude tool calls must include an {.field id}.",
+      "Anthropic tool calls must include an {.field id}.",
       i = "Check that the server returned a {.val tool_use} content block with an id."
     ))
   }

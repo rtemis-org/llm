@@ -11,7 +11,7 @@ rtemis.llm provides functionality to interface with Large Language Models, part 
 reasoning, structured output, memory management, and tool use. Allows creation of custom
 LLM-based workflows and agentic AI systems using a functional user-facing frontend and an S7
 backend. Includes \code{llmapply()} for quick batch LLM inference. Supports Ollama, OpenAI, and
-Claude endpoints.
+Anthropic endpoints.
 }
 \section{Online Documentation and Vignettes}{
 

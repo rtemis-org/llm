@@ -437,16 +437,16 @@ OpenAIMessage <- new_class(
 )
 
 
-# %% ClaudeMessage ----
-#' @title ClaudeMessage Class
+# %% AnthropicMessage ----
+#' @title AnthropicMessage Class
 #'
 #' @description
-#' LLMMessage subclass for Anthropic Claude messages.
+#' LLMMessage subclass for Anthropic messages.
 #'
 #' @author EDG
 #' @noRd
-ClaudeMessage <- new_class(
-  "ClaudeMessage",
+AnthropicMessage <- new_class(
+  "AnthropicMessage",
   parent = LLMMessage,
   constructor = function(
     content,

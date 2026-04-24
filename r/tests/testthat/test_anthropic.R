@@ -1,17 +1,17 @@
-# test_claude.R
+# test_anthropic.R
 # ::rtemis.llm::
 # 2026 EDG rtemis.org
 
-# %% ClaudeConfig ----
-test_that("ClaudeConfig class and config_Claude work", {
-  config <- config_Claude(
+# %% AnthropicConfig ----
+test_that("AnthropicConfig class and config_Anthropic work", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     temperature = 0.4,
     api_key = "test-key",
     max_tokens = 1024L,
     validate_model = FALSE
   )
-  expect_true(S7_inherits(config, ClaudeConfig))
+  expect_true(S7_inherits(config, AnthropicConfig))
   expect_equal(config@model_name, "claude-sonnet-4-6")
   expect_equal(config@max_tokens, 1024L)
   expect_equal(config@backend, "anthropic")
@@ -19,21 +19,21 @@ test_that("ClaudeConfig class and config_Claude work", {
 })
 
 
-# %% config_Claude API key handling ----
-test_that("config_Claude aborts when no API key is resolvable", {
-  config <- config_Claude(
+# %% config_Anthropic API key handling ----
+test_that("config_Anthropic aborts when no API key is resolvable", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
-    api_key_env = "RTEMIS_LLM_CLAUDE_EMPTY_TEST_KEY",
+    api_key_env = "RTEMIS_LLM_ANTHROPIC_EMPTY_TEST_KEY",
     validate_model = FALSE
   )
-  expect_error(resolve_claude_api_key(config), "No Anthropic API key")
+  expect_error(resolve_anthropic_api_key(config), "No Anthropic API key")
 })
 
 
-# %% config_Claude max_tokens validation ----
-test_that("config_Claude rejects non-positive max_tokens", {
+# %% config_Anthropic max_tokens validation ----
+test_that("config_Anthropic rejects non-positive max_tokens", {
   expect_error(
-    config_Claude(
+    config_Anthropic(
       model_name = "claude-sonnet-4-6",
       api_key = "test-key",
       max_tokens = 0,
@@ -44,10 +44,10 @@ test_that("config_Claude rejects non-positive max_tokens", {
 })
 
 
-# %% config_Claude thinking budget validation ----
-test_that("config_Claude rejects thinking budgets below the minimum", {
+# %% config_Anthropic thinking budget validation ----
+test_that("config_Anthropic rejects thinking budgets below the minimum", {
   expect_error(
-    config_Claude(
+    config_Anthropic(
       model_name = "claude-sonnet-4-6",
       api_key = "test-key",
       thinking_budget_tokens = 256L,
@@ -58,9 +58,9 @@ test_that("config_Claude rejects thinking budgets below the minimum", {
 })
 
 
-# %% repr.ClaudeConfig ----
-test_that("ClaudeConfig repr redacts API keys", {
-  config <- config_Claude(
+# %% repr.AnthropicConfig ----
+test_that("AnthropicConfig repr redacts API keys", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "anthropic-secret",
     validate_model = FALSE
@@ -71,22 +71,22 @@ test_that("ClaudeConfig repr redacts API keys", {
 })
 
 
-# %% create_Claude() ----
-test_that("create_Claude works", {
-  llm <- create_Claude(
+# %% create_Anthropic() ----
+test_that("create_Anthropic works", {
+  llm <- create_Anthropic(
     model_name = "claude-sonnet-4-6",
     system_prompt = "You are a meticulous research assistant.",
     api_key = "test-key",
     validate_model = FALSE
   )
-  expect_true(S7_inherits(llm, Claude))
+  expect_true(S7_inherits(llm, Anthropic))
   expect_equal(llm@config@model_name, "claude-sonnet-4-6")
 })
 
 
-# %% build_chat_request_body.ClaudeConfig ----
-test_that("Claude request body uses Messages API shape", {
-  config <- config_Claude(
+# %% build_chat_request_body.AnthropicConfig ----
+test_that("Anthropic request body uses Messages API shape", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     temperature = 0.2,
@@ -126,9 +126,9 @@ test_that("Claude request body uses Messages API shape", {
 })
 
 
-# %% build_chat_request_body.ClaudeConfig thinking ----
-test_that("Claude request body includes thinking when configured", {
-  config <- config_Claude(
+# %% build_chat_request_body.AnthropicConfig thinking ----
+test_that("Anthropic request body includes thinking when configured", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     thinking_budget_tokens = 2048L,
@@ -147,9 +147,9 @@ test_that("Claude request body includes thinking when configured", {
 })
 
 
-# %% build_chat_request_body.ClaudeConfig think requires budget ----
-test_that("Claude think=TRUE with no configured budget aborts", {
-  config <- config_Claude(
+# %% build_chat_request_body.AnthropicConfig think requires budget ----
+test_that("Anthropic think=TRUE with no configured budget aborts", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -168,9 +168,9 @@ test_that("Claude think=TRUE with no configured budget aborts", {
 })
 
 
-# %% build_chat_messages.ClaudeConfig tool merging ----
-test_that("Claude merges consecutive tool messages into one user block", {
-  config <- config_Claude(
+# %% build_chat_messages.AnthropicConfig tool merging ----
+test_that("Anthropic merges consecutive tool messages into one user block", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -221,9 +221,9 @@ test_that("Claude merges consecutive tool messages into one user block", {
 })
 
 
-# %% build_chat_messages.ClaudeConfig tool_call_id required ----
-test_that("Claude tool messages require a tool_call_id", {
-  config <- config_Claude(
+# %% build_chat_messages.AnthropicConfig tool_call_id required ----
+test_that("Anthropic tool messages require a tool_call_id", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -239,9 +239,9 @@ test_that("Claude tool messages require a tool_call_id", {
 })
 
 
-# %% Tool schema shape for Claude ----
-test_that("Claude tools use flat {name, description, input_schema} shape", {
-  config <- config_Claude(
+# %% Tool schema shape for Anthropic ----
+test_that("Anthropic tools use flat {name, description, input_schema} shape", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -274,9 +274,9 @@ test_that("Claude tools use flat {name, description, input_schema} shape", {
 })
 
 
-# %% build_response_format.ClaudeConfig structured output ----
-test_that("Claude structured output injects forced synthetic tool", {
-  config <- config_Claude(
+# %% build_response_format.AnthropicConfig structured output ----
+test_that("Anthropic structured output injects forced synthetic tool", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -306,9 +306,9 @@ test_that("Claude structured output injects forced synthetic tool", {
 })
 
 
-# %% decode_tool_arguments.ClaudeConfig ----
-test_that("Claude tool arguments are returned as named list", {
-  config <- config_Claude(
+# %% decode_tool_arguments.AnthropicConfig ----
+test_that("Anthropic tool arguments are returned as named list", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -327,9 +327,9 @@ test_that("Claude tool arguments are returned as named list", {
 })
 
 
-# %% build_tool_message.ClaudeConfig ----
-test_that("Claude tool messages include tool_call_id", {
-  config <- config_Claude(
+# %% build_tool_message.AnthropicConfig ----
+test_that("Anthropic tool messages include tool_call_id", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -350,9 +350,9 @@ test_that("Claude tool messages include tool_call_id", {
 })
 
 
-# %% parse_chat_response.ClaudeConfig ----
-test_that("Claude response parsing extracts text, thinking and tool_use blocks", {
-  config <- config_Claude(
+# %% parse_chat_response.AnthropicConfig ----
+test_that("Anthropic response parsing extracts text, thinking and tool_use blocks", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -409,9 +409,9 @@ test_that("Claude response parsing extracts text, thinking and tool_use blocks",
 })
 
 
-# %% parse_chat_response.ClaudeConfig refusal ----
-test_that("Claude refusal stop_reason is surfaced", {
-  config <- config_Claude(
+# %% parse_chat_response.AnthropicConfig refusal ----
+test_that("Anthropic refusal stop_reason is surfaced", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     validate_model = FALSE
@@ -437,9 +437,9 @@ test_that("Claude refusal stop_reason is surfaced", {
 })
 
 
-# %% parse_chat_response.ClaudeConfig inline <think> tags ----
-test_that("Claude response parsing extracts reasoning from inline <think> tags", {
-  config <- config_Claude(
+# %% parse_chat_response.AnthropicConfig inline <think> tags ----
+test_that("Anthropic response parsing extracts reasoning from inline <think> tags", {
+  config <- config_Anthropic(
     model_name = "gemma-4-26b-a4b-it-4bit",
     api_key = "test-key",
     validate_model = FALSE
@@ -471,10 +471,10 @@ test_that("Claude response parsing extracts reasoning from inline <think> tags",
 })
 
 
-# %% ClaudeMessage preserves raw content ----
-test_that("ClaudeMessage preserves raw_content via metadata", {
+# %% AnthropicMessage preserves raw content ----
+test_that("AnthropicMessage preserves raw_content via metadata", {
   raw <- list(list(type = "text", text = "Hi"))
-  m <- ClaudeMessage(
+  m <- AnthropicMessage(
     content = "Hi",
     metadata = list(raw_content = raw),
     model_name = "claude-sonnet-4-6"
@@ -484,9 +484,9 @@ test_that("ClaudeMessage preserves raw_content via metadata", {
 })
 
 
-# %% build_chat_request_body.ClaudeConfig per-call overrides ----
-test_that("Claude request body honors per-call overrides", {
-  config <- config_Claude(
+# %% build_chat_request_body.AnthropicConfig per-call overrides ----
+test_that("Anthropic request body honors per-call overrides", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     temperature = 0.2,
@@ -517,9 +517,9 @@ test_that("Claude request body honors per-call overrides", {
 })
 
 
-# %% build_chat_request_body.ClaudeConfig defaults fall through ----
-test_that("Claude request body falls back to config when overrides are NULL", {
-  config <- config_Claude(
+# %% build_chat_request_body.AnthropicConfig defaults fall through ----
+test_that("Anthropic request body falls back to config when overrides are NULL", {
+  config <- config_Anthropic(
     model_name = "claude-sonnet-4-6",
     api_key = "test-key",
     temperature = 0.2,

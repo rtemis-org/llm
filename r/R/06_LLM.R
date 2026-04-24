@@ -209,20 +209,20 @@ method(print, OpenAI) <- function(x, output_type = NULL, ...) {
 } # /print.OpenAI
 
 
-# %% Claude ----
-#' @title Claude Class
+# %% Anthropic ----
+#' @title Anthropic Class
 #'
 #' @description
-#' Anthropic Claude LLM class.
+#' Anthropic LLM class.
 #'
 #' @author EDG
 #' @noRd
-Claude <- new_class(
-  "Claude",
+Anthropic <- new_class(
+  "Anthropic",
   parent = LLM,
   properties = list(
     name = optional(S7::class_character),
-    config = ClaudeConfig,
+    config = AnthropicConfig,
     output_schema = optional(Schema)
   ),
   constructor = function(
@@ -243,11 +243,11 @@ Claude <- new_class(
 )
 
 
-# %% repr.Claude ----
-method(repr, Claude) <- function(x, output_type = NULL) {
+# %% repr.Anthropic ----
+method(repr, Anthropic) <- function(x, output_type = NULL) {
   output_type <- get_output_type(output_type)
   paste0(
-    repr_S7name("Claude", output_type = output_type),
+    repr_S7name("Anthropic", output_type = output_type),
     if (!is.null(x@name)) {
       paste0(
         fmt("         Name: ", bold = TRUE, output_type = output_type),
@@ -277,10 +277,10 @@ method(repr, Claude) <- function(x, output_type = NULL) {
 }
 
 
-# %% print.Claude ----
-method(print, Claude) <- function(x, output_type = NULL, ...) {
+# %% print.Anthropic ----
+method(print, Anthropic) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
-} # /print.Claude
+} # /print.Anthropic
 
 
 # %% generate.Ollama ----
@@ -451,10 +451,10 @@ method(generate, OpenAI) <- function(
 }
 
 
-# %% generate.Claude ----
-#' Generate method for Claude
+# %% generate.Anthropic ----
+#' Generate method for Anthropic
 #'
-#' @param x Claude object.
+#' @param x Anthropic object.
 #' @param prompt Character: The prompt to send to the model.
 #' @param temperature Optional numeric \[0, 2\]: Per-call temperature override.
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
@@ -465,11 +465,11 @@ method(generate, OpenAI) <- function(
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `top_k` (integer).
 #'
-#' @return ClaudeMessage object
+#' @return AnthropicMessage object
 #' @author EDG
 #'
 #' @noRd
-method(generate, Claude) <- function(
+method(generate, Anthropic) <- function(
   x,
   prompt,
   temperature = NULL,
@@ -520,7 +520,7 @@ method(generate, Claude) <- function(
   )
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
   res <- parse_chat_response(x@config, resp)
-  ClaudeMessage(
+  AnthropicMessage(
     name = x@name,
     content = res[["content"]],
     metadata = res[["metadata"]],
@@ -762,12 +762,12 @@ create_OpenAI <- function(
 } # /create_OpenAI
 
 
-# %% config_Claude ----
-#' Create a ClaudeConfig Object
+# %% config_Anthropic ----
+#' Create a AnthropicConfig Object
 #'
-#' Creates a ClaudeConfig object which can be passed to `create_agent()`
+#' Creates a AnthropicConfig object which can be passed to `create_agent()`
 #'
-#' @param model_name Character: The name of the Claude model to use (for example
+#' @param model_name Character: The name of the Anthropic model to use (for example
 #' `"claude-sonnet-4-6"`).
 #' @param temperature Numeric \[0, 2\]: The temperature for the model.
 #' @param base_url Character: Base URL of the Anthropic API.
@@ -786,36 +786,36 @@ create_OpenAI <- function(
 #' set, each request enables extended thinking with this budget.
 #' @param validate_model Logical: Whether to validate model availability using `/models`.
 #'
-#' @return ClaudeConfig object
+#' @return AnthropicConfig object
 #'
 #' @author EDG
 #' @export
 #'
 #' @examples
-#' cfg <- config <- config_Claude(
+#' cfg <- config <- config_Anthropic(
 #'    model_name = "claude-sonnet-4-6",
 #'    temperature = 0.4,
 #'    api_key = "test-key",
 #'    max_tokens = 1024L,
 #'    validate_model = FALSE
 #' )
-config_Claude <- function(
+config_Anthropic <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
-  base_url = CLAUDE_URL_DEFAULT,
+  base_url = ANTHROPIC_URL_DEFAULT,
   api_key = NULL,
-  api_key_env = CLAUDE_API_KEY_ENV_DEFAULT,
+  api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
   keychain_service = NULL,
-  anthropic_version = CLAUDE_API_VERSION_DEFAULT,
+  anthropic_version = ANTHROPIC_API_VERSION_DEFAULT,
   anthropic_beta = NULL,
-  max_tokens = CLAUDE_MAX_TOKENS_DEFAULT,
-  timeout = CLAUDE_TIMEOUT_DEFAULT,
+  max_tokens = ANTHROPIC_MAX_TOKENS_DEFAULT,
+  timeout = ANTHROPIC_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
-  ClaudeConfig(
+  AnthropicConfig(
     model_name = model_name,
     temperature = temperature,
     base_url = base_url,
@@ -831,13 +831,13 @@ config_Claude <- function(
     thinking_budget_tokens = thinking_budget_tokens,
     validate_model = validate_model
   )
-} # /config_Claude
+} # /config_Anthropic
 
 
-# %% create_Claude ----
-#' Create a Claude LLM Object
+# %% create_Anthropic ----
+#' Create a Anthropic LLM Object
 #'
-#' @param model_name Character: The name of the Claude model to use.
+#' @param model_name Character: The name of the Anthropic model to use.
 #' @param system_prompt Character: The system prompt to use.
 #' @param temperature Numeric \[0, 2\]: The temperature for the model.
 #' @param output_schema Optional Schema: Output schema created using [schema]. Structured output is
@@ -856,40 +856,40 @@ config_Claude <- function(
 #' @param thinking_budget_tokens Optional integer \[1024, Inf): Extended-thinking budget.
 #' @param validate_model Logical: Whether to validate model availability using `/models`.
 #'
-#' @return Claude LLM object
+#' @return Anthropic LLM object
 #'
 #' @author EDG
 #' @export
 #'
 #' @examples
-#' llm <- create_Claude(
+#' llm <- create_Anthropic(
 #'    model_name = "claude-sonnet-4-6",
 #'    system_prompt = "You are a meticulous research assistant.",
 #'    api_key = "test-key",
 #'    validate_model = FALSE
 #' )
-create_Claude <- function(
+create_Anthropic <- function(
   model_name,
   system_prompt = SYSTEM_PROMPT_DEFAULT,
   temperature = TEMPERATURE_DEFAULT,
   output_schema = NULL,
   name = NULL,
-  base_url = CLAUDE_URL_DEFAULT,
+  base_url = ANTHROPIC_URL_DEFAULT,
   api_key = NULL,
-  api_key_env = CLAUDE_API_KEY_ENV_DEFAULT,
+  api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
   keychain_service = NULL,
-  anthropic_version = CLAUDE_API_VERSION_DEFAULT,
+  anthropic_version = ANTHROPIC_API_VERSION_DEFAULT,
   anthropic_beta = NULL,
-  max_tokens = CLAUDE_MAX_TOKENS_DEFAULT,
-  timeout = CLAUDE_TIMEOUT_DEFAULT,
+  max_tokens = ANTHROPIC_MAX_TOKENS_DEFAULT,
+  timeout = ANTHROPIC_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
-  Claude(
+  Anthropic(
     name = name,
-    config = config_Claude(
+    config = config_Anthropic(
       model_name = model_name,
       temperature = temperature,
       base_url = base_url,
@@ -908,4 +908,4 @@ create_Claude <- function(
     system_prompt = system_prompt,
     output_schema = output_schema
   )
-} # /create_Claude
+} # /create_Anthropic

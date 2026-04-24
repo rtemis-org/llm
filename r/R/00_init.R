@@ -47,10 +47,10 @@ to_json <- new_generic("to_json", "x")
 #' @param prompt Character: The prompt to pass to the model or agent.
 #' @param temperature Optional numeric \[0, 2\]: Per-call sampling temperature.
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
-#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate. For Claude,
+#' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate. For Anthropic,
 #' this overrides the config-level value (which is required); for Ollama this maps to
 #' `options.num_predict`; for OpenAI-compatible backends this maps to `max_tokens`.
-#' @param stop Optional character: Stop sequence(s). Mapped to `stop_sequences` on Claude
+#' @param stop Optional character: Stop sequence(s). Mapped to `stop_sequences` on Anthropic
 #' and `options.stop` on Ollama.
 #' @param think Optional logical or character: Whether to enable model thinking
 #' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
@@ -66,7 +66,7 @@ to_json <- new_generic("to_json", "x")
 #' Backend-specific extra arguments accepted via `...`:
 #' - **Ollama**: `top_k` (integer), `seed` (integer)
 #' - **OpenAI**: `seed` (integer)
-#' - **Claude**: `top_k` (integer)
+#' - **Anthropic**: `top_k` (integer)
 #'
 #' Any argument set to `NULL` (the default) falls back to the value baked into the
 #' underlying `LLMConfig` at construction time.

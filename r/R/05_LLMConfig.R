@@ -10,12 +10,12 @@ OLLAMA_URL_DEFAULT <- "http://localhost:11434"
 OPENAI_URL_DEFAULT <- "https://api.openai.com/v1"
 OPENAI_API_KEY_ENV_DEFAULT <- "OPENAI_API_KEY"
 OPENAI_TIMEOUT_DEFAULT <- 60
-CLAUDE_URL_DEFAULT <- "https://api.anthropic.com/v1"
-CLAUDE_API_KEY_ENV_DEFAULT <- "ANTHROPIC_API_KEY"
-CLAUDE_API_VERSION_DEFAULT <- "2023-06-01"
-CLAUDE_MAX_TOKENS_DEFAULT <- 4096L
-CLAUDE_TIMEOUT_DEFAULT <- 60
-CLAUDE_THINKING_MIN_BUDGET <- 1024L
+ANTHROPIC_URL_DEFAULT <- "https://api.anthropic.com/v1"
+ANTHROPIC_API_KEY_ENV_DEFAULT <- "ANTHROPIC_API_KEY"
+ANTHROPIC_API_VERSION_DEFAULT <- "2023-06-01"
+ANTHROPIC_MAX_TOKENS_DEFAULT <- 4096L
+ANTHROPIC_TIMEOUT_DEFAULT <- 60
+ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
 
 
 # --- Internal API ---------------------------------------------------------------------------------
@@ -248,16 +248,16 @@ OpenAIConfig <- new_class(
 )
 
 
-# %% ClaudeConfig ----
-#' @title ClaudeConfig Class
+# %% AnthropicConfig ----
+#' @title AnthropicConfig Class
 #'
 #' @description
-#' Anthropic Claude Messages API configuration class.
+#' Anthropic Messages API configuration class.
 #'
 #' @author EDG
 #' @noRd
-ClaudeConfig <- new_class(
-  "ClaudeConfig",
+AnthropicConfig <- new_class(
+  "AnthropicConfig",
   parent = LLMConfig,
   properties = list(
     api_key = optional(S7::class_character),
@@ -277,12 +277,12 @@ ClaudeConfig <- new_class(
     temperature,
     base_url,
     api_key = NULL,
-    api_key_env = CLAUDE_API_KEY_ENV_DEFAULT,
+    api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
     keychain_service = NULL,
-    anthropic_version = CLAUDE_API_VERSION_DEFAULT,
+    anthropic_version = ANTHROPIC_API_VERSION_DEFAULT,
     anthropic_beta = NULL,
-    max_tokens = CLAUDE_MAX_TOKENS_DEFAULT,
-    timeout = CLAUDE_TIMEOUT_DEFAULT,
+    max_tokens = ANTHROPIC_MAX_TOKENS_DEFAULT,
+    timeout = ANTHROPIC_TIMEOUT_DEFAULT,
     extra_headers = NULL,
     extra_body = NULL,
     thinking_budget_tokens = NULL,
@@ -345,10 +345,10 @@ ClaudeConfig <- new_class(
         )
       }
       thinking_budget_tokens <- as.integer(thinking_budget_tokens)
-      if (thinking_budget_tokens < CLAUDE_THINKING_MIN_BUDGET) {
+      if (thinking_budget_tokens < ANTHROPIC_THINKING_MIN_BUDGET) {
         cli::cli_abort(c(
-          "{.var thinking_budget_tokens} must be at least {.val {CLAUDE_THINKING_MIN_BUDGET}}.",
-          i = "Extended thinking requires a minimum budget of {CLAUDE_THINKING_MIN_BUDGET} tokens."
+          "{.var thinking_budget_tokens} must be at least {.val {ANTHROPIC_THINKING_MIN_BUDGET}}.",
+          i = "Extended thinking requires a minimum budget of {ANTHROPIC_THINKING_MIN_BUDGET} tokens."
         ))
       }
     }
@@ -357,7 +357,7 @@ ClaudeConfig <- new_class(
     }
     base_url <- .clean_base_url(base_url)
     if (validate_model) {
-      claude_check_model(
+      anthropic_check_model(
         x = model_name,
         base_url = base_url,
         api_key = api_key,
@@ -389,17 +389,17 @@ ClaudeConfig <- new_class(
 )
 
 
-# %% as_list.ClaudeConfig ----
-#' as_list method for ClaudeConfig
+# %% as_list.AnthropicConfig ----
+#' as_list method for AnthropicConfig
 #'
-#' @param x ClaudeConfig object.
+#' @param x AnthropicConfig object.
 #'
-#' @return List representation of ClaudeConfig.
+#' @return List representation of AnthropicConfig.
 #'
 #' @author EDG
 #' @noRd
-method(as_list, ClaudeConfig) <- function(x) {
-  api_key <- resolve_claude_api_key(x, error_if_missing = FALSE)
+method(as_list, AnthropicConfig) <- function(x) {
+  api_key <- resolve_anthropic_api_key(x, error_if_missing = FALSE)
   list(
     model_name = x@model_name,
     temperature = x@temperature,
@@ -417,7 +417,7 @@ method(as_list, ClaudeConfig) <- function(x) {
     thinking_budget_tokens = x@thinking_budget_tokens,
     validate_model = x@validate_model
   )
-} # /as_list.ClaudeConfig
+} # /as_list.AnthropicConfig
 
 
 # %% as_list.OpenAIConfig ----

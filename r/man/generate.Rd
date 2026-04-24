@@ -26,11 +26,11 @@ generate(
 
 \item{top_p}{Optional numeric [0, 1]: Nucleus sampling cutoff.}
 
-\item{max_tokens}{Optional integer [1, Inf): Maximum tokens to generate. For Claude,
+\item{max_tokens}{Optional integer [1, Inf): Maximum tokens to generate. For Anthropic,
 this overrides the config-level value (which is required); for Ollama this maps to
 \code{options.num_predict}; for OpenAI-compatible backends this maps to \code{max_tokens}.}
 
-\item{stop}{Optional character: Stop sequence(s). Mapped to \code{stop_sequences} on Claude
+\item{stop}{Optional character: Stop sequence(s). Mapped to \code{stop_sequences} on Anthropic
 and \code{options.stop} on Ollama.}
 
 \item{think}{Optional logical or character: Whether to enable model thinking
@@ -57,7 +57,7 @@ Backend-specific extra arguments accepted via \code{...}:
 \itemize{
 \item \strong{Ollama}: \code{top_k} (integer), \code{seed} (integer)
 \item \strong{OpenAI}: \code{seed} (integer)
-\item \strong{Claude}: \code{top_k} (integer)
+\item \strong{Anthropic}: \code{top_k} (integer)
 }
 
 Any argument set to \code{NULL} (the default) falls back to the value baked into the

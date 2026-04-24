@@ -319,21 +319,21 @@ method(create_llm_message, OpenAIConfig) <- function(
 }
 
 
-# %% create_llm_message.ClaudeConfig ----
-#' create_llm_message method for Agent with Claude backend
+# %% create_llm_message.AnthropicConfig ----
+#' create_llm_message method for Agent with Anthropic backend
 #'
-#' @param x ClaudeConfig object.
+#' @param x AnthropicConfig object.
 #' @param content Character: The content of the message.
 #' @param reasoning Optional character: The reasoning trace.
 #' @param tool_calls Optional list: Tool call information.
 #' @param name Optional character: The agent name.
 #' @param metadata List: Message metadata.
 #'
-#' @return A ClaudeMessage object.
+#' @return A AnthropicMessage object.
 #'
 #' @author EDG
 #' @noRd
-method(create_llm_message, ClaudeConfig) <- function(
+method(create_llm_message, AnthropicConfig) <- function(
   x,
   content,
   reasoning = NULL,
@@ -341,7 +341,7 @@ method(create_llm_message, ClaudeConfig) <- function(
   name = NULL,
   metadata = list()
 ) {
-  ClaudeMessage(
+  AnthropicMessage(
     content = content,
     name = name,
     metadata = metadata,
@@ -373,7 +373,7 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #' Create a rtemis.llm Agent
 #'
 #' @param llmconfig `LLMConfig`: The LLM configuration to use. Create using one of [config_Ollama],
-#'   [config_OpenAI], or [config_Claude].
+#'   [config_OpenAI], or [config_Anthropic].
 #' @param system_prompt Optional character: The system prompt to use.
 #' @param use_memory Logical: Whether to use conversation memory.
 #' @param tools Optional list of Tool objects: The tools available to the agent.

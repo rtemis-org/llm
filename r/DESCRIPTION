@@ -1,7 +1,7 @@
 Package: rtemis.llm
 Title: Large Language Models and Agentic AI
 Version: 0.8.0
-Date: 2026-04-23
+Date: 2026-04-24
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Unified interface for creating LLM and Agent objects, generating responses and 
