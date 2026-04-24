@@ -454,11 +454,11 @@ available_tools <- function() {
   for (handle in tool_handles) {
     tool <- tools[[handle]]
     cat(
-      "  - ",
+      "* ",
       highlight(handle),
       " (function_name: ",
       tool@function_name,
-      ")\n      ",
+      ")\n  ",
       tool@description,
       "\n\n",
       sep = ""
