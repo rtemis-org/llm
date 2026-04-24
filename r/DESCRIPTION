@@ -10,6 +10,7 @@ Description: Unified interface for creating LLM and Agent objects, generating re
     'OpenAI'-compatible, and 'Anthropic'-compatible endpoints.
 License: GPL (>= 3)
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
+BugReports: https://github.com/rtemis-org/rtemis.llm/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
