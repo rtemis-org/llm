@@ -1,5 +1,5 @@
 # %% Schema constants and helpers ----
-#' JSON Schema Field Types
+# Allowed JSON Schema field types.
 .SCHEMA_FIELD_TYPES <- c(
   "string",
   "number",
