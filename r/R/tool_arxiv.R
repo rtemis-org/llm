@@ -45,6 +45,7 @@ query_arxiv <- function(
   output_type = c("json", "data.table"),
   verbosity = 1L
 ) {
+  check_dependencies("xml2")
   # Input Validation
   sort_by <- match.arg(sort_by)
   sort_order <- match.arg(sort_order)

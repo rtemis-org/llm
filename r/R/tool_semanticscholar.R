@@ -118,6 +118,7 @@ query_semanticscholar <- function(
   output_type = c("json", "data.table"),
   verbosity = 1L
 ) {
+  check_dependencies("keyring")
   output_type <- match.arg(output_type)
   # --- Validate query ---
   if (!is.character(query) || length(query) != 1L) {
