@@ -1,6 +1,5 @@
 ^LICENSE\.md$
 ^__dev$
-^data-raw$
 ^_pkgdown\.yml$
 ^docs$
 ^specs$
@@ -8,6 +7,6 @@
 ^AGENTS\.md$
 ^CLAUDE\.md$
 ^pkgdown$
-^SKILL\.md$
 ^LICENSE\.md$
 ^Makefile$
+^SKILL\.md$
