@@ -82,5 +82,4 @@ agent <- create_agent(
 
 ```r
 generate(agent, "Explain quantum superposition in seven bullet points.")
-response
 ```
