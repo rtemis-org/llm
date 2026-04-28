@@ -19,7 +19,7 @@
 #'   llmapply(
 #'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
 #'     "gemma4:e4b",
-#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
 #'     temperature = 0.2
 #'   ) |> responses()
 #' }
@@ -97,7 +97,7 @@ responses <- function(x) {
 #'   llmapply(
 #'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
 #'     "gemma4:e4b",
-#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
 #'     temperature = 0.2
 #'   ) |> reasoning()
 #' }
@@ -263,7 +263,7 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #'   llmapply(
 #'     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
 #'     "gemma4:e4b",
-#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+#'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
 #'     temperature = 0.2
 #'   )
 #' }
