@@ -427,14 +427,16 @@ AIThinking <- new_class(
 #' description of every built-in `Tool` exported by the package. Derived at
 #' call time from the namespace — no hardcoded list.
 #'
-#' @return Invisibly, a named list of `Tool` objects keyed by their R handle.
+#' @param verbosity Integer: Verbosity level.
+#'
+#' @return A named list of `Tool` objects keyed by their R handle, invisibly.
 #'
 #' @author EDG
 #' @export
 #'
 #' @examples
 #' available_tools()
-available_tools <- function() {
+available_tools <- function(verbosity = 1L) {
   ns <- asNamespace("rtemis.llm")
   exports <- getNamespaceExports(ns)
   is_tool_export <- vapply(
@@ -450,19 +452,21 @@ available_tools <- function() {
     lapply(tool_handles, get, envir = ns, inherits = FALSE),
     tool_handles
   )
-  cat(fmt("\n  Built-in tools:\n\n"))
-  for (handle in tool_handles) {
-    tool <- tools[[handle]]
-    cat(
-      "* ",
-      highlight(handle),
-      " (function_name: ",
-      tool@function_name,
-      ")\n  ",
-      tool@description,
-      "\n\n",
-      sep = ""
-    )
+  if (verbosity > 0L) {
+    cat(fmt("\n  Built-in tools:\n\n"))
+    for (handle in tool_handles) {
+      tool <- tools[[handle]]
+      cat(
+        "* ",
+        highlight(handle),
+        " (function_name: ",
+        tool@function_name,
+        ")\n  ",
+        tool@description,
+        "\n\n",
+        sep = ""
+      )
+    }
   }
   invisible(tools)
 }
