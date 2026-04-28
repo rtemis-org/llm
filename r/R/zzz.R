@@ -8,11 +8,7 @@
 # ::rtemis.llm::
 # 2025- EDG rtemis.org
 
-# vars
 rtemis.llm_version <- packageVersion("rtemis.llm")
-
-# References
-# Unicode emojis: https://www.unicode.org/emoji/charts/full-emoji-list.html
 
 .onLoad <- function(libname, pkgname) {
   # S7
@@ -27,7 +23,7 @@ rtemis.llm_version <- packageVersion("rtemis.llm")
     bold(pkgname),
     " v.",
     rtemis.llm_version,
-    " \U1F30A",
+    " \U1F99C",
     " ",
     sessionInfo()[[2]]
   ))
