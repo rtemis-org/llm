@@ -28,6 +28,11 @@ test-r:
 	@echo "==> R: Testing rtemis.draw"
 	cd r && Rscript -e "devtools::test(stop_on_failure = TRUE)"
 
+# ── URL Check ────────────────────────────────────────────────────────────────
+url-check-r:
+	@echo "==> R: Checking URLs in rtemis.draw"
+	cd r && Rscript -e "urlchecker::url_check()"
+
 # ── Check ────────────────────────────────────────────────────────────────────
 check: check-r
 
