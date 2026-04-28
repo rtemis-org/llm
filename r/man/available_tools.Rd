@@ -4,10 +4,13 @@
 \alias{available_tools}
 \title{Print built-in tools available for use by agents}
 \usage{
-available_tools()
+available_tools(verbosity = 1L)
+}
+\arguments{
+\item{verbosity}{Integer: Verbosity level.}
 }
 \value{
-Invisibly, a named list of \code{Tool} objects keyed by their R handle.
+A named list of \code{Tool} objects keyed by their R handle, invisibly.
 }
 \description{
 Prints the R handle (\verb{tool_*}), the \code{function_name} the model sees, and the

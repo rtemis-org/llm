@@ -24,7 +24,7 @@ Returns the assistant content from a single \code{Message}, from a flat list of 
   llmapply(
     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
     "gemma4:e4b",
-    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
     temperature = 0.2
   ) |> responses()
 }

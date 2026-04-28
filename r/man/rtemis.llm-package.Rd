@@ -24,6 +24,7 @@ Useful links:
   \item \url{https://www.rtemis.org}
   \item \url{https://docs.rtemis.org/r/llm}
   \item \url{https://docs.rtemis.org/r/llm-api}
+  \item Report bugs at \url{https://github.com/rtemis-org/rtemis.llm/issues}
 }
 
 }

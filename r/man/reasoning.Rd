@@ -24,7 +24,7 @@ field; all other \code{Message} subclasses return \code{NA_character_}. Messages
   llmapply(
     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
     "gemma4:e4b",
-    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
     temperature = 0.2
   ) |> reasoning()
 }
