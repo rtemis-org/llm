@@ -1,13 +1,15 @@
 Package: rtemis.llm
 Title: Large Language Models and Agentic AI
-Version: 0.8.0
-Date: 2026-04-24
+Version: 0.8.1
+Date: 2026-04-28
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Unified interface for creating LLM and Agent objects, generating responses and 
     performing batch inference based on a type-checked and validated 'S7' backend. Features 
-    reasoning, structured output, memory management, and tool use. Supports 'Ollama', 
-    'OpenAI'-compatible, and 'Anthropic'-compatible endpoints.
+    reasoning, structured output, memory management, and tool use. Supports 'Ollama' 
+    <https://docs.ollama.com/api>, 
+    'OpenAI'-compatible <https://developers.openai.com/api/reference/overview>, and 
+    'Anthropic'-compatible <https://platform.claude.com/docs/en/api/getting-started> endpoints.
 License: GPL (>= 3)
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
 BugReports: https://github.com/rtemis-org/rtemis.llm/issues
