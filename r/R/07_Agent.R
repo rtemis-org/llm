@@ -25,8 +25,8 @@
 #' @field allow_custom_tools Logical: If TRUE, the agent may carry tools whose `function_name` is
 #'   not in the package allowlist (`AVAILABLE_TOOLS`). Such tools must supply their own `impl`. The caller
 #'   vouches for the code in any custom tool.
-#' @field logfile Optional character: Path to the agent's security log. Important! If NULL, the package
-#'   defaults to
+#' @field logfile Optional character: Path to the agent's security log. Important! If NULL, the
+#'   value will be set to
 #'   `getOption("rtemis_security_logfile", tempfile("rtemis_security_log_", fileext = ".jsonl"))` to
 #'   satisfy CRAN policy. It is important to set it to a non-temporary location that will persist
 #'   and you can access. Otherwise, security incidents may be missed. Can be overridden per call
@@ -70,6 +70,12 @@ Agent <- new_class(
           content = system_prompt
         ),
         verbosity = verbosity - 1L
+      )
+    }
+    if (is.null(logfile)) {
+      logfile <- getOption(
+        "rtemis_security_logfile",
+        tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
     new_object(
