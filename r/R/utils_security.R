@@ -1,6 +1,5 @@
 # %% Constants ----
 HASH_ALGO <- "sha256"
-KMN_LOG_FILE <- "rtemis.llm_security_log.jsonl"
 
 # Package-authored tool allowlist: every `function_name` listed here is eligible
 # for agent dispatch. Hashes for these functions are captured at `.onLoad` into
@@ -63,7 +62,6 @@ get_keychain_secret <- function(
 #' @param issue Character: Description of the security issue.
 #' @param tool_requested Character: The unauthorized tool that was requested.
 #' @param logfile Character: Path to the log file to append the incident to.
-#'   Defaults to `KMN_LOG_FILE`.
 #'
 #' @return NULL. Called for side effect of logging.
 #'
@@ -74,7 +72,10 @@ report_agent_unauthorized_tool <- function(
   agent,
   issue,
   tool_requested,
-  logfile = KMN_LOG_FILE
+  logfile = getOption(
+    "rtemis_security_logfile",
+    tempfile("rtemis_security_log_", fileext = ".jsonl")
+  )
 ) {
   log_entry <- list(
     timestamp = Sys.time(),
