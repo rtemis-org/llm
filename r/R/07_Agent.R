@@ -500,8 +500,13 @@ method(generate, Agent) <- function(
   if (is.null(output_schema)) {
     output_schema <- x@output_schema
   }
-  # Resolve logfile: per-call arg > agent field
-  logfile <- logfile %||% x@logfile
+  # Resolve logfile: per-call arg > agent field > package default
+  logfile <- logfile %||%
+    x@logfile %||%
+    getOption(
+      "rtemis_security_logfile",
+      tempfile("rtemis_security_log_", fileext = ".jsonl")
+    )
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
