@@ -61,7 +61,7 @@ passed via \code{...} are \strong{not} yet recycled across \code{x} — they are
   llmapply(
     c("burgundy", "crimson", "maroon", "ruby", "scarlet"),
     "gemma4:e4b",
-    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF"
+    system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
     temperature = 0.2
   )
 }

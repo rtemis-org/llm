@@ -10,7 +10,7 @@ format-r:
 # ── Document ─────────────────────────────────────────────────────────────────
 document: document-r
 
-document-r:
+document-r: format-r
 	@echo "=> R: Documenting rtemis.draw"
 	cd r && Rscript -e "devtools::document()"
 
@@ -28,6 +28,11 @@ test-r:
 	@echo "==> R: Testing rtemis.draw"
 	cd r && Rscript -e "devtools::test(stop_on_failure = TRUE)"
 
+# ── URL Check ────────────────────────────────────────────────────────────────
+url-check-r:
+	@echo "==> R: Checking URLs in rtemis.draw"
+	cd r && Rscript -e "urlchecker::url_check()"
+
 # ── Check ────────────────────────────────────────────────────────────────────
 check: check-r
 
@@ -41,3 +46,8 @@ site: site-r
 site-r:
 	@echo "==> R: Building pkgdown site for rtemis.draw"
 	cd r && Rscript -e "pkgdown::build_site()"
+
+# ── Build ────────────────────────────────────────────────────────────────────
+build-r:
+	@echo "==> R: Building rtemis.draw"
+	cd r && R CMD build .

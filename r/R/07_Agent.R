@@ -25,8 +25,11 @@
 #' @field allow_custom_tools Logical: If TRUE, the agent may carry tools whose `function_name` is
 #'   not in the package allowlist (`AVAILABLE_TOOLS`). Such tools must supply their own `impl`. The caller
 #'   vouches for the code in any custom tool.
-#' @field logfile Optional character: Path to the agent's security/audit log. If NULL, the package
-#'   default (`KMN_LOG_FILE`, resolved relative to `getwd()`) is used. Can be overridden per call
+#' @field logfile Optional character: Path to the agent's security log. Important! If NULL, the
+#'   value will be set to
+#'   `getOption("rtemis_security_logfile", tempfile("rtemis_security_log_", fileext = ".jsonl"))` to
+#'   satisfy CRAN policy. It is important to set it to a non-temporary location that will persist
+#'   and you can access. Otherwise, security incidents may be missed. Can be overridden per call
 #'   on [generate].
 #'
 #' @author EDG
@@ -67,6 +70,12 @@ Agent <- new_class(
           content = system_prompt
         ),
         verbosity = verbosity - 1L
+      )
+    }
+    if (is.null(logfile)) {
+      logfile <- getOption(
+        "rtemis_security_logfile",
+        tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
     new_object(
@@ -498,7 +507,12 @@ method(generate, Agent) <- function(
     output_schema <- x@output_schema
   }
   # Resolve logfile: per-call arg > agent field > package default
-  logfile <- logfile %||% x@logfile %||% KMN_LOG_FILE
+  logfile <- logfile %||%
+    x@logfile %||%
+    getOption(
+      "rtemis_security_logfile",
+      tempfile("rtemis_security_log_", fileext = ".jsonl")
+    )
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
