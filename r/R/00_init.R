@@ -305,7 +305,7 @@ check_optional_scalar_character <- function(
 #' @return Called for side effects. Throws an error if checks fail.
 #'
 #' @author EDG
-#' @export
+#' @noRd
 #'
 #' @examples
 #' check_integer_scalar(5L)
