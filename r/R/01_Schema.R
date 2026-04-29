@@ -29,24 +29,10 @@ Field <- S7::new_class(
   "Field",
   properties = list(
     name = character_scalar,
-    type = character_scalar,
+    type = enum(.SCHEMA_FIELD_TYPES, default = "string"),
     description = optional_character_scalar,
-    required = S7::class_logical
-  ),
-  validator = function(self) {
-    check_optional_scalar_character(self@name, "name")
-    if (!nzchar(self@name)) {
-      cli::cli_abort("Field name cannot be empty.")
-    }
-    check_optional_scalar_character(self@description, "description")
-    check_character(self@type, allow_null = FALSE, arg_name = "type")
-    if (length(self@type) != 1L) {
-      cli::cli_abort("{.var type} must be a single JSON Schema type.")
-    }
-    check_enum(self@type, .SCHEMA_FIELD_TYPES, arg_name = "type")
-    check_scalar_logical(self@required, "required")
-    NULL
-  }
+    required = logical_scalar
+  )
 )
 
 
@@ -113,9 +99,6 @@ Schema <- S7::new_class(
     )
   },
   validator = function(self) {
-    # name and description are optional scalar characters
-    check_optional_scalar_character(self@name, "name")
-    check_optional_scalar_character(self@description, "description")
     # at least one field is required
     if (length(self@fields) == 0L) {
       cli::cli_abort(

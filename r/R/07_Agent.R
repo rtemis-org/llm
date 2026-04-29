@@ -89,7 +89,6 @@ Agent <- new_class(
     )
   },
   validator = function(self) {
-    check_scalar_logical(self@allow_custom_tools, "allow_custom_tools")
     if (!is.null(self@tools)) {
       fn_names <- vapply(
         self@tools,
@@ -102,7 +101,7 @@ Agent <- new_class(
       if (length(dups) > 0L) {
         cli::cli_abort(c(
           "Duplicate tool {.field function_name}: {.val {dups}}.",
-          i = "Each tool on an agent must have a unique {.field function_name} so dispatch is deterministic."
+          i = "Each tool on an agent must have a unique {.field function_name}."
         ))
       }
       for (tool in self@tools) {
