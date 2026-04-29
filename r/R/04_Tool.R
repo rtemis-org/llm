@@ -105,6 +105,18 @@ Tool <- new_class(
         )
       }
     }
+    param_names <- vapply(
+      self@parameters,
+      function(p) p@name,
+      character(1L),
+      USE.NAMES = FALSE
+    )
+    if (anyDuplicated(param_names)) {
+      cli::cli_abort(
+        "Tool parameter names must be unique. Rename duplicate parameters."
+      )
+    }
+    NULL
   }
 )
 
