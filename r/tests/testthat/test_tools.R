@@ -62,6 +62,23 @@ test_that("Tool class works", {
 }) # /Tool
 
 
+# %% Tool duplicate parameter names ----
+test_that("Tool rejects duplicate parameter names", {
+  expect_error(
+    Tool(
+      name = "bad_tool",
+      function_name = "bad_fn",
+      description = "Tool with duplicate parameter names.",
+      parameters = list(
+        tool_param(name = "x", type = "number", description = "First x", required = TRUE),
+        tool_param(name = "x", type = "number", description = "Second x", required = TRUE)
+      )
+    ),
+    regexp = "unique"
+  )
+}) # /Tool duplicate parameter names
+
+
 # %% create_tool() ----
 tool_addition <- create_tool(
   name = "Addition",
