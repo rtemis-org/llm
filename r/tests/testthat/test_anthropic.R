@@ -1,6 +1,6 @@
 # test_anthropic.R
 # ::rtemis.llm::
-# 2026 EDG rtemis.org
+# 2026- EDG rtemis.org
 
 # %% AnthropicConfig ----
 test_that("AnthropicConfig class and config_Anthropic work", {

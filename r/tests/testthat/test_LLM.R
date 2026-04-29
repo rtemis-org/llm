@@ -1,6 +1,6 @@
 # test_LLM.R
 # ::rtemis.llm::
-# 2025 EDG rtemis.org
+# 2025- EDG rtemis.org
 
 # %% Settings ----
 model_name <- "qwen3.5:0.8b"
