@@ -72,14 +72,9 @@ report_agent_unauthorized_tool <- function(
   agent,
   issue,
   tool_requested,
-  logfile = NULL
+  logfile
 ) {
-  if (is.null(logfile)) {
-    logfile <- getOption(
-      "rtemis_security_logfile",
-      tempfile("rtemis_security_log_", fileext = ".jsonl")
-    )
-  }
+  .check_scalar_character(logfile, "logfile")
   log_entry <- list(
     timestamp = Sys.time(),
     agent_name = agent@name,

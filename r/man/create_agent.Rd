@@ -40,9 +40,12 @@ created using \link{schema} and \link{field}.}
 code: built-in package guarantees (allowlist + hash verification) do not apply to it.
 Defaults to FALSE.}
 
-\item{logfile}{Optional character: Path to the agent's security/audit log. If NULL, the
-package default (\code{"rtemis.llm_security_log.jsonl"} relative to \code{getwd()}) is used. Can be
-overridden per call via the \code{logfile} argument to \link{generate}.}
+\item{logfile}{Optional character: Path to the agent's security log. Important! If NULL, the
+value will be set to
+\code{getOption("rtemis_security_logfile", tempfile("rtemis_security_log_", fileext = ".jsonl"))} to
+satisfy CRAN policy. It is important to set it to a non-temporary location that will persist
+and you can access. Otherwise, security incidents may be missed. Can be overridden per call
+on \link{generate}.}
 
 \item{verbosity}{Integer: Verbosity level.}
 }
