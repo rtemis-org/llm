@@ -46,3 +46,8 @@ site: site-r
 site-r:
 	@echo "==> R: Building pkgdown site for rtemis.draw"
 	cd r && Rscript -e "pkgdown::build_site()"
+
+# ── Build ────────────────────────────────────────────────────────────────────
+build-r:
+	@echo "==> R: Building rtemis.draw"
+	cd r && R CMD build .
