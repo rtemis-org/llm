@@ -1,11 +1,6 @@
 # Agent.R
 # ::rtemis.llm::
-# 2025 EDG rtemis.org
-
-# References:
-# Chat endpoint: https://docs.ollama.com/api/chat
-# Tool calling: https://docs.ollama.com/capabilities/tool-calling#tool-calling
-# Thinking: https://docs.ollama.com/capabilities/thinking#enable-thinking-in-api-calls
+# 2025- EDG rtemis.org
 
 # --- Internal API ---------------------------------------------------------------------------------
 # %% Agent ----
@@ -39,14 +34,14 @@ Agent <- new_class(
   properties = list(
     llmconfig = LLMConfig,
     state = AgentMemory,
-    system_prompt = optional(S7::class_character),
-    use_memory = class_logical,
+    system_prompt = optional_character_scalar,
+    use_memory = logical_scalar,
     tools = optional(S7::class_list),
-    max_tool_rounds = class_integer,
+    max_tool_rounds = pos_integer_scalar,
     output_schema = optional(Schema),
-    name = optional(S7::class_character),
-    allow_custom_tools = class_logical,
-    logfile = S7::class_character
+    name = optional_character_scalar,
+    allow_custom_tools = logical_scalar,
+    logfile = character_scalar
   ),
   constructor = function(
     llmconfig,
@@ -78,6 +73,7 @@ Agent <- new_class(
         tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
+    check_scalar_character(logfile, "logfile")
     new_object(
       S7_object(),
       llmconfig = llmconfig,
@@ -432,6 +428,9 @@ create_agent <- function(
   logfile = NULL,
   verbosity = 1L
 ) {
+  check_optional_scalar_character(system_prompt, "system_prompt")
+  check_scalar_logical(use_memory, "use_memory")
+  check_optional_scalar_character(logfile, "logfile")
   agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
@@ -511,6 +510,7 @@ method(generate, Agent) <- function(
   }
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
+  check_scalar_character(logfile, "logfile")
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory

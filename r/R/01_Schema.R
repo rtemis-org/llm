@@ -28,9 +28,9 @@
 Field <- S7::new_class(
   "Field",
   properties = list(
-    name = S7::class_character,
-    type = S7::class_character,
-    description = optional(S7::class_character),
+    name = character_scalar,
+    type = character_scalar,
+    description = optional_character_scalar,
     required = S7::class_logical
   ),
   validator = function(self) {
@@ -94,9 +94,9 @@ method(print, Field) <- function(x, output_type = NULL, ...) {
 Schema <- S7::new_class(
   "Schema",
   properties = list(
-    name = optional(S7::class_character),
-    type = class_character,
-    description = optional(S7::class_character),
+    name = optional_character_scalar,
+    type = character_scalar,
+    description = optional_character_scalar,
     fields = class_list
   ),
   constructor = function(

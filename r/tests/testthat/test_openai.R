@@ -1,6 +1,6 @@
 # test_openai.R
 # ::rtemis.llm::
-# 2026 EDG rtemis.org
+# 2026- EDG rtemis.org
 
 # %% OpenAIConfig ----
 test_that("OpenAIConfig class works for local compatible servers", {

@@ -32,15 +32,15 @@ TOOL_MESSAGE_ROLE <- "tool"
 Message <- new_class(
   "Message",
   properties = list(
-    content = class_character,
-    role = class_character,
-    name = optional(S7::class_character),
+    content = character_scalar,
+    role = character_scalar,
+    name = optional_character_scalar,
     timestamp = class_POSIXct,
     metadata = optional(S7::class_list)
   ),
   constructor = function(
-    content = character(0L),
-    role = character(0L),
+    content,
+    role,
     name = NULL,
     metadata = NULL
   ) {
@@ -134,11 +134,12 @@ SystemMessage <- new_class(
     metadata = NULL
   ) {
     new_object(
-      Message(),
-      content = content,
-      role = SYSTEM_MESSAGE_ROLE,
-      name = name,
-      metadata = metadata
+      Message(
+        content = content,
+        role = SYSTEM_MESSAGE_ROLE,
+        name = name,
+        metadata = metadata
+      )
     )
   }
 )
@@ -183,7 +184,7 @@ InputMessage <- new_class(
   "InputMessage",
   parent = Message,
   properties = list(
-    image_path = optional(S7::class_character)
+    image_path = optional_character_scalar
   ),
   constructor = function(
     content,
@@ -192,12 +193,13 @@ InputMessage <- new_class(
     metadata = NULL
   ) {
     new_object(
-      Message(),
-      content = content,
-      role = INPUT_MESSAGE_ROLE,
-      name = name,
-      image_path = image_path,
-      metadata = metadata
+      Message(
+        content = content,
+        role = INPUT_MESSAGE_ROLE,
+        name = name,
+        metadata = metadata
+      ),
+      image_path = image_path
     )
   }
 )
@@ -269,9 +271,9 @@ LLMMessage <- new_class(
   "LLMMessage",
   parent = Message,
   properties = list(
-    reasoning = optional(S7::class_character),
+    reasoning = optional_character_scalar,
     tool_calls = optional(S7::class_list),
-    model_name = class_character
+    model_name = character_scalar
   ),
   constructor = function(
     content,
@@ -282,11 +284,12 @@ LLMMessage <- new_class(
     tool_calls = NULL
   ) {
     new_object(
-      Message(),
-      content = content,
-      role = LLM_MESSAGE_ROLE,
-      name = name,
-      metadata = metadata,
+      Message(
+        content = content,
+        role = LLM_MESSAGE_ROLE,
+        name = name,
+        metadata = metadata
+      ),
       model_name = model_name,
       reasoning = reasoning,
       tool_calls = tool_calls
@@ -492,11 +495,12 @@ AgentMessage <- new_class(
     metadata = NULL
   ) {
     new_object(
-      Message(),
-      content = content,
-      role = AGENT_MESSAGE_ROLE,
-      name = name,
-      metadata = metadata
+      Message(
+        content = content,
+        role = AGENT_MESSAGE_ROLE,
+        name = name,
+        metadata = metadata
+      )
     )
   }
 )
@@ -574,7 +578,7 @@ ToolMessage <- new_class(
   "ToolMessage",
   parent = Message,
   properties = list(
-    tool_call_id = optional(S7::class_character)
+    tool_call_id = optional_character_scalar
   ),
   constructor = function(
     content,
@@ -583,12 +587,13 @@ ToolMessage <- new_class(
     metadata = list()
   ) {
     new_object(
-      Message(),
-      role = TOOL_MESSAGE_ROLE,
-      name = name,
-      content = content,
-      tool_call_id = tool_call_id,
-      metadata = metadata
+      Message(
+        content = content,
+        role = TOOL_MESSAGE_ROLE,
+        name = name,
+        metadata = metadata
+      ),
+      tool_call_id = tool_call_id
     )
   }
 )

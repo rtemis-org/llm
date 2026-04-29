@@ -1,6 +1,9 @@
-# References:
-# Ollama API: https://docs.ollama.com/
-# Ollama tool calling: https://docs.ollama.com/capabilities/tool-calling
+# Ollama References:
+# Chat endpoint: https://docs.ollama.com/api/chat
+# Thinking: https://docs.ollama.com/capabilities/thinking#enable-thinking-in-api-calls
+# Tool calling: https://docs.ollama.com/capabilities/tool-calling#tool-calling
+# OpenAI API: https://developers.openai.com/api/reference/overview
+# Anthropic API: https://platform.claude.com/docs/en/api/getting-started
 
 # %% Constants ----
 TEMPERATURE_DEFAULT <- 0.3
@@ -35,10 +38,10 @@ ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
 LLMConfig <- new_class(
   "LLMConfig",
   properties = list(
-    model_name = class_character,
+    model_name = character_scalar,
     temperature = class_numeric,
-    backend = class_character,
-    base_url = class_character
+    backend = character_scalar,
+    base_url = character_scalar
   ),
   constructor = function(
     model_name,
@@ -151,11 +154,12 @@ OpenAIConfig <- new_class(
   "OpenAIConfig",
   parent = LLMConfig,
   properties = list(
-    api_key = optional(S7::class_character),
-    api_key_env = class_character,
-    keychain_service = optional(S7::class_character),
-    organization = optional(S7::class_character),
-    project = optional(S7::class_character),
+    temperature = bounded_double_property(0, 2),
+    api_key = optional_character_scalar,
+    api_key_env = character_scalar,
+    keychain_service = optional_character_scalar,
+    organization = optional_character_scalar,
+    project = optional_character_scalar,
     timeout = class_numeric,
     extra_headers = optional(S7::class_list),
     extra_body = optional(S7::class_list),
@@ -177,20 +181,20 @@ OpenAIConfig <- new_class(
     enable_thinking = NULL,
     validate_model = FALSE
   ) {
-    .check_scalar_character(model_name, "model_name")
-    .check_scalar_character(base_url, "base_url")
+    check_scalar_character(model_name, "model_name")
+    check_scalar_character(base_url, "base_url")
     if (!is.null(api_key)) {
-      .check_scalar_character(api_key, "api_key")
+      check_scalar_character(api_key, "api_key")
     }
-    .check_scalar_character(api_key_env, "api_key_env")
+    check_scalar_character(api_key_env, "api_key_env")
     if (!is.null(keychain_service)) {
-      .check_scalar_character(keychain_service, "keychain_service")
+      check_scalar_character(keychain_service, "keychain_service")
     }
     if (!is.null(organization)) {
-      .check_scalar_character(organization, "organization")
+      check_scalar_character(organization, "organization")
     }
     if (!is.null(project)) {
-      .check_scalar_character(project, "project")
+      check_scalar_character(project, "project")
     }
     if (length(timeout) != 1L || is.na(timeout) || timeout <= 0) {
       cli::cli_abort("{.var timeout} must be a positive numeric scalar.")
@@ -260,11 +264,12 @@ AnthropicConfig <- new_class(
   "AnthropicConfig",
   parent = LLMConfig,
   properties = list(
-    api_key = optional(S7::class_character),
-    api_key_env = class_character,
-    keychain_service = optional(S7::class_character),
-    anthropic_version = class_character,
-    anthropic_beta = optional(S7::class_character),
+    temperature = prob_scalar,
+    api_key = optional_character_scalar,
+    api_key_env = character_scalar,
+    keychain_service = optional_character_scalar,
+    anthropic_version = character_scalar,
+    anthropic_beta = optional_character_scalar,
     max_tokens = class_integer,
     timeout = class_numeric,
     extra_headers = optional(S7::class_list),
@@ -288,16 +293,16 @@ AnthropicConfig <- new_class(
     thinking_budget_tokens = NULL,
     validate_model = FALSE
   ) {
-    .check_scalar_character(model_name, "model_name")
-    .check_scalar_character(base_url, "base_url")
+    check_scalar_character(model_name, "model_name")
+    check_scalar_character(base_url, "base_url")
     if (!is.null(api_key)) {
-      .check_scalar_character(api_key, "api_key")
+      check_scalar_character(api_key, "api_key")
     }
-    .check_scalar_character(api_key_env, "api_key_env")
+    check_scalar_character(api_key_env, "api_key_env")
     if (!is.null(keychain_service)) {
-      .check_scalar_character(keychain_service, "keychain_service")
+      check_scalar_character(keychain_service, "keychain_service")
     }
-    .check_scalar_character(anthropic_version, "anthropic_version")
+    check_scalar_character(anthropic_version, "anthropic_version")
     if (!is.null(anthropic_beta)) {
       if (
         !is.character(anthropic_beta) ||

@@ -1,3 +1,313 @@
+# %% --- S7 Properties -----------------------------------------------------------------------------
+
+# %% Logical ----
+#' Logical scalar S7 property
+#'
+#' S7 property accepting a single non-NA logical value.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+logical_scalar <- new_property(
+  class_logical,
+  validator = function(value) {
+    if (length(value) != 1L || is.na(value)) {
+      return("must be a logical scalar (TRUE or FALSE)")
+    }
+    NULL
+  }
+)
+
+
+# %% Character ----
+#' Non-empty character scalar S7 property
+#'
+#' S7 property accepting a single non-NA, non-empty (after trimming whitespace) string.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+character_scalar <- new_property(
+  class_character,
+  validator = function(value) {
+    if (length(value) != 1L || is.na(value) || !nzchar(trimws(value))) {
+      return("must be a non-empty character scalar")
+    }
+    NULL
+  }
+)
+
+
+#' Optional non-empty character scalar S7 property
+#'
+#' S7 property accepting `NULL` or a single non-NA, non-empty (after trimming whitespace) string.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+optional_character_scalar <- new_property(
+  class = new_union(class_character, NULL),
+  default = NULL,
+  validator = function(value) {
+    if (
+      !is.null(value) &&
+        (length(value) != 1L || is.na(value) || !nzchar(trimws(value)))
+    ) {
+      return("must be NULL or a non-empty character scalar")
+    }
+    NULL
+  }
+)
+
+
+#' Positive integer scalar S7 property
+#'
+#' S7 property accepting a single non-NA integer value strictly greater than zero (e.g. `1L`).
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+pos_integer_scalar <- new_property(
+  class_integer,
+  validator = function(value) {
+    if (length(value) != 1L || is.na(value) || value <= 0L) {
+      return("must be a positive integer scalar (> 0, e.g. 1L)")
+    }
+    NULL
+  }
+)
+
+
+# %% Bounded double scalars ----
+#' Probability scalar S7 property
+#'
+#' S7 property accepting a single finite double in \eqn{[0, 1]}.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+prob_scalar <- new_property(
+  class_double,
+  validator = function(value) {
+    if (length(value) != 1L || is.na(value) || value < 0 || value > 1) {
+      return("must be a finite double in [0, 1]")
+    }
+    NULL
+  }
+)
+
+
+# %% Factory ----
+#' Create a bounded double S7 property
+#'
+#' Returns a `new_property()` for a double scalar constrained to a given interval.
+#' Useful for bounds not covered by the pre-built properties.
+#'
+#' @param lower Numeric scalar. Lower bound. Default `-Inf`.
+#' @param upper Numeric scalar. Upper bound. Default `Inf`.
+#' @param lower_open Logical scalar. If `TRUE`, lower bound is exclusive `(lower, ...]`.
+#'   Default `FALSE`.
+#' @param upper_open Logical scalar. If `TRUE`, upper bound is exclusive `[..., upper)`.
+#'   Default `FALSE`.
+#' @param nullable Logical scalar. If `TRUE`, `NULL` is also accepted. Default `FALSE`.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' # Learning rate in (0, 1]
+#' lr_prop <- bounded_double_property(0, 1, lower_open = TRUE)
+bounded_double_property <- function(
+  lower = -Inf,
+  upper = Inf,
+  lower_open = FALSE,
+  upper_open = FALSE,
+  nullable = FALSE
+) {
+  lower_sym <- if (lower_open) "(" else "["
+  upper_sym <- if (upper_open) ")" else "]"
+  bound_desc <- paste0(
+    "must be a finite double in ",
+    lower_sym,
+    lower,
+    ", ",
+    upper,
+    upper_sym
+  )
+
+  check_lower <- if (lower_open) {
+    function(v) v > lower
+  } else {
+    function(v) v >= lower
+  }
+  check_upper <- if (upper_open) {
+    function(v) v < upper
+  } else {
+    function(v) v <= upper
+  }
+
+  cls <- if (nullable) new_union(class_double, NULL) else class_double
+
+  new_property(
+    class = cls,
+    validator = function(value) {
+      if (is.null(value)) {
+        return(NULL)
+      }
+      if (length(value) != 1L || is.na(value) || !is.finite(value)) {
+        return(paste0(bound_desc, " (must be a finite scalar)"))
+      }
+      if (!check_lower(value) || !check_upper(value)) {
+        return(bound_desc)
+      }
+      NULL
+    }
+  )
+}
+
+
+# %% --- Checks ------------------------------------------------------------------------------------
+# %% check_scalar_character() ----
+#' Check Scalar Character
+#'
+#' @param x Object: Object to check.
+#' @param name Character: Argument name to report.
+#'
+#' @return NULL, invisibly.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+check_scalar_character <- function(x, name) {
+  if (
+    !is.character(x) ||
+      length(x) != 1L ||
+      is.na(x) ||
+      !nzchar(trimws(x))
+  ) {
+    cli::cli_abort("{.var {name}} must be a non-empty character scalar.")
+  }
+  invisible(NULL)
+}
+
+
+# %% check_optional_scalar_character ----
+#' Check Optional Scalar Character
+#'
+#' @param x Optional Character: Value to check.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+#'
+#' @examples
+#' check_optional_scalar_character(NULL, "my_arg") # Passes
+#' check_optional_scalar_character("hello", "my_arg") # Passes
+#' # Throw error:
+#' try(check_optional_scalar_character(c("hello", "world"), "my_arg"))
+#' try(check_optional_scalar_character(123, "my_arg"))
+check_optional_scalar_character <- function(
+  x,
+  arg_name = deparse(substitute(x))
+) {
+  check_character(x, allow_null = TRUE, arg_name = arg_name)
+  if (!is.null(x) && length(x) != 1L) {
+    cli::cli_abort(
+      "{.var {arg_name}} must be NULL or a single string."
+    )
+  }
+  invisible()
+}
+
+
+# %% check_double_scalar ----
+#' Check double scalar
+#'
+#' @param x Numeric: Value to check. Must be a single non-NA number (integer inputs are accepted).
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' check_double_scalar(3.14)
+#' check_double_scalar(1L)
+#' # Throw error:
+#' try(check_double_scalar(NA_real_))
+#' try(check_double_scalar(c(1.0, 2.0)))
+check_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
+  if (!is.numeric(x)) {
+    cli::cli_abort("{.var {arg_name}} must be numeric.")
+  }
+  if (length(x) != 1L || is.na(x)) {
+    cli::cli_abort("{.var {arg_name}} must be a single non-NA number.")
+  }
+  invisible()
+} # /rtemis.core::check_double_scalar
+
+
+# %% check_optional_pos_double_scalar ----
+#' Check optional positive double scalar
+#'
+#' @param x Optional Numeric: Value to check. Must be `NULL` or a single finite number
+#'   strictly greater than zero.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' check_optional_pos_double_scalar(NULL)
+#' check_optional_pos_double_scalar(2.5)
+#' # Throw error:
+#' try(check_optional_pos_double_scalar(0))
+check_optional_pos_double_scalar <- function(
+  x,
+  arg_name = deparse(substitute(x))
+) {
+  if (is.null(x)) {
+    return(invisible())
+  }
+  check_pos_double_scalar(x, arg_name = arg_name)
+  invisible()
+} # /rtemis.core::check_optional_pos_double_scalar
+
+
+# %% check_pos_double_scalar ----
+#' Check positive double scalar
+#'
+#' @param x Numeric: Value to check. Must be a single finite number strictly greater than zero.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' check_pos_double_scalar(0.001)
+#' check_pos_double_scalar(100)
+#' # Throw error:
+#' try(check_pos_double_scalar(0))
+#' try(check_pos_double_scalar(-1))
+#' try(check_pos_double_scalar(Inf))
+check_pos_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
+  check_double_scalar(x, arg_name = arg_name)
+  if (!is.finite(x) || x <= 0) {
+    cli::cli_abort("{.var {arg_name}} must be a finite number greater than 0.")
+  }
+  invisible()
+} # /rtemis.core::check_pos_double_scalar
+
+
 # --- Generics -------------------------------------------------------------------------------------
 
 # %% get_model_name ----
@@ -337,6 +647,8 @@ build_tool_message <- new_generic("build_tool_message", "x")
 build_response_format <- new_generic("build_response_format", "x")
 
 
+# %% --- Classes -----------------------------------------------------------------------------------
+
 # %% AIThinking Class ----
 #' @title AIThinking Class
 #'
@@ -351,7 +663,7 @@ build_response_format <- new_generic("build_response_format", "x")
 AIThinking <- new_class(
   "AIThinking",
   properties = list(
-    content = class_character,
+    content = character_scalar,
     metadata = class_list
   ),
   constructor = function(content, metadata = list()) {
@@ -363,30 +675,8 @@ AIThinking <- new_class(
   }
 )
 
-# %% utils ----
-# %% .check_scalar_character() ----
-#' Check Scalar Character
-#'
-#' @param x Object: Object to check.
-#' @param name Character: Argument name to report.
-#'
-#' @return NULL, invisibly.
-#'
-#' @author EDG
-#' @keywords internal
-#' @noRd
-.check_scalar_character <- function(x, name) {
-  if (
-    !is.character(x) ||
-      length(x) != 1L ||
-      is.na(x) ||
-      !nzchar(trimws(x))
-  ) {
-    cli::cli_abort("{.var {name}} must be a non-empty character scalar.")
-  }
-  invisible(NULL)
-}
 
+# %% --- Utils -------------------------------------------------------------------------------------
 
 # %% .is_named_list() ----
 #' Test Named List
@@ -416,7 +706,7 @@ AIThinking <- new_class(
 #' @keywords internal
 #' @noRd
 .clean_base_url <- function(x) {
-  .check_scalar_character(x, "base_url")
+  check_scalar_character(x, "base_url")
   sub("/+$", "", trimws(x))
 }
 

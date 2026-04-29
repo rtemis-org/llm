@@ -17,9 +17,12 @@
 LLM <- new_class(
   "LLM",
   properties = list(
-    name = optional(S7::class_character),
-    system_prompt = class_character
-  )
+    name = optional_character_scalar,
+    system_prompt = character_scalar
+  ),
+  constructor = function(name = NULL, system_prompt) {
+    new_object(S7_object(), name = name, system_prompt = system_prompt)
+  }
 ) # rtemis.llm::LLM
 
 
@@ -68,7 +71,6 @@ Ollama <- new_class(
   "Ollama",
   parent = LLM,
   properties = list(
-    name = optional(S7::class_character),
     config = OllamaConfig,
     output_schema = optional(Schema)
   ),
@@ -81,9 +83,9 @@ Ollama <- new_class(
     ollama_check_model(config@model_name)
     new_object(
       LLM(
+        name = name,
         system_prompt = system_prompt
       ),
-      name = name,
       config = config,
       output_schema = output_schema
     )
@@ -147,7 +149,6 @@ OpenAI <- new_class(
   "OpenAI",
   parent = LLM,
   properties = list(
-    name = optional(S7::class_character),
     config = OpenAIConfig,
     output_schema = optional(Schema)
   ),
@@ -159,9 +160,9 @@ OpenAI <- new_class(
   ) {
     new_object(
       LLM(
+        name = name,
         system_prompt = system_prompt
       ),
-      name = name,
       config = config,
       output_schema = output_schema
     )
@@ -221,7 +222,6 @@ Anthropic <- new_class(
   "Anthropic",
   parent = LLM,
   properties = list(
-    name = optional(S7::class_character),
     config = AnthropicConfig,
     output_schema = optional(Schema)
   ),
@@ -233,9 +233,9 @@ Anthropic <- new_class(
   ) {
     new_object(
       LLM(
+        name = name,
         system_prompt = system_prompt
       ),
-      name = name,
       config = config,
       output_schema = output_schema
     )
@@ -609,6 +609,10 @@ create_Ollama <- function(
   think = NULL
 ) {
   ollama_check_model(model_name)
+  check_scalar_character(system_prompt, "system_prompt")
+  check_optional_pos_double_scalar(temperature, "temperature")
+  check_optional_scalar_character(name, "name")
+  check_scalar_character(base_url, "base_url")
   Ollama(
     name = name,
     config = OllamaConfig(
@@ -670,6 +674,9 @@ config_OpenAI <- function(
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
+  check_scalar_character(model_name)
+  check_optional_pos_double_scalar(temperature, "temperature")
+  check_scalar_character(base_url, "base_url")
   OpenAIConfig(
     model_name = model_name,
     temperature = temperature,
@@ -739,6 +746,11 @@ create_OpenAI <- function(
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
+  check_scalar_character(model_name)
+  check_scalar_character(system_prompt, "system_prompt")
+  check_optional_pos_double_scalar(temperature, "temperature")
+  check_optional_scalar_character(name, "name")
+  check_scalar_character(base_url, "base_url")
   OpenAI(
     name = name,
     config = config_OpenAI(
@@ -815,6 +827,9 @@ config_Anthropic <- function(
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
+  check_scalar_character(model_name)
+  check_optional_pos_double_scalar(temperature, "temperature")
+  check_scalar_character(base_url, "base_url")
   AnthropicConfig(
     model_name = model_name,
     temperature = temperature,
@@ -887,6 +902,11 @@ create_Anthropic <- function(
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
+  check_scalar_character(model_name)
+  check_scalar_character(system_prompt, "system_prompt")
+  check_optional_pos_double_scalar(temperature, "temperature")
+  check_optional_scalar_character(name, "name")
+  check_scalar_character(base_url, "base_url")
   Anthropic(
     name = name,
     config = config_Anthropic(

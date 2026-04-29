@@ -1,6 +1,6 @@
 # test-tools.R
 # ::rtemis.llm::
-# 2025 EDG rtemis.org
+# 2025- EDG rtemis.org
 
 # %% ToolParameter Class ----
 test_that("ToolParameter class works", {
@@ -38,6 +38,7 @@ test_that("tool_param() works", {
 test_that("Tool class works", {
   tool <- Tool(
     name = "addition",
+    function_name = "add_numbers",
     description = "Performs arithmetic addition of two numbers.",
     parameters = list(
       tool_param(
