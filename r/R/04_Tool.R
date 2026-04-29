@@ -15,20 +15,10 @@ ToolParameter <- new_class(
   "ToolParameter",
   properties = list(
     name = character_scalar,
-    type = character_scalar,
+    type = enum(.SCHEMA_FIELD_TYPES),
     description = character_scalar,
     required = logical_scalar
-  ),
-  validator = function(self) {
-    check_scalar_character(self@name, "name")
-    if (!nzchar(self@name)) {
-      cli::cli_abort("ToolParameter name cannot be empty.")
-    }
-    check_scalar_character(self@description, "description")
-    check_enum(self@type, .SCHEMA_FIELD_TYPES, arg_name = "type")
-    check_scalar_logical(self@required, "required")
-    NULL
-  }
+  )
 )
 
 
@@ -115,6 +105,18 @@ Tool <- new_class(
         )
       }
     }
+    param_names <- vapply(
+      self@parameters,
+      function(p) p@name,
+      character(1L),
+      USE.NAMES = FALSE
+    )
+    if (anyDuplicated(param_names)) {
+      cli::cli_abort(
+        "Tool parameter names must be unique. Rename duplicate parameters."
+      )
+    }
+    NULL
   }
 )
 
