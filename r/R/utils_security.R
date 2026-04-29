@@ -74,7 +74,7 @@ report_agent_unauthorized_tool <- function(
   tool_requested,
   logfile
 ) {
-  .check_scalar_character(logfile, "logfile")
+  check_scalar_character(logfile, "logfile")
   log_entry <- list(
     timestamp = Sys.time(),
     agent_name = agent@name,

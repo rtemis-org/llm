@@ -1,11 +1,6 @@
 # Agent.R
 # ::rtemis.llm::
-# 2025 EDG rtemis.org
-
-# References:
-# Chat endpoint: https://docs.ollama.com/api/chat
-# Tool calling: https://docs.ollama.com/capabilities/tool-calling#tool-calling
-# Thinking: https://docs.ollama.com/capabilities/thinking#enable-thinking-in-api-calls
+# 2025- EDG rtemis.org
 
 # --- Internal API ---------------------------------------------------------------------------------
 # %% Agent ----
@@ -78,7 +73,7 @@ Agent <- new_class(
         tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
-    .check_scalar_character(logfile, "logfile")
+    check_scalar_character(logfile, "logfile")
     new_object(
       S7_object(),
       llmconfig = llmconfig,
@@ -433,6 +428,9 @@ create_agent <- function(
   logfile = NULL,
   verbosity = 1L
 ) {
+  check_optional_scalar_character(system_prompt, "system_prompt")
+  check_scalar_logical(use_memory, "use_memory")
+  check_optional_scalar_character(logfile, "logfile")
   agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
@@ -512,7 +510,7 @@ method(generate, Agent) <- function(
   }
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
-  .check_scalar_character(logfile, "logfile")
+  check_scalar_character(logfile, "logfile")
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
