@@ -113,7 +113,7 @@ prob_scalar <- new_property(
 #'
 #' @return An S7 property object.
 #' @author EDG
-#' @export
+#' @noRd
 #'
 #' @examples
 #' # Learning rate in (0, 1]
@@ -233,7 +233,7 @@ check_optional_scalar_character <- function(
 #' @return Called for side effects. Throws an error if checks fail.
 #'
 #' @author EDG
-#' @export
+#' @noRd
 #'
 #' @examples
 #' check_double_scalar(3.14)
@@ -290,7 +290,7 @@ check_optional_pos_double_scalar <- function(
 #' @return Called for side effects. Throws an error if checks fail.
 #'
 #' @author EDG
-#' @export
+#' @noRd
 #'
 #' @examples
 #' check_pos_double_scalar(0.001)
