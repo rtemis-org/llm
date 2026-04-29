@@ -428,7 +428,8 @@ create_agent <- function(
   verbosity = 1L
 ) {
   check_optional_scalar_character(system_prompt, "system_prompt")
-  check_scalar_logical(use_memory, "use_memory")
+  check_logical_scalar(use_memory, "use_memory")
+  max_tool_rounds <- clean_int(max_tool_rounds)
   check_pos_integer_scalar(max_tool_rounds, "max_tool_rounds")
   check_optional_scalar_character(name, "name")
   check_logical_scalar(allow_custom_tools, "allow_custom_tools")
