@@ -25,8 +25,8 @@
 #' @field allow_custom_tools Logical: If TRUE, the agent may carry tools whose `function_name` is
 #'   not in the package allowlist (`AVAILABLE_TOOLS`). Such tools must supply their own `impl`. The caller
 #'   vouches for the code in any custom tool.
-#' @field logfile Optional character: Path to the agent's security log. Important! If NULL, the
-#'   value will be set to
+#' @field logfile Character: Path to the agent's security log. Important! If NULL is passed to
+#'   constructor, the value will be set to
 #'   `getOption("rtemis_security_logfile", tempfile("rtemis_security_log_", fileext = ".jsonl"))` to
 #'   satisfy CRAN policy. It is important to set it to a non-temporary location that will persist
 #'   and you can access. Otherwise, security incidents may be missed. Can be overridden per call
@@ -46,7 +46,7 @@ Agent <- new_class(
     output_schema = optional(Schema),
     name = optional(S7::class_character),
     allow_custom_tools = class_logical,
-    logfile = optional(S7::class_character)
+    logfile = S7::class_character
   ),
   constructor = function(
     llmconfig,
@@ -395,9 +395,12 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #'   [create_custom_tool] and supply their own function body. The caller vouches for that
 #'   code: built-in package guarantees (allowlist + hash verification) do not apply to it.
 #'   Defaults to FALSE.
-#' @param logfile Optional character: Path to the agent's security/audit log. If NULL, the
-#'   package default (`"rtemis.llm_security_log.jsonl"` relative to `getwd()`) is used. Can be
-#'   overridden per call via the `logfile` argument to [generate].
+#' @param logfile Optional character: Path to the agent's security log. Important! If NULL, the
+#'   value will be set to
+#'   `getOption("rtemis_security_logfile", tempfile("rtemis_security_log_", fileext = ".jsonl"))` to
+#'   satisfy CRAN policy. It is important to set it to a non-temporary location that will persist
+#'   and you can access. Otherwise, security incidents may be missed. Can be overridden per call
+#'   on [generate].
 #' @param verbosity Integer: Verbosity level.
 #'
 #' @return `Agent` object
@@ -470,7 +473,7 @@ create_agent <- function(
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
 #' @param logfile Optional character: Per-call override for the audit/security log path. If NULL,
-#'   falls back to the agent's `logfile` field, then to the package default.
+#'   defaults to the agent's `logfile` field (set this using [create_agent]).
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Backend-specific per-call options forwarded to the request builder
 #' (e.g. `top_k`, `seed`). See [generate].
@@ -506,13 +509,8 @@ method(generate, Agent) <- function(
   if (is.null(output_schema)) {
     output_schema <- x@output_schema
   }
-  # Resolve logfile: per-call arg > agent field > package default
-  logfile <- logfile %||%
-    x@logfile %||%
-    getOption(
-      "rtemis_security_logfile",
-      tempfile("rtemis_security_log_", fileext = ".jsonl")
-    )
+  # Resolve logfile: per-call arg > agent field
+  logfile <- logfile %||% x@logfile
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
