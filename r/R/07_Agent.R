@@ -78,6 +78,7 @@ Agent <- new_class(
         tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
+    .check_scalar_character(logfile, "logfile")
     new_object(
       S7_object(),
       llmconfig = llmconfig,
