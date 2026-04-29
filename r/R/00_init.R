@@ -292,6 +292,41 @@ check_optional_scalar_character <- function(
 }
 
 
+# %% check_integer_scalar ----
+#' Check integer scalar
+#'
+#' @details
+#' Accepts any single numeric value that is a whole number. Integer-typed inputs (`1L`) and
+#' double-typed whole numbers (`1`, `100`) are both accepted for user convenience.
+#'
+#' @param x Numeric: Value to check. Must be a single non-NA whole number.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' check_integer_scalar(5L)
+#' check_integer_scalar(100)
+#' # Throw error:
+#' try(check_integer_scalar(1.5))
+#' try(check_integer_scalar(NA_integer_))
+check_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
+  if (!is.numeric(x)) {
+    cli::cli_abort("{.var {arg_name}} must be numeric.")
+  }
+  if (length(x) != 1L || is.na(x)) {
+    cli::cli_abort("{.var {arg_name}} must be a single non-NA number.")
+  }
+  if (x != round(x)) {
+    cli::cli_abort("{.var {arg_name}} must be a whole number.")
+  }
+  invisible()
+} # /rtemis.core::check_integer_scalar
+
+
 # %% check_pos_integer_scalar ----
 #' Check positive integer scalar
 #'
