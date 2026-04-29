@@ -190,8 +190,8 @@ enum <- function(values, default = NULL, nullable = FALSE) {
       if (is.null(value)) {
         return(NULL)
       }
-      if (length(value) != 1L) {
-        return("must be a single character scalar")
+      if (length(value) != 1L || is.na(value)) {
+        return("must be a single non-NA character scalar")
       }
       if (!value %in% values) {
         return(paste0(
