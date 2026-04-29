@@ -14,10 +14,10 @@
 ToolParameter <- new_class(
   "ToolParameter",
   properties = list(
-    name = class_character,
-    type = class_character,
-    description = class_character,
-    required = class_logical
+    name = character_scalar,
+    type = character_scalar,
+    description = character_scalar,
+    required = logical_scalar
   ),
   validator = function(self) {
     check_scalar_character(self@name, "name")
@@ -101,9 +101,9 @@ tool_param <- function(
 Tool <- new_class(
   "Tool",
   properties = list(
-    name = class_character,
-    function_name = class_character,
-    description = class_character,
+    name = character_scalar,
+    function_name = character_scalar,
+    description = character_scalar,
     parameters = class_list,
     impl = optional(class_function)
   ),

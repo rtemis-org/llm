@@ -34,14 +34,14 @@ Agent <- new_class(
   properties = list(
     llmconfig = LLMConfig,
     state = AgentMemory,
-    system_prompt = optional(S7::class_character),
-    use_memory = class_logical,
+    system_prompt = optional_character_scalar,
+    use_memory = logical_scalar,
     tools = optional(S7::class_list),
-    max_tool_rounds = class_integer,
+    max_tool_rounds = pos_integer_scalar,
     output_schema = optional(Schema),
-    name = optional(S7::class_character),
-    allow_custom_tools = class_logical,
-    logfile = S7::class_character
+    name = optional_character_scalar,
+    allow_custom_tools = logical_scalar,
+    logfile = character_scalar
   ),
   constructor = function(
     llmconfig,

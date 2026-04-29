@@ -38,10 +38,10 @@ ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
 LLMConfig <- new_class(
   "LLMConfig",
   properties = list(
-    model_name = class_character,
+    model_name = character_scalar,
     temperature = class_numeric,
-    backend = class_character,
-    base_url = class_character
+    backend = character_scalar,
+    base_url = character_scalar
   ),
   constructor = function(
     model_name,
@@ -154,11 +154,12 @@ OpenAIConfig <- new_class(
   "OpenAIConfig",
   parent = LLMConfig,
   properties = list(
-    api_key = optional(S7::class_character),
-    api_key_env = class_character,
-    keychain_service = optional(S7::class_character),
-    organization = optional(S7::class_character),
-    project = optional(S7::class_character),
+    temperature = bounded_double_property(0, 2),
+    api_key = optional_character_scalar,
+    api_key_env = character_scalar,
+    keychain_service = optional_character_scalar,
+    organization = optional_character_scalar,
+    project = optional_character_scalar,
     timeout = class_numeric,
     extra_headers = optional(S7::class_list),
     extra_body = optional(S7::class_list),
@@ -263,11 +264,12 @@ AnthropicConfig <- new_class(
   "AnthropicConfig",
   parent = LLMConfig,
   properties = list(
-    api_key = optional(S7::class_character),
-    api_key_env = class_character,
-    keychain_service = optional(S7::class_character),
-    anthropic_version = class_character,
-    anthropic_beta = optional(S7::class_character),
+    temperature = prob_scalar,
+    api_key = optional_character_scalar,
+    api_key_env = character_scalar,
+    keychain_service = optional_character_scalar,
+    anthropic_version = character_scalar,
+    anthropic_beta = optional_character_scalar,
     max_tokens = class_integer,
     timeout = class_numeric,
     extra_headers = optional(S7::class_list),
