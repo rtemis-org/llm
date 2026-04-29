@@ -207,6 +207,35 @@ enum <- function(values, default = NULL, nullable = FALSE) {
 
 
 # %% --- Checks ------------------------------------------------------------------------------------
+# %% check_logical_scalar ----
+#' Check logical scalar
+#'
+#' @param x Logical: Value to check. Must be a single non-NA `TRUE` or `FALSE`.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' check_logical_scalar(TRUE)
+#' check_logical_scalar(FALSE)
+#' # Throw error:
+#' try(check_logical_scalar(NA))
+#' try(check_logical_scalar(1L))
+#' try(check_logical_scalar(c(TRUE, FALSE)))
+check_logical_scalar <- function(x, arg_name = deparse(substitute(x))) {
+  if (!is.logical(x)) {
+    cli::cli_abort("{.var {arg_name}} must be TRUE or FALSE.")
+  }
+  if (length(x) != 1L || is.na(x)) {
+    cli::cli_abort("{.var {arg_name}} must be a single TRUE or FALSE.")
+  }
+  invisible()
+} # /rtemis.core::check_logical_scalar
+
+
 # %% check_scalar_character() ----
 #' Check Scalar Character
 #'
@@ -261,6 +290,38 @@ check_optional_scalar_character <- function(
   }
   invisible()
 }
+
+
+# %% check_pos_integer_scalar ----
+#' Check positive integer scalar
+#'
+#' @details
+#' Accepts any single numeric value that is a whole number strictly greater than zero.
+#' Integer-typed inputs (`1L`) and double-typed whole numbers (`1`, `100`) are both accepted for
+#' user convenience.
+#'
+#' @param x Numeric: Value to check. Must be a single non-NA whole number greater than zero.
+#' @param arg_name Character: Argument name to use in error messages.
+#'
+#' @return Called for side effects. Throws an error if checks fail.
+#'
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' check_pos_integer_scalar(1L)
+#' check_pos_integer_scalar(10)
+#' # Throw error:
+#' try(check_pos_integer_scalar(0))
+#' try(check_pos_integer_scalar(-1L))
+#' try(check_pos_integer_scalar(1.5))
+check_pos_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
+  check_integer_scalar(x, arg_name = arg_name)
+  if (x <= 0) {
+    cli::cli_abort("{.var {arg_name}} must be a whole number greater than 0.")
+  }
+  invisible()
+} # /rtemis.core::check_pos_integer_scalar
 
 
 # %% check_double_scalar ----
@@ -782,17 +843,17 @@ available_tools <- function(verbosity = 1L) {
     tool_handles
   )
   if (verbosity > 0L) {
-    cat(fmt("\n  Built-in tools:\n\n"))
+    message(fmt("\n  Built-in tools:\n", bold = TRUE))
     for (handle in tool_handles) {
       tool <- tools[[handle]]
-      cat(
+      message(
         "* ",
         highlight(handle),
         " (function_name: ",
         tool@function_name,
         ")\n  ",
         tool@description,
-        "\n\n",
+        "\n",
         sep = ""
       )
     }
