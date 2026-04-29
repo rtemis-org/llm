@@ -167,6 +167,45 @@ bounded_double_property <- function(
 }
 
 
+# %% enum() ----
+#' Create an enum S7 property
+#'
+#' Returns a `new_property()` for a character scalar constrained to a fixed set of allowed values.
+#'
+#' @param values Character: Allowed values.
+#' @param default Optional Character: Default value.
+#' @param nullable Logical scalar. If `TRUE`, `NULL` is also accepted. Default `FALSE`.
+#'
+#' @return An S7 property object.
+#' @author EDG
+#' @noRd
+#'
+#' @examples
+#' type_prop <- enum(c("string", "number", "boolean"), default = "string")
+enum <- function(values, default = NULL, nullable = FALSE) {
+  cls <- if (nullable) new_union(class_character, NULL) else class_character
+  new_property(
+    class = cls,
+    validator = function(value) {
+      if (is.null(value)) {
+        return(NULL)
+      }
+      if (length(value) != 1L) {
+        return("must be a single character scalar")
+      }
+      if (!value %in% values) {
+        return(paste0(
+          "must be one of ",
+          paste(paste0('"', values, '"'), collapse = ", ")
+        ))
+      }
+      NULL
+    },
+    default = default
+  )
+}
+
+
 # %% --- Checks ------------------------------------------------------------------------------------
 # %% check_scalar_character() ----
 #' Check Scalar Character
