@@ -511,6 +511,7 @@ method(generate, Agent) <- function(
   }
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
+  .check_scalar_character(logfile, "logfile")
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
