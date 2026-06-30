@@ -15,7 +15,6 @@ URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.
 BugReports: https://github.com/rtemis-org/llm/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     cli,
     data.table,
@@ -31,3 +30,4 @@ Suggests:
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.1.0)
+Config/roxygen2/version: 8.0.0

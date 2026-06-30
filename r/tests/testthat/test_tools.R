@@ -70,8 +70,18 @@ test_that("Tool rejects duplicate parameter names", {
       function_name = "bad_fn",
       description = "Tool with duplicate parameter names.",
       parameters = list(
-        tool_param(name = "x", type = "number", description = "First x", required = TRUE),
-        tool_param(name = "x", type = "number", description = "Second x", required = TRUE)
+        tool_param(
+          name = "x",
+          type = "number",
+          description = "First x",
+          required = TRUE
+        ),
+        tool_param(
+          name = "x",
+          type = "number",
+          description = "Second x",
+          required = TRUE
+        )
       )
     ),
     regexp = "unique"
