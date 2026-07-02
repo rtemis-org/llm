@@ -30,17 +30,17 @@ method(build_chat_messages, OpenAIConfig) <- function(x, state) {
     get_messages(state),
     function(msg) {
       if (S7_inherits(msg, InputMessage) && !is.null(msg@image_path)) {
-        cli::cli_abort(c(
-          "OpenAI-compatible image inputs are not implemented yet.",
-          i = "Use a text-only prompt or add a provider-specific image adapter first."
-        ))
+        abort(
+          "OpenAI-compatible image inputs are not implemented yet.\n",
+          "Use a text-only prompt or add a provider-specific image adapter first."
+        )
       }
       if (S7_inherits(msg, ToolMessage)) {
         if (is.null(msg@tool_call_id)) {
-          cli::cli_abort(c(
-            "OpenAI-compatible tool messages require {.field tool_call_id}.",
-            i = "Use provider adapter tool handling to append tool responses."
-          ))
+          abort(
+            "OpenAI-compatible tool messages require `tool_call_id`.\n",
+            "Use provider adapter tool handling to append tool responses."
+          )
         }
         return(list(
           role = msg@role,
@@ -350,10 +350,10 @@ method(parse_chat_response, OllamaConfig) <- function(x, resp) {
 method(parse_chat_response, OpenAIConfig) <- function(x, resp) {
   res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   if (is.null(res[["choices"]][[1]])) {
-    cli::cli_abort(c(
-      "OpenAI-compatible response did not include any choices.",
-      i = "Check that the server implements the Chat Completions response shape."
-    ))
+    abort(
+      "OpenAI-compatible response did not include any choices.\n",
+      "Check that the server implements the Chat Completions response shape."
+    )
   }
   choice <- res[["choices"]][[1]]
   message <- choice[["message"]]
@@ -386,7 +386,7 @@ method(parse_chat_response, OpenAIConfig) <- function(x, resp) {
 method(decode_tool_arguments, OllamaConfig) <- function(x, tool_call) {
   args <- tool_call[["function"]][["arguments"]] %||% list()
   if (!is.list(args)) {
-    cli::cli_abort("Ollama tool arguments must be a list.")
+    abort("Ollama tool arguments must be a list.")
   }
   args
 }
@@ -409,18 +409,21 @@ method(decode_tool_arguments, OpenAIConfig) <- function(x, tool_call) {
     args <- tryCatch(
       jsonlite::fromJSON(args, simplifyVector = FALSE),
       error = function(e) {
-        cli::cli_abort(c(
-          "Could not decode arguments for tool {.val {tool_call[[\"function\"]][[\"name\"]]}}.",
-          i = "Check that the model returned valid JSON function arguments."
-        ))
+        abort(
+          "Could not decode arguments for tool '",
+          tool_call[["function"]][["name"]],
+          "'.\n",
+          "Check that the model returned valid JSON function arguments.",
+          parent = e
+        )
       }
     )
   }
   if (!is.list(args)) {
-    cli::cli_abort(c(
-      "Decoded tool arguments must be a named list.",
-      i = "Check that the model returned a JSON object for function arguments."
-    ))
+    abort(
+      "Decoded tool arguments must be a named list.\n",
+      "Check that the model returned a JSON object for function arguments."
+    )
   }
   args
 }
@@ -473,10 +476,10 @@ method(build_tool_message, OpenAIConfig) <- function(
 ) {
   tool_call_id <- tool_call[["id"]]
   if (is.null(tool_call_id)) {
-    cli::cli_abort(c(
-      "OpenAI-compatible tool calls must include an {.field id}.",
-      i = "Check that the server implements the Chat Completions tool-call response shape."
-    ))
+    abort(
+      "OpenAI-compatible tool calls must include an `id`.\n",
+      "Check that the server implements the Chat Completions tool-call response shape."
+    )
   }
   ToolMessage(
     name = tool_name,
@@ -523,10 +526,10 @@ method(build_chat_messages, AnthropicConfig) <- function(x, state) {
     }
     if (S7_inherits(msg, ToolMessage)) {
       if (is.null(msg@tool_call_id)) {
-        cli::cli_abort(c(
-          "Anthropic tool messages require {.field tool_call_id}.",
-          i = "Use provider adapter tool handling to append tool responses."
-        ))
+        abort(
+          "Anthropic tool messages require `tool_call_id`.\n",
+          "Use provider adapter tool handling to append tool responses."
+        )
       }
       pending_tool_results[[length(pending_tool_results) + 1L]] <- list(
         type = "tool_result",
@@ -545,10 +548,10 @@ method(build_chat_messages, AnthropicConfig) <- function(x, state) {
     }
     if (S7_inherits(msg, InputMessage)) {
       if (!is.null(msg@image_path)) {
-        cli::cli_abort(c(
-          "Anthropic image inputs are not implemented yet.",
-          i = "Use a text-only prompt or add a provider-specific image adapter first."
-        ))
+        abort(
+          "Anthropic image inputs are not implemented yet.\n",
+          "Use a text-only prompt or add a provider-specific image adapter first."
+        )
       }
       out[[length(out) + 1L]] <- list(
         role = "user",
@@ -767,10 +770,13 @@ method(decode_tool_arguments, AnthropicConfig) <- function(x, tool_call) {
     args <- tryCatch(
       jsonlite::fromJSON(args, simplifyVector = FALSE),
       error = function(e) {
-        cli::cli_abort(c(
-          "Could not decode arguments for tool {.val {tool_call[[\"function\"]][[\"name\"]]}}.",
-          i = "Check that the model returned valid JSON tool arguments."
-        ))
+        abort(
+          "Could not decode arguments for tool '",
+          tool_call[["function"]][["name"]],
+          "'.\n",
+          "Check that the model returned valid JSON tool arguments.",
+          parent = e
+        )
       }
     )
   }
@@ -778,10 +784,10 @@ method(decode_tool_arguments, AnthropicConfig) <- function(x, tool_call) {
     args <- list()
   }
   if (!is.list(args)) {
-    cli::cli_abort(c(
-      "Decoded Anthropic tool arguments must be a named list.",
-      i = "Check that the model returned a JSON object for tool input."
-    ))
+    abort(
+      "Decoded Anthropic tool arguments must be a named list.\n",
+      "Check that the model returned a JSON object for tool input."
+    )
   }
   args
 }
@@ -808,10 +814,10 @@ method(build_tool_message, AnthropicConfig) <- function(
 ) {
   tool_call_id <- tool_call[["id"]]
   if (is.null(tool_call_id)) {
-    cli::cli_abort(c(
-      "Anthropic tool calls must include an {.field id}.",
-      i = "Check that the server returned a {.val tool_use} content block with an id."
-    ))
+    abort(
+      "Anthropic tool calls must include an `id`.\n",
+      "Check that the server returned a 'tool_use' content block with an id."
+    )
   }
   ToolMessage(
     name = tool_name,

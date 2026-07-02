@@ -31,11 +31,13 @@ resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
     api_key <- get_keychain_secret(service = config@keychain_service)
   }
   if (is.null(api_key) && error_if_missing) {
-    cli::cli_abort(c(
-      "No Anthropic API key was found.",
-      i = "Set {.envvar {config@api_key_env}}, pass {.var api_key}, or configure {.var keychain_service}.",
-      i = "Keys can be created at {.url https://console.anthropic.com/}."
-    ))
+    abort(
+      "No Anthropic API key was found.\n",
+      "Set ",
+      config@api_key_env,
+      ", pass `api_key`, or configure `keychain_service`.\n",
+      "Keys can be created at https://console.anthropic.com/."
+    )
   }
   api_key
 }
@@ -95,13 +97,23 @@ resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
   )
   error_type <- body[["error"]][["type"]]
   api_message <- body[["error"]][["message"]] %||% body[["message"]]
-  cli::cli_abort(c(
-    "Anthropic API request failed with HTTP status {status}.",
-    if (!is.null(error_type)) i = "Error type: {.val {error_type}}.",
-    if (!is.null(api_message)) ">" = api_message,
-    if (!is.null(request_id)) i = "Request id: {.val {request_id}}.",
-    i = "Check the model name, API key, and request options."
-  ))
+  abort(
+    "Anthropic API request failed with HTTP status ",
+    status,
+    ".",
+    if (!is.null(error_type)) paste0("\nError type: ", error_type, "."),
+    if (!is.null(api_message)) paste0("\n", api_message),
+    if (!is.null(request_id)) paste0("\nRequest id: ", request_id, "."),
+    "\nCheck the model name, API key, and request options.",
+    class = "rtemis_llm_api_error",
+    data = list(
+      status_code = status,
+      provider = "Anthropic",
+      request_id = request_id,
+      error_type = error_type,
+      api_message = api_message
+    )
+  )
 }
 
 
@@ -117,15 +129,15 @@ resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
 #' @noRd
 clean_anthropic_schema <- function(x) {
   if (!is.list(x)) {
-    cli::cli_abort("{.var output_schema} must be a JSON Schema list.")
+    abort("`output_schema` must be a JSON Schema list.")
   }
   x <- unclass(x)
   if (identical(x[["type"]], "object")) {
     if (is.null(x[["properties"]]) || !is.list(x[["properties"]])) {
-      cli::cli_abort(c(
-        "{.var output_schema} object schemas must define {.field properties}.",
-        i = "Use {.fun schema} and {.fun field} to create an output schema."
-      ))
+      abort(
+        "`output_schema` object schemas must define `properties`.\n",
+        "Use schema() and field() to create an output schema."
+      )
     }
     x[["properties"]] <- lapply(x[["properties"]], clean_anthropic_schema)
     required <- if (is.null(x[["required"]])) {
@@ -153,7 +165,7 @@ clean_anthropic_schema <- function(x) {
 #' @noRd
 .tool_to_anthropic_schema <- function(tool) {
   if (!S7_inherits(tool, Tool)) {
-    cli::cli_abort(".tool_to_anthropic_schema() expects a {.cls Tool} object.")
+    abort(".tool_to_anthropic_schema() expects a Tool object.")
   }
   required <- sapply(
     Filter(function(p) p@required, tool@parameters),
@@ -430,16 +442,18 @@ resolve_anthropic_thinking_budget <- function(config, think = NULL) {
     return(config@thinking_budget_tokens)
   }
   if (length(think) != 1L || is.na(think)) {
-    cli::cli_abort("{.var think} must be a logical scalar or {.val NULL}.")
+    abort("`think` must be a logical scalar or NULL.")
   }
   if (!isTRUE(as.logical(think))) {
     return(NULL)
   }
   if (is.null(config@thinking_budget_tokens)) {
-    cli::cli_abort(c(
-      "{.var think = TRUE} requires a thinking budget for Anthropic.",
-      i = "Set {.arg thinking_budget_tokens} on {.fun config_Anthropic} (minimum {.val {ANTHROPIC_THINKING_MIN_BUDGET}})."
-    ))
+    abort(
+      "`think = TRUE` requires a thinking budget for Anthropic.\n",
+      "Set `thinking_budget_tokens` on config_Anthropic() (minimum ",
+      ANTHROPIC_THINKING_MIN_BUDGET,
+      ")."
+    )
   }
   config@thinking_budget_tokens
 }
@@ -515,10 +529,10 @@ anthropic_list_models <- function(
     .check_anthropic_response(resp)
     res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
     if (is.null(res[["data"]])) {
-      cli::cli_abort(c(
-        "Anthropic models endpoint did not return a {.field data} array.",
-        i = "Set {.var validate_model = FALSE} if the server response shape is non-standard."
-      ))
+      abort(
+        "Anthropic models endpoint did not return a `data` array.\n",
+        "Set `validate_model = FALSE` if the server response shape is non-standard."
+      )
     }
     collected <- c(
       collected,
@@ -579,9 +593,11 @@ anthropic_check_model <- function(
   if (x %in% models) {
     invisible(NULL)
   } else {
-    cli::cli_abort(c(
-      "Model {.val {x}} is not available from the Anthropic API.",
-      i = "Check the model name or set {.var validate_model = FALSE}."
-    ))
+    abort(
+      "Model '",
+      x,
+      "' is not available from the Anthropic API.\n",
+      "Check the model name or set `validate_model = FALSE`."
+    )
   }
 }

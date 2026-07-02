@@ -50,9 +50,7 @@ InProcessAgentMemory <- new_class(
       for (i in seq_along(self@state[["messages"]])) {
         msg <- self@state[["messages"]][[i]]
         if (!S7_inherits(msg, Message)) {
-          cli::cli_abort(
-            "All elements in 'messages' must be of class 'Message'."
-          )
+          abort("All elements in 'messages' must be of class 'Message'.")
         }
       }
     } # /validate state messages

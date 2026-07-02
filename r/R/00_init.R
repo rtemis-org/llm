@@ -227,10 +227,10 @@ enum <- function(values, default = NULL, nullable = FALSE) {
 #' try(check_logical_scalar(c(TRUE, FALSE)))
 check_logical_scalar <- function(x, arg_name = deparse(substitute(x))) {
   if (!is.logical(x)) {
-    cli::cli_abort("{.var {arg_name}} must be TRUE or FALSE.")
+    abort("`", arg_name, "` must be TRUE or FALSE.")
   }
   if (length(x) != 1L || is.na(x)) {
-    cli::cli_abort("{.var {arg_name}} must be a single TRUE or FALSE.")
+    abort("`", arg_name, "` must be a single TRUE or FALSE.")
   }
   invisible()
 } # /rtemis.core::check_logical_scalar
@@ -254,7 +254,7 @@ check_scalar_character <- function(x, name) {
       is.na(x) ||
       !nzchar(trimws(x))
   ) {
-    cli::cli_abort("{.var {name}} must be a non-empty character scalar.")
+    abort("`", name, "` must be a non-empty character scalar.")
   }
   invisible(NULL)
 }
@@ -284,9 +284,7 @@ check_optional_scalar_character <- function(
 ) {
   check_character(x, allow_null = TRUE, arg_name = arg_name)
   if (!is.null(x) && length(x) != 1L) {
-    cli::cli_abort(
-      "{.var {arg_name}} must be NULL or a single string."
-    )
+    abort("`", arg_name, "` must be NULL or a single string.")
   }
   invisible()
 }
@@ -315,13 +313,13 @@ check_optional_scalar_character <- function(
 #' try(check_integer_scalar(NA_integer_))
 check_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
   if (!is.numeric(x)) {
-    cli::cli_abort("{.var {arg_name}} must be numeric.")
+    abort("`", arg_name, "` must be numeric.")
   }
   if (length(x) != 1L || is.na(x)) {
-    cli::cli_abort("{.var {arg_name}} must be a single non-NA number.")
+    abort("`", arg_name, "` must be a single non-NA number.")
   }
   if (x != round(x)) {
-    cli::cli_abort("{.var {arg_name}} must be a whole number.")
+    abort("`", arg_name, "` must be a whole number.")
   }
   invisible()
 } # /rtemis.core::check_integer_scalar
@@ -353,7 +351,7 @@ check_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
 check_pos_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
   check_integer_scalar(x, arg_name = arg_name)
   if (x <= 0) {
-    cli::cli_abort("{.var {arg_name}} must be a whole number greater than 0.")
+    abort("`", arg_name, "` must be a whole number greater than 0.")
   }
   invisible()
 } # /rtemis.core::check_pos_integer_scalar
@@ -378,10 +376,10 @@ check_pos_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
 #' try(check_double_scalar(c(1.0, 2.0)))
 check_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
   if (!is.numeric(x)) {
-    cli::cli_abort("{.var {arg_name}} must be numeric.")
+    abort("`", arg_name, "` must be numeric.")
   }
   if (length(x) != 1L || is.na(x)) {
-    cli::cli_abort("{.var {arg_name}} must be a single non-NA number.")
+    abort("`", arg_name, "` must be a single non-NA number.")
   }
   invisible()
 } # /rtemis.core::check_double_scalar
@@ -437,7 +435,7 @@ check_optional_pos_double_scalar <- function(
 check_pos_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
   check_double_scalar(x, arg_name = arg_name)
   if (!is.finite(x) || x <= 0) {
-    cli::cli_abort("{.var {arg_name}} must be a finite number greater than 0.")
+    abort("`", arg_name, "` must be a finite number greater than 0.")
   }
   invisible()
 } # /rtemis.core::check_pos_double_scalar

@@ -100,9 +100,7 @@ Tool <- new_class(
   validator = function(self) {
     for (param in self@parameters) {
       if (!S7_inherits(param, ToolParameter)) {
-        cli::cli_abort(
-          "All elements of 'parameters' must be ToolParameter objects."
-        )
+        abort("All elements of 'parameters' must be ToolParameter objects.")
       }
     }
     param_names <- vapply(
@@ -112,9 +110,7 @@ Tool <- new_class(
       USE.NAMES = FALSE
     )
     if (anyDuplicated(param_names)) {
-      cli::cli_abort(
-        "Tool parameter names must be unique. Rename duplicate parameters."
-      )
+      abort("Tool parameter names must be unique. Rename duplicate parameters.")
     }
     NULL
   }
@@ -233,9 +229,7 @@ create_custom_tool <- function(
   impl
 ) {
   if (missing(impl) || !is.function(impl)) {
-    cli::cli_abort(
-      "{.arg impl} must be a function. Use {.fn create_tool} for built-in tools."
-    )
+    abort("`impl` must be a function. Use create_tool() for built-in tools.")
   }
   Tool(
     name = name,

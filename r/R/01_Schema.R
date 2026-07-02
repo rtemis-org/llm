@@ -101,15 +101,11 @@ Schema <- S7::new_class(
   validator = function(self) {
     # at least one field is required
     if (length(self@fields) == 0L) {
-      cli::cli_abort(
-        "{.cls Schema} must have at least one field. Add a {.cls Field}."
-      )
+      abort("Schema must have at least one field. Add a Field.")
     }
     # all fields must be Field objects
     if (!all(sapply(self@fields, function(x) S7_inherits(x, Field)))) {
-      cli::cli_abort(
-        "All {.field fields} must be {.cls Field} objects. Use {.fun field}."
-      )
+      abort("All `fields` must be Field objects. Use field().")
     }
     # field names must be unique
     field_names <- vapply(
@@ -121,9 +117,7 @@ Schema <- S7::new_class(
       USE.NAMES = FALSE
     )
     if (anyDuplicated(field_names)) {
-      cli::cli_abort(
-        "Schema field names must be unique. Rename duplicate fields."
-      )
+      abort("Schema field names must be unique. Rename duplicate fields.")
     }
     NULL
   }

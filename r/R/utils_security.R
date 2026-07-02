@@ -42,11 +42,14 @@ get_keychain_secret <- function(
   tryCatch(
     system(cmd, intern = TRUE),
     error = function(e) {
-      cli::cli_warn(c(
-        "x" = "Could not retrieve key for service {.val {service}}.",
-        "!" = "Keychain may be locked, the key may not exist, or access may be denied.",
-        ">" = e[["message"]]
-      ))
+      warn(
+        "Could not retrieve key for service '",
+        service,
+        "'.\n",
+        "Keychain may be locked, the key may not exist, or access may be denied.\n",
+        e[["message"]],
+        use_warning = TRUE
+      )
       NULL
     }
   )
@@ -154,8 +157,10 @@ validate_function <- function(tool_name) {
   }
   fn <- get(tool_name, envir = asNamespace("rtemis.llm"), inherits = FALSE)
   if (!identical(.hash_function(fn), .tool_hash_cache[[tool_name]])) {
-    cli::cli_abort(
-      "Tool hash mismatch: {.val {tool_name}} may have been altered."
+    abort(
+      "Tool hash mismatch: '",
+      tool_name,
+      "' may have been altered."
     )
   }
   invisible(NULL)
