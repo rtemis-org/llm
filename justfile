@@ -43,9 +43,9 @@ test:
     cd {{r_dir}} && {{rscript}} -e "testthat::test_local(stop_on_failure = TRUE)"
     @just _msg "Done"
 
-# Check that URLs in the package resolve
-url-check:
-    @just _msg "─── Checking URLs in {{pkg}}... ───"
+# Check URLs in package documentation with urlchecker
+urls:
+    @just _msg "─── Checking URLs for {{pkg}}... ───"
     cd {{r_dir}} && {{rscript}} -e "urlchecker::url_check()"
     @just _msg "Done"
 
