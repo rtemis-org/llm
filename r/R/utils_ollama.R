@@ -98,8 +98,10 @@ ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
     return(invisible(NULL))
   }
   if (length(x) != 1L || is.na(x)) {
-    cli::cli_abort(
-      "{.var {name}} must be a logical scalar or one of {.val low}, {.val medium}, {.val high}."
+    abort(
+      "`",
+      name,
+      "` must be a logical scalar or one of 'low', 'medium', 'high'."
     )
   }
   if (is.logical(x)) {
@@ -108,8 +110,10 @@ ollama_get_model_info <- function(x = NULL, base_url = OLLAMA_URL_DEFAULT) {
   if (is.character(x) && x %in% c("low", "medium", "high")) {
     return(invisible(NULL))
   }
-  cli::cli_abort(
-    "{.var {name}} must be a logical scalar or one of {.val low}, {.val medium}, {.val high}."
+  abort(
+    "`",
+    name,
+    "` must be a logical scalar or one of 'low', 'medium', 'high'."
   )
 }
 
@@ -133,10 +137,12 @@ ollama_check_model <- function(x) {
   if (x %in% ollama_list_models()) {
     invisible(NULL)
   } else {
-    cli::cli_abort(c(
-      "Model {.val {x}} is not available.",
-      i = "Please check the model name and pull it if necessary.",
-      i = "List available models with `ollama_list_models()`."
-    ))
+    abort(
+      "Model '",
+      x,
+      "' is not available.\n",
+      "Please check the model name and pull it if necessary.\n",
+      "List available models with `ollama_list_models()`."
+    )
   }
 }

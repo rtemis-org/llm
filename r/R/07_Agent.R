@@ -99,36 +99,44 @@ Agent <- new_class(
       )
       dups <- unique(fn_names[duplicated(fn_names) & !is.na(fn_names)])
       if (length(dups) > 0L) {
-        cli::cli_abort(c(
-          "Duplicate tool {.field function_name}: {.val {dups}}.",
-          i = "Each tool on an agent must have a unique {.field function_name}."
-        ))
+        abort(
+          "Duplicate tool `function_name`: ",
+          paste0("'", dups, "'", collapse = ", "),
+          ".\n",
+          "Each tool on an agent must have a unique `function_name`."
+        )
       }
       for (tool in self@tools) {
         # Check that each tool is a Tool object
         if (!S7_inherits(tool, Tool)) {
-          cli::cli_abort("All elements of 'tools' must be Tool objects.")
+          abort("All elements of 'tools' must be Tool objects.")
         }
         is_builtin <- tool@function_name %in% AVAILABLE_TOOLS
         if (is_builtin) {
           if (!is.null(tool@impl)) {
-            cli::cli_abort(c(
-              "Built-in tool {.val {tool@function_name}} must not supply {.arg impl}.",
-              i = "Built-in tools are resolved from the package namespace and hash-verified."
-            ))
+            abort(
+              "Built-in tool '",
+              tool@function_name,
+              "' must not supply `impl`.\n",
+              "Built-in tools are resolved from the package namespace and hash-verified."
+            )
           }
         } else {
           if (!self@allow_custom_tools) {
-            cli::cli_abort(c(
-              "Tool {.val {tool@function_name}} is not part of the allowed tool set.",
-              i = "To use custom tools, pass {.code allow_custom_tools = TRUE} to {.fn create_agent}."
-            ))
+            abort(
+              "Tool '",
+              tool@function_name,
+              "' is not part of the allowed tool set.\n",
+              "To use custom tools, pass `allow_custom_tools = TRUE` to create_agent()."
+            )
           }
           if (is.null(tool@impl)) {
-            cli::cli_abort(c(
-              "Custom tool {.val {tool@function_name}} must supply {.arg impl}.",
-              i = "Use {.fn create_custom_tool} to construct it."
-            ))
+            abort(
+              "Custom tool '",
+              tool@function_name,
+              "' must supply `impl`.\n",
+              "Use create_custom_tool() to construct it."
+            )
           }
         }
       }
@@ -445,11 +453,12 @@ create_agent <- function(
     allow_custom_tools = allow_custom_tools,
     logfile = logfile
   )
-  if (allow_custom_tools && verbosity > 0L) {
-    cli::cli_inform(c(
-      "!" = "Agent created with {.code allow_custom_tools = TRUE}.",
-      i = "Custom tools bypass the package's allowlist and hash verification."
-    ))
+  if (allow_custom_tools) {
+    warn(
+      "Agent created with `allow_custom_tools = TRUE`.\n",
+      "Custom tools bypass the package's allowlist and hash verification.",
+      verbosity = verbosity
+    )
   }
   agent
 }
@@ -637,10 +646,12 @@ method(generate, Agent) <- function(
             tool_requested = tool_names[i],
             logfile = logfile
           )
-          cli::cli_abort(c(
-            "Agent requested tool '{.val {tool_names[i]}}' which is not in the agent's tool list.",
-            i = "This incident has been reported."
-          ))
+          abort(
+            "Agent requested tool '",
+            tool_names[i],
+            "' which is not in the agent's tool list.\n",
+            "This incident has been reported."
+          )
         }
         # {/\!} Resolve tool function:
         #   - Built-in: hash-verify via validate_function(), resolve from package namespace.
@@ -667,10 +678,12 @@ method(generate, Agent) <- function(
         tool_call <- res[["tool_calls"]][[i]]
         args <- decode_tool_arguments(x@llmconfig, tool_call)
         if (!.is_named_list(args)) {
-          cli::cli_abort(c(
-            "Tool arguments for {.val {tool_names[i]}} must be a named list.",
-            i = "Check the tool schema and model tool-call response."
-          ))
+          abort(
+            "Tool arguments for '",
+            tool_names[i],
+            "' must be a named list.\n",
+            "Check the tool schema and model tool-call response."
+          )
         }
         # Force output_type = "json" where supported
         if ("output_type" %in% names(formals(fn))) {

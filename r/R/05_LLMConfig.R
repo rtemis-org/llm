@@ -52,7 +52,7 @@ LLMConfig <- new_class(
     # --- Validate inputs ---
     # Temperature must be numeric between 0.0 and 2.0
     if (temperature < 0.0 || temperature > 2.0) {
-      cli::cli_abort("{.var temperature} must be between 0.0 and 2.0.")
+      abort("`temperature` must be between 0.0 and 2.0.")
     }
     new_object(
       S7_object(),
@@ -197,26 +197,22 @@ OpenAIConfig <- new_class(
       check_scalar_character(project, "project")
     }
     if (length(timeout) != 1L || is.na(timeout) || timeout <= 0) {
-      cli::cli_abort("{.var timeout} must be a positive numeric scalar.")
+      abort("`timeout` must be a positive numeric scalar.")
     }
     if (!is.null(extra_headers) && !.is_named_list(extra_headers)) {
-      cli::cli_abort(
-        "{.var extra_headers} must be a named list or {.val NULL}."
-      )
+      abort("`extra_headers` must be a named list or NULL.")
     }
     if (!is.null(extra_body) && !.is_named_list(extra_body)) {
-      cli::cli_abort("{.var extra_body} must be a named list or {.val NULL}.")
+      abort("`extra_body` must be a named list or NULL.")
     }
     if (
       !is.null(enable_thinking) &&
         (length(enable_thinking) != 1L || is.na(enable_thinking))
     ) {
-      cli::cli_abort(
-        "{.var enable_thinking} must be a logical scalar or {.val NULL}."
-      )
+      abort("`enable_thinking` must be a logical scalar or NULL.")
     }
     if (length(validate_model) != 1L || is.na(validate_model)) {
-      cli::cli_abort("{.var validate_model} must be a logical scalar.")
+      abort("`validate_model` must be a logical scalar.")
     }
     base_url <- .clean_base_url(base_url)
     if (validate_model) {
@@ -310,8 +306,8 @@ AnthropicConfig <- new_class(
           any(is.na(anthropic_beta)) ||
           any(!nzchar(trimws(anthropic_beta)))
       ) {
-        cli::cli_abort(
-          "{.var anthropic_beta} must be a non-empty character vector or {.val NULL}."
+        abort(
+          "`anthropic_beta` must be a non-empty character vector or NULL."
         )
       }
     }
@@ -322,21 +318,17 @@ AnthropicConfig <- new_class(
         max_tokens <= 0 ||
         max_tokens != as.integer(max_tokens)
     ) {
-      cli::cli_abort(
-        "{.var max_tokens} must be a positive integer-coercible scalar."
-      )
+      abort("`max_tokens` must be a positive integer-coercible scalar.")
     }
     max_tokens <- as.integer(max_tokens)
     if (length(timeout) != 1L || is.na(timeout) || timeout <= 0) {
-      cli::cli_abort("{.var timeout} must be a positive numeric scalar.")
+      abort("`timeout` must be a positive numeric scalar.")
     }
     if (!is.null(extra_headers) && !.is_named_list(extra_headers)) {
-      cli::cli_abort(
-        "{.var extra_headers} must be a named list or {.val NULL}."
-      )
+      abort("`extra_headers` must be a named list or NULL.")
     }
     if (!is.null(extra_body) && !.is_named_list(extra_body)) {
-      cli::cli_abort("{.var extra_body} must be a named list or {.val NULL}.")
+      abort("`extra_body` must be a named list or NULL.")
     }
     if (!is.null(thinking_budget_tokens)) {
       if (
@@ -345,20 +337,24 @@ AnthropicConfig <- new_class(
           !is.numeric(thinking_budget_tokens) ||
           thinking_budget_tokens != as.integer(thinking_budget_tokens)
       ) {
-        cli::cli_abort(
-          "{.var thinking_budget_tokens} must be a positive integer-coercible scalar or {.val NULL}."
+        abort(
+          "`thinking_budget_tokens` must be a positive integer-coercible scalar or NULL."
         )
       }
       thinking_budget_tokens <- as.integer(thinking_budget_tokens)
       if (thinking_budget_tokens < ANTHROPIC_THINKING_MIN_BUDGET) {
-        cli::cli_abort(c(
-          "{.var thinking_budget_tokens} must be at least {.val {ANTHROPIC_THINKING_MIN_BUDGET}}.",
-          i = "Extended thinking requires a minimum budget of {ANTHROPIC_THINKING_MIN_BUDGET} tokens."
-        ))
+        abort(
+          "`thinking_budget_tokens` must be at least ",
+          ANTHROPIC_THINKING_MIN_BUDGET,
+          ".\n",
+          "Extended thinking requires a minimum budget of ",
+          ANTHROPIC_THINKING_MIN_BUDGET,
+          " tokens."
+        )
       }
     }
     if (length(validate_model) != 1L || is.na(validate_model)) {
-      cli::cli_abort("{.var validate_model} must be a logical scalar.")
+      abort("`validate_model` must be a logical scalar.")
     }
     base_url <- .clean_base_url(base_url)
     if (validate_model) {

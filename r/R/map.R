@@ -67,11 +67,11 @@ responses <- function(x) {
     )
   }
 
-  cli::cli_abort(
-    c(
-      "!" = "Could not extract responses from {.arg x}.",
-      "i" = "Pass a {.cls Message}, a list of {.cls Message} objects, or a list of lists of {.cls Message} objects (the output of {.fn map} / {.fn llmapply} / {.fn agentapply} with {.code extract_responses = FALSE})."
-    )
+  abort(
+    "Could not extract responses from `x`.\n",
+    "Pass a Message, a list of Message objects, or a list of lists of ",
+    "Message objects (the output of map() / llmapply() / agentapply() ",
+    "with `extract_responses = FALSE`)."
   )
 }
 
@@ -144,42 +144,27 @@ reasoning <- function(x) {
     )
   }
 
-  cli::cli_abort(
-    c(
-      "!" = "Could not extract reasoning from {.arg x}.",
-      "i" = "Pass a {.cls Message}, a list of {.cls Message} objects, or a list of lists of {.cls Message} objects (the output of {.fn map} / {.fn llmapply} / {.fn agentapply} with {.code extract_responses = FALSE})."
-    )
+  abort(
+    "Could not extract reasoning from `x`.\n",
+    "Pass a Message, a list of Message objects, or a list of lists of ",
+    "Message objects (the output of map() / llmapply() / agentapply() ",
+    "with `extract_responses = FALSE`)."
   )
 }
 
 
 # %% .map_iter ----
-# Internal: shared iteration body for map methods. Uses cli progress bar and forwards
-# backend-specific per-call args via `...` to `generate()`.
+# Internal: shared iteration body for map methods. Uses rtemis.core's nested progress API and
+# forwards backend-specific per-call args via `...` to `generate()`.
 .map_iter <- function(x, f, verbosity, ...) {
-  msg(
-    repr_bracket(get_model_name(f)),
-    "working...",
-    caller_id = 2L,
+  progress_lapply(
+    x,
+    function(el) {
+      generate(f, el, verbosity = verbosity - 1L, ...)
+    },
+    label = repr_bracket(get_model_name(f)),
     verbosity = verbosity
   )
-  out <- lapply(
-    cli::cli_progress_along(
-      x,
-      "Processing",
-      format = "{cli::pb_spin} [{cli::pb_current}/{cli::pb_total}] {cli::pb_bar} {cli::pb_eta_str}"
-    ),
-    function(i) {
-      generate(f, x[[i]], verbosity = verbosity - 1L, ...)
-    }
-  )
-  msg(
-    repr_bracket(get_model_name(f)),
-    "done.",
-    caller_id = 2L,
-    verbosity = verbosity
-  )
-  out
 }
 
 
@@ -211,11 +196,14 @@ method(map, list(class_list, LLM | Agent)) <- function(
   passed <- setdiff(names(call)[-1L], "")
   conflicts <- intersect(passed, build_args)
   if (length(conflicts) > 0L) {
-    cli::cli_abort(
-      c(
-        "!" = "Cannot supply {.arg {conflicts}} when {.arg {object_name}} is already a built object.",
-        "i" = "Either pass a model name string together with build-path arguments, or pass a pre-built object with no build-path arguments."
-      )
+    abort(
+      "Cannot supply ",
+      paste0("`", conflicts, "`", collapse = ", "),
+      " when `",
+      object_name,
+      "` is already a built object.\n",
+      "Either pass a model name string together with build-path arguments, ",
+      "or pass a pre-built object with no build-path arguments."
     )
   }
   invisible(NULL)
@@ -281,11 +269,9 @@ llmapply <- function(
   backend <- match.arg(backend)
 
   if (S7_inherits(model_or_llm, Agent)) {
-    cli::cli_abort(
-      c(
-        "!" = "{.arg model_or_llm} is an {.cls Agent}, not an {.cls LLM}.",
-        "i" = "Use {.fn agentapply} to run an {.cls Agent} over a vector of prompts."
-      )
+    abort(
+      "`model_or_llm` is an Agent, not an LLM.\n",
+      "Use agentapply() to run an Agent over a vector of prompts."
     )
   }
 
@@ -316,11 +302,11 @@ llmapply <- function(
       )
     )
   } else {
-    cli::cli_abort(
-      c(
-        "!" = "{.arg model_or_llm} must be a single model-name string or a built {.cls LLM} object.",
-        "i" = "Got {.cls {class(model_or_llm)}}."
-      )
+    abort(
+      "`model_or_llm` must be a single model-name string or a built LLM object.\n",
+      "Got <",
+      paste(class(model_or_llm), collapse = "/"),
+      ">."
     )
   }
 
@@ -389,11 +375,9 @@ agentapply <- function(
   backend <- match.arg(backend)
 
   if (S7_inherits(model_or_agent, LLM)) {
-    cli::cli_abort(
-      c(
-        "!" = "{.arg model_or_agent} is an {.cls LLM}, not an {.cls Agent}.",
-        "i" = "Use {.fn llmapply} to run an {.cls LLM} over a vector of prompts."
-      )
+    abort(
+      "`model_or_agent` is an LLM, not an Agent.\n",
+      "Use llmapply() to run an LLM over a vector of prompts."
     )
   }
 
@@ -428,11 +412,11 @@ agentapply <- function(
       verbosity = verbosity
     )
   } else {
-    cli::cli_abort(
-      c(
-        "!" = "{.arg model_or_agent} must be a single model-name string or a built {.cls Agent} object.",
-        "i" = "Got {.cls {class(model_or_agent)}}."
-      )
+    abort(
+      "`model_or_agent` must be a single model-name string or a built Agent object.\n",
+      "Got <",
+      paste(class(model_or_agent), collapse = "/"),
+      ">."
     )
   }
 

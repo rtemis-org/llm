@@ -8,5 +8,5 @@
 ^CLAUDE\.md$
 ^pkgdown$
 ^LICENSE\.md$
-^Makefile$
+^justfile$
 ^SKILL\.md$

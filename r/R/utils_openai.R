@@ -59,11 +59,13 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
       error_if_missing &&
       .is_official_openai_url(config@base_url)
   ) {
-    cli::cli_abort(c(
-      "No OpenAI API key was found.",
-      i = "Set {.envvar {config@api_key_env}}, pass {.var api_key}, or configure {.var keychain_service}.",
-      i = "For local OpenAI-compatible servers, set {.var base_url} to the local endpoint."
-    ))
+    abort(
+      "No OpenAI API key was found.\n",
+      "Set ",
+      config@api_key_env,
+      ", pass `api_key`, or configure `keychain_service`.\n",
+      "For local OpenAI-compatible servers, set `base_url` to the local endpoint."
+    )
   }
   api_key
 }
@@ -128,12 +130,22 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
   } else if (!is.null(body[["message"]])) {
     api_message <- body[["message"]]
   }
-  cli::cli_abort(c(
-    "{provider} API request failed with HTTP status {status}.",
-    if (!is.null(api_message)) ">" = api_message,
-    if (!is.null(request_id)) i = "Request id: {.val {request_id}}.",
-    i = "Check the model name, base URL, API key, and request options."
-  ))
+  abort(
+    provider,
+    " API request failed with HTTP status ",
+    status,
+    ".",
+    if (!is.null(api_message)) paste0("\n", api_message),
+    if (!is.null(request_id)) paste0("\nRequest id: ", request_id, "."),
+    "\nCheck the model name, base URL, API key, and request options.",
+    class = "rtemis_llm_api_error",
+    data = list(
+      status_code = status,
+      provider = provider,
+      request_id = request_id,
+      api_message = api_message
+    )
+  )
 }
 
 
@@ -149,15 +161,15 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
 #' @noRd
 clean_openai_schema <- function(x) {
   if (!is.list(x)) {
-    cli::cli_abort("{.var output_schema} must be a JSON Schema list.")
+    abort("`output_schema` must be a JSON Schema list.")
   }
   x <- unclass(x)
   if (identical(x[["type"]], "object")) {
     if (is.null(x[["properties"]]) || !is.list(x[["properties"]])) {
-      cli::cli_abort(c(
-        "{.var output_schema} object schemas must define {.field properties}.",
-        i = "Use {.fun schema} and {.fun field} to create an output schema."
-      ))
+      abort(
+        "`output_schema` object schemas must define `properties`.\n",
+        "Use schema() and field() to create an output schema."
+      )
     }
     x[["properties"]] <- lapply(x[["properties"]], clean_openai_schema)
     if (is.null(x[["required"]])) {
@@ -414,7 +426,7 @@ resolve_openai_enable_thinking <- function(config, think = NULL) {
     return(NULL)
   }
   if (length(value) != 1L || is.na(value)) {
-    cli::cli_abort("{.var enable_thinking} must be a logical scalar.")
+    abort("`enable_thinking` must be a logical scalar.")
   }
   as.logical(value)
 }
@@ -442,10 +454,11 @@ add_openai_thinking_options <- function(
     return(request_body)
   }
   if (.is_official_openai_url(config@base_url)) {
-    cli::cli_abort(c(
-      "{.var enable_thinking} is for local OpenAI-compatible servers.",
-      i = "Official OpenAI reasoning controls are model-specific; pass supported fields with {.var extra_body}."
-    ))
+    abort(
+      "`enable_thinking` is for local OpenAI-compatible servers.\n",
+      "Official OpenAI reasoning controls are model-specific; ",
+      "pass supported fields with `extra_body`."
+    )
   }
   request_body[["enable_thinking"]] <- enable_thinking
   chat_template_kwargs <- request_body[["chat_template_kwargs"]] %||% list()
@@ -505,10 +518,10 @@ openai_list_models <- function(
   .check_http_response(resp, .openai_provider_name(config))
   res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   if (is.null(res[["data"]])) {
-    cli::cli_abort(c(
-      "The OpenAI-compatible models endpoint did not return a {.field data} array.",
-      i = "Set {.var validate_model = FALSE} for servers that do not implement {.path /models}."
-    ))
+    abort(
+      "The OpenAI-compatible models endpoint did not return a `data` array.\n",
+      "Set `validate_model = FALSE` for servers that do not implement /models."
+    )
   }
   sapply(res[["data"]], function(x) x[["id"]])
 }
@@ -559,9 +572,12 @@ openai_check_model <- function(
   if (x %in% models) {
     invisible(NULL)
   } else {
-    cli::cli_abort(c(
-      "Model {.val {x}} is not available from the OpenAI-compatible server.",
-      i = "Check the model name or set {.var validate_model = FALSE} for servers with incomplete {.path /models} support."
-    ))
+    abort(
+      "Model '",
+      x,
+      "' is not available from the OpenAI-compatible server.\n",
+      "Check the model name or set `validate_model = FALSE` for servers ",
+      "with incomplete /models support."
+    )
   }
 }

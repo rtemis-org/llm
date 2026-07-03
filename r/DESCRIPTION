@@ -1,7 +1,7 @@
 Package: rtemis.llm
 Title: Large Language Models and Agentic AI
-Version: 0.8.1
-Date: 2026-04-28
+Version: 0.8.2
+Date: 2026-07-02
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Unified interface for creating LLM and Agent objects, generating responses and 
@@ -15,14 +15,12 @@ URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.
 BugReports: https://github.com/rtemis-org/llm/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
-    cli,
     data.table,
     digest,
     httr2,
     jsonlite,
-    rtemis.core,
+    rtemis.core (>= 0.4.1),
     S7
 Suggests:
     keyring,
@@ -31,3 +29,4 @@ Suggests:
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.1.0)
+Config/roxygen2/version: 8.0.0
