@@ -1,7 +1,7 @@
 Package: rtemis.llm
 Title: Large Language Models and Agentic AI
-Version: 0.8.2
-Date: 2026-07-02
+Version: 0.8.3
+Date: 2026-08-14
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Unified interface for creating LLM and Agent objects, generating responses and 
@@ -29,4 +29,4 @@ Suggests:
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.1.0)
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

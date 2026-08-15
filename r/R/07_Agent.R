@@ -34,14 +34,26 @@ Agent <- new_class(
   properties = list(
     llmconfig = LLMConfig,
     state = AgentMemory,
-    system_prompt = optional_character_scalar,
-    use_memory = logical_scalar,
+    system_prompt = prop_string(
+      nullable = TRUE,
+      description = "System prompt"
+    ),
+    use_memory = prop_boolean(
+      default = NULL,
+      description = "Retain conversation history across calls"
+    ),
     tools = optional(S7::class_list),
-    max_tool_rounds = pos_integer_scalar,
+    max_tool_rounds = prop_integer(
+      min = 1L,
+      description = "Maximum tool-call rounds per generation"
+    ),
     output_schema = optional(Schema),
-    name = optional_character_scalar,
-    allow_custom_tools = logical_scalar,
-    logfile = character_scalar
+    name = prop_string(nullable = TRUE, description = "Agent name"),
+    allow_custom_tools = prop_boolean(
+      default = NULL,
+      description = "Allow tools defined at runtime"
+    ),
+    logfile = prop_string(description = "Path to the log file")
   ),
   constructor = function(
     llmconfig,
@@ -73,7 +85,7 @@ Agent <- new_class(
         tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
-    check_scalar_character(logfile, "logfile")
+    check_character_scalar(logfile, "logfile")
     new_object(
       S7_object(),
       llmconfig = llmconfig,
@@ -435,13 +447,13 @@ create_agent <- function(
   logfile = NULL,
   verbosity = 1L
 ) {
-  check_optional_scalar_character(system_prompt, "system_prompt")
+  check_optional_character_scalar(system_prompt, "system_prompt")
   check_logical_scalar(use_memory, "use_memory")
   max_tool_rounds <- clean_int(max_tool_rounds)
   check_pos_integer_scalar(max_tool_rounds, "max_tool_rounds")
-  check_optional_scalar_character(name, "name")
+  check_optional_character_scalar(name, "name")
   check_logical_scalar(allow_custom_tools, "allow_custom_tools")
-  check_optional_scalar_character(logfile, "logfile")
+  check_optional_character_scalar(logfile, "logfile")
   agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
@@ -522,7 +534,7 @@ method(generate, Agent) <- function(
   }
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
-  check_scalar_character(logfile, "logfile")
+  check_character_scalar(logfile, "logfile")
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory

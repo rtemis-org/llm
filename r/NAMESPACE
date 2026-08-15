@@ -37,5 +37,7 @@ import(S7)
 import(data.table)
 import(rtemis.core)
 importFrom(stats,setNames)
-importFrom(utils,View)
-importFrom(utils,sessionInfo)
+importFrom(utils,
+  View,
+  sessionInfo
+)

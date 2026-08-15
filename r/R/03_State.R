@@ -31,7 +31,7 @@ InProcessAgentMemory <- new_class(
   parent = AgentMemory,
   properties = list(
     state = class_environment,
-    metadata = optional(S7::class_list)
+    metadata = prop_bag(description = "Arbitrary metadata")
   ),
   constructor = function(
     metadata = NULL

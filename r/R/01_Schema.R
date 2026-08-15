@@ -28,10 +28,20 @@
 Field <- S7::new_class(
   "Field",
   properties = list(
-    name = character_scalar,
-    type = enum(.SCHEMA_FIELD_TYPES, default = "string"),
-    description = optional_character_scalar,
-    required = logical_scalar
+    name = prop_string(description = "Field name"),
+    type = prop_string(
+      default = "string",
+      enum = .SCHEMA_FIELD_TYPES,
+      description = "JSON Schema type"
+    ),
+    description = prop_string(
+      nullable = TRUE,
+      description = "Field description"
+    ),
+    required = prop_boolean(
+      default = NULL,
+      description = "Whether the parent schema requires the field"
+    )
   )
 )
 
@@ -80,9 +90,12 @@ method(print, Field) <- function(x, output_type = NULL, ...) {
 Schema <- S7::new_class(
   "Schema",
   properties = list(
-    name = optional_character_scalar,
-    type = character_scalar,
-    description = optional_character_scalar,
+    name = prop_string(nullable = TRUE, description = "Schema name"),
+    type = prop_const("object", description = "JSON Schema type"),
+    description = prop_string(
+      nullable = TRUE,
+      description = "Schema description"
+    ),
     fields = class_list
   ),
   constructor = function(

@@ -17,8 +17,8 @@
 LLM <- new_class(
   "LLM",
   properties = list(
-    name = optional_character_scalar,
-    system_prompt = character_scalar
+    name = prop_string(nullable = TRUE, description = "LLM name"),
+    system_prompt = prop_string(description = "System prompt")
   ),
   constructor = function(name = NULL, system_prompt) {
     new_object(S7_object(), name = name, system_prompt = system_prompt)
@@ -316,57 +316,57 @@ method(generate, Ollama) <- function(
 ) {
   # Check input
   check_inherits(prompt, "character")
-  effective_think <- think %||% x@config@think
-  .check_ollama_think(effective_think, "think")
   extra <- list(...)
   top_k <- extra[["top_k"]]
   seed <- extra[["seed"]]
-  options <- list(
-    temperature = temperature %||% x@config@temperature
+  # The chat endpoint, via the same adapter the OpenAI and Anthropic backends
+  # use. The legacy completion endpoint (`/api/generate`) returns an empty
+  # response for harmony-format reasoning models such as gpt-oss.
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    SystemMessage(
+      name = x@name,
+      content = x@system_prompt
+    ),
+    echo = FALSE,
+    verbosity = 0L
   )
-  if (!is.null(top_p)) {
-    options[["top_p"]] <- top_p
-  }
-  if (!is.null(top_k)) {
-    options[["top_k"]] <- as.integer(top_k)
-  }
-  if (!is.null(seed)) {
-    options[["seed"]] <- as.integer(seed)
-  }
-  if (!is.null(max_tokens)) {
-    options[["num_predict"]] <- as.integer(max_tokens)
-  }
-  if (!is.null(stop)) {
-    options[["stop"]] <- as.character(stop)
-  }
-  # Request
-  request_body <- list(
-    model = x@config@model_name,
-    system = x@system_prompt,
-    prompt = prompt,
-    stream = FALSE,
-    options = options
+  append_message(
+    state,
+    InputMessage(content = prompt),
+    echo = FALSE,
+    verbosity = 0L
   )
-  if (!is.null(effective_think)) {
-    request_body[["think"]] <- effective_think
-  }
-  effective_schema <- output_schema %||% x@output_schema
-  if (!is.null(effective_schema)) {
-    request_body[["format"]] <- as_list(effective_schema)
-  }
+  request_body <- build_chat_request_body(
+    x@config,
+    state = state,
+    output_schema = output_schema %||% x@output_schema,
+    think = think,
+    use_tools = FALSE,
+    temperature = temperature,
+    top_p = top_p,
+    max_tokens = max_tokens,
+    stop = stop,
+    top_k = top_k,
+    seed = seed
+  )
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
-  # Perform request
-  resp <- httr2::request(paste0(x@config@base_url, "/api/generate")) |>
-    httr2::req_body_json(request_body) |>
-    httr2::req_user_agent("rtemis.llm-r LLM (www.rtemis.org)") |>
-    httr2::req_error(is_error = function(resp) FALSE) |>
-    httr2::req_perform(verbosity = max(verbosity - 1L, 0L))
-  # Check for errors
-  .check_http_response(resp, "Ollama")
-
-  # Replace working message with done
+  resp <- perform_chat_request(
+    x@config,
+    request_body = request_body,
+    verbosity = verbosity
+  )
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
-  as_OllamaMessage(httr2::resp_body_json(resp))
+  res <- parse_chat_response(x@config, resp)
+  OllamaMessage(
+    name = x@name,
+    content = res[["content"]],
+    metadata = res[["metadata"]],
+    model_name = x@config@model_name,
+    reasoning = res[["reasoning"]],
+    tool_calls = res[["tool_calls"]]
+  )
 }
 
 
@@ -609,10 +609,10 @@ create_Ollama <- function(
   think = NULL
 ) {
   ollama_check_model(model_name)
-  check_scalar_character(system_prompt, "system_prompt")
-  check_optional_pos_double_scalar(temperature, "temperature")
-  check_optional_scalar_character(name, "name")
-  check_scalar_character(base_url, "base_url")
+  check_character_scalar(system_prompt, "system_prompt")
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_optional_character_scalar(name, "name")
+  check_character_scalar(base_url, "base_url")
   Ollama(
     name = name,
     config = OllamaConfig(
@@ -674,9 +674,9 @@ config_OpenAI <- function(
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
-  check_scalar_character(model_name)
-  check_optional_pos_double_scalar(temperature, "temperature")
-  check_scalar_character(base_url, "base_url")
+  check_character_scalar(model_name)
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_character_scalar(base_url, "base_url")
   OpenAIConfig(
     model_name = model_name,
     temperature = temperature,
@@ -746,11 +746,11 @@ create_OpenAI <- function(
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
-  check_scalar_character(model_name)
-  check_scalar_character(system_prompt, "system_prompt")
-  check_optional_pos_double_scalar(temperature, "temperature")
-  check_optional_scalar_character(name, "name")
-  check_scalar_character(base_url, "base_url")
+  check_character_scalar(model_name)
+  check_character_scalar(system_prompt, "system_prompt")
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_optional_character_scalar(name, "name")
+  check_character_scalar(base_url, "base_url")
   OpenAI(
     name = name,
     config = config_OpenAI(
@@ -827,9 +827,9 @@ config_Anthropic <- function(
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
-  check_scalar_character(model_name)
-  check_optional_pos_double_scalar(temperature, "temperature")
-  check_scalar_character(base_url, "base_url")
+  check_character_scalar(model_name)
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_character_scalar(base_url, "base_url")
   AnthropicConfig(
     model_name = model_name,
     temperature = temperature,
@@ -902,11 +902,11 @@ create_Anthropic <- function(
   thinking_budget_tokens = NULL,
   validate_model = FALSE
 ) {
-  check_scalar_character(model_name)
-  check_scalar_character(system_prompt, "system_prompt")
-  check_optional_pos_double_scalar(temperature, "temperature")
-  check_optional_scalar_character(name, "name")
-  check_scalar_character(base_url, "base_url")
+  check_character_scalar(model_name)
+  check_character_scalar(system_prompt, "system_prompt")
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_optional_character_scalar(name, "name")
+  check_character_scalar(base_url, "base_url")
   Anthropic(
     name = name,
     config = config_Anthropic(

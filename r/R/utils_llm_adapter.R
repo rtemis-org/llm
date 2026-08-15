@@ -326,9 +326,12 @@ method(perform_chat_request, OpenAIConfig) <- function(
 method(parse_chat_response, OllamaConfig) <- function(x, resp) {
   res <- httr2::resp_body_json(resp, simplifyVector = FALSE)
   message <- res[["message"]]
+  # An empty thinking string means "no reasoning trace", and `reasoning` is
+  # optional, so it is carried as NULL -- as the OpenAI path already does.
+  reasoning <- message[["thinking"]]
   list(
     content = message[["content"]] %||% "",
-    reasoning = message[["thinking"]],
+    reasoning = if (!is.null(reasoning) && nzchar(reasoning)) reasoning,
     tool_calls = message[["tool_calls"]],
     refusal = NULL,
     metadata = res[setdiff(names(res), "message")]

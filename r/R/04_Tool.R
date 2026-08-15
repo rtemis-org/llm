@@ -14,10 +14,16 @@
 ToolParameter <- new_class(
   "ToolParameter",
   properties = list(
-    name = character_scalar,
-    type = enum(.SCHEMA_FIELD_TYPES),
-    description = character_scalar,
-    required = logical_scalar
+    name = prop_string(description = "Parameter name"),
+    type = prop_string(
+      enum = .SCHEMA_FIELD_TYPES,
+      description = "JSON Schema type"
+    ),
+    description = prop_string(description = "Parameter description"),
+    required = prop_boolean(
+      default = NULL,
+      description = "Whether the tool requires the parameter"
+    )
   )
 )
 
@@ -91,9 +97,9 @@ tool_param <- function(
 Tool <- new_class(
   "Tool",
   properties = list(
-    name = character_scalar,
-    function_name = character_scalar,
-    description = character_scalar,
+    name = prop_string(description = "Tool name"),
+    function_name = prop_string(description = "Name of the function to call"),
+    description = prop_string(description = "Tool description"),
     parameters = class_list,
     impl = optional(class_function)
   ),
