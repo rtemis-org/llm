@@ -175,6 +175,11 @@ OpenAIConfig <- new_class(
     ),
     extra_headers = prop_bag(description = "Extra HTTP headers"),
     extra_body = prop_bag(description = "Extra request body fields"),
+    zero_data_retention = prop_boolean(
+      default = NULL,
+      nullable = TRUE,
+      description = "Require OpenRouter zero-data-retention routing"
+    ),
     enable_thinking = prop_boolean(
       nullable = TRUE,
       description = "Enable reasoning"
@@ -196,6 +201,7 @@ OpenAIConfig <- new_class(
     timeout = OPENAI_TIMEOUT_DEFAULT,
     extra_headers = NULL,
     extra_body = NULL,
+    zero_data_retention = NULL,
     enable_thinking = NULL,
     validate_model = FALSE
   ) {
@@ -223,6 +229,10 @@ OpenAIConfig <- new_class(
     if (!is.null(extra_body) && !.is_named_list(extra_body)) {
       abort("`extra_body` must be a named list or NULL.")
     }
+    check_optional_logical_scalar(
+      zero_data_retention,
+      "zero_data_retention"
+    )
     if (
       !is.null(enable_thinking) &&
         (length(enable_thinking) != 1L || is.na(enable_thinking))
@@ -233,6 +243,18 @@ OpenAIConfig <- new_class(
       abort("`validate_model` must be a logical scalar.")
     }
     base_url <- .clean_base_url(base_url)
+    if (
+      isTRUE(zero_data_retention) &&
+        !grepl(
+          "^https://(openrouter\\.ai|eu\\.openrouter\\.ai)(:[0-9]+)?(/|$)",
+          base_url
+        )
+    ) {
+      abort(
+        "`zero_data_retention = TRUE` is only supported for OpenRouter requests.\n",
+        "Use an OpenRouter base URL, or configure ZDR in the provider account/workspace."
+      )
+    }
     if (validate_model) {
       openai_check_model(
         x = model_name,
@@ -259,6 +281,7 @@ OpenAIConfig <- new_class(
       timeout = timeout,
       extra_headers = extra_headers,
       extra_body = extra_body,
+      zero_data_retention = zero_data_retention,
       enable_thinking = enable_thinking,
       validate_model = validate_model
     )
@@ -488,6 +511,7 @@ method(as_list, OpenAIConfig) <- function(x) {
     timeout = x@timeout,
     extra_headers = x@extra_headers,
     extra_body = x@extra_body,
+    zero_data_retention = x@zero_data_retention,
     enable_thinking = x@enable_thinking,
     validate_model = x@validate_model
   )

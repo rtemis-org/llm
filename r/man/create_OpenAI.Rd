@@ -19,6 +19,7 @@ create_OpenAI(
   timeout = OPENAI_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
+  zero_data_retention = NULL,
   enable_thinking = NULL,
   validate_model = FALSE
 )
@@ -52,6 +53,9 @@ create_OpenAI(
 
 \item{extra_body}{Optional list: Additional request body fields.}
 
+\item{zero_data_retention}{Optional logical: Whether to require OpenRouter to route each request
+only to a zero-data-retention endpoint. Supported only with an OpenRouter base URL.}
+
 \item{enable_thinking}{Optional logical: Whether to enable model thinking for compatible local
 servers.}
 
@@ -62,6 +66,11 @@ OpenAI LLM object
 }
 \description{
 Create an OpenAI-compatible LLM Object
+}
+\details{
+With \code{zero_data_retention = TRUE}, each OpenRouter request includes
+\code{provider.zdr = true}. OpenRouter will then consider only endpoints with a ZDR policy. This
+option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
 }
 \examples{
 llm <- create_OpenAI(

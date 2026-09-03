@@ -70,7 +70,10 @@ test_that("create_Ollama works", {
 
 # %% OllamaConfig think property ----
 test_that("OllamaConfig accepts valid think values", {
-  skip_if_ollama_model_missing(model_name)
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
   # logical
   cfg_true <- OllamaConfig(
     model_name = model_name,
@@ -79,6 +82,13 @@ test_that("OllamaConfig accepts valid think values", {
     think = TRUE
   )
   testthat::expect_identical(cfg_true@think, TRUE)
+  cfg_false <- OllamaConfig(
+    model_name = model_name,
+    temperature = 0.3,
+    base_url = "http://localhost:11434",
+    think = FALSE
+  )
+  testthat::expect_identical(cfg_false@think, FALSE)
   # character levels
   cfg_high <- OllamaConfig(
     model_name = model_name,
@@ -98,7 +108,10 @@ test_that("OllamaConfig accepts valid think values", {
 
 
 test_that("OllamaConfig rejects invalid think values", {
-  skip_if_ollama_model_missing(model_name)
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
   testthat::expect_error(
     OllamaConfig(
       model_name = model_name,

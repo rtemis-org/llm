@@ -253,6 +253,17 @@ method(build_chat_request_body, OpenAIConfig) <- function(
   if (!is.null(x@extra_body)) {
     request_body[names(x@extra_body)] <- x@extra_body
   }
+  if (isTRUE(x@zero_data_retention)) {
+    provider <- request_body[["provider"]] %||% list()
+    if (!is.list(provider)) {
+      abort(
+        "`extra_body[[\"provider\"]]` must be a list when ",
+        "`zero_data_retention = TRUE`."
+      )
+    }
+    provider[["zdr"]] <- TRUE
+    request_body[["provider"]] <- provider
+  }
   request_body
 }
 

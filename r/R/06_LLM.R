@@ -542,7 +542,8 @@ method(generate, Anthropic) <- function(
 #' @param base_url Character: Base URL of Ollama server.
 #' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode
 #' for this config. Logical values target models like deepseek or qwen3; character values target
-#' gpt-oss. Can be overridden per call.
+#' gpt-oss. When `NULL`, the field is omitted from requests and Ollama uses the model default. Can
+#' be overridden per call.
 #'
 #' @return OllamaConfig object
 #'
@@ -583,6 +584,7 @@ config_Ollama <- function(
 #' @param base_url Character: Base URL of Ollama server.
 #' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
 #' Logical values target models like deepseek or qwen3; character values target gpt-oss.
+#' When `NULL`, the field is omitted from requests and Ollama uses the model default.
 #'
 #' @return Ollama LLM object
 #'
@@ -643,11 +645,17 @@ create_Ollama <- function(
 #' @param timeout Numeric (0, Inf): Request timeout in seconds.
 #' @param extra_headers Optional list: Additional HTTP headers.
 #' @param extra_body Optional list: Additional request body fields.
+#' @param zero_data_retention Optional logical: Whether to require OpenRouter to route each request
+#' only to a zero-data-retention endpoint. Supported only with an OpenRouter base URL.
 #' @param enable_thinking Optional logical: Whether to enable model thinking for compatible local
 #' servers.
 #' @param validate_model Logical: Whether to validate model availability using the models endpoint.
 #'
 #' @return OpenAIConfig object
+#'
+#' @details With `zero_data_retention = TRUE`, each OpenRouter request includes
+#' `provider.zdr = true`. OpenRouter will then consider only endpoints with a ZDR policy. This
+#' option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
 #'
 #' @author EDG
 #' @export
@@ -657,6 +665,14 @@ create_Ollama <- function(
 #'    model_name = "local-model",
 #'    temperature = 0.4,
 #'    base_url = "http://localhost:1234/v1/",
+#'    validate_model = FALSE
+#' )
+#' # Require an OpenRouter endpoint that does not retain prompts or responses:
+#' openrouter_cfg <- config_OpenAI(
+#'    model_name = "inclusionai/ling-3.0-flash-fin:free",
+#'    base_url = "https://openrouter.ai/api/v1",
+#'    api_key_env = "OPENROUTER_API_KEY",
+#'    zero_data_retention = TRUE,
 #'    validate_model = FALSE
 #' )
 config_OpenAI <- function(
@@ -671,6 +687,7 @@ config_OpenAI <- function(
   timeout = OPENAI_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
+  zero_data_retention = NULL,
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
@@ -689,6 +706,7 @@ config_OpenAI <- function(
     timeout = timeout,
     extra_headers = extra_headers,
     extra_body = extra_body,
+    zero_data_retention = zero_data_retention,
     enable_thinking = enable_thinking,
     validate_model = validate_model
   )
@@ -712,11 +730,17 @@ config_OpenAI <- function(
 #' @param timeout Numeric (0, Inf): Request timeout in seconds.
 #' @param extra_headers Optional list: Additional HTTP headers.
 #' @param extra_body Optional list: Additional request body fields.
+#' @param zero_data_retention Optional logical: Whether to require OpenRouter to route each request
+#' only to a zero-data-retention endpoint. Supported only with an OpenRouter base URL.
 #' @param enable_thinking Optional logical: Whether to enable model thinking for compatible local
 #' servers.
 #' @param validate_model Logical: Whether to validate model availability using the models endpoint.
 #'
 #' @return OpenAI LLM object
+#'
+#' @details With `zero_data_retention = TRUE`, each OpenRouter request includes
+#' `provider.zdr = true`. OpenRouter will then consider only endpoints with a ZDR policy. This
+#' option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
 #'
 #' @author EDG
 #' @export
@@ -743,6 +767,7 @@ create_OpenAI <- function(
   timeout = OPENAI_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
+  zero_data_retention = NULL,
   enable_thinking = NULL,
   validate_model = FALSE
 ) {
@@ -765,6 +790,7 @@ create_OpenAI <- function(
       timeout = timeout,
       extra_headers = extra_headers,
       extra_body = extra_body,
+      zero_data_retention = zero_data_retention,
       enable_thinking = enable_thinking,
       validate_model = validate_model
     ),

@@ -20,7 +20,8 @@ config_Ollama(
 
 \item{think}{Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode
 for this config. Logical values target models like deepseek or qwen3; character values target
-gpt-oss. Can be overridden per call.}
+gpt-oss. When \code{NULL}, the field is omitted from requests and Ollama uses the model default. Can
+be overridden per call.}
 }
 \value{
 OllamaConfig object

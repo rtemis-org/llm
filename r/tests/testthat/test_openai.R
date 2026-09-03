@@ -80,8 +80,109 @@ test_that("OpenAI-compatible request body uses chat completions shape", {
   expect_equal(body[["top_p"]], 0.9)
   expect_false("options" %in% names(body))
   expect_false("format" %in% names(body))
+  expect_false("provider" %in% names(body))
+  expect_null(config@zero_data_retention)
   expect_equal(body[["messages"]][[1]][["role"]], "system")
   expect_equal(body[["messages"]][[2]][["role"]], "user")
+})
+
+
+# %% OpenRouter zero data retention ----
+test_that("OpenRouter requests can require zero data retention", {
+  config <- config_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    extra_body = list(provider = list(only = list("Novita"), zdr = FALSE)),
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hello."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(config, state = state)
+  expect_true(body[["provider"]][["zdr"]])
+  expect_equal(body[["provider"]][["only"]], list("Novita"))
+  expect_true(as_list(config)[["zero_data_retention"]])
+})
+
+
+test_that("zero data retention fails closed for unsupported endpoints", {
+  expect_error(
+    config_OpenAI(
+      model_name = "gpt-test",
+      api_key = "test-key",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "local-model",
+      base_url = "http://localhost:1234/v1",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "test-model",
+      base_url = "https://openrouter.ai.example.com/api/v1",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "test-model",
+      base_url = "https://openrouter.ai/api/v1",
+      zero_data_retention = NA,
+      validate_model = FALSE
+    ),
+    "single TRUE or FALSE"
+  )
+})
+
+
+test_that("create_OpenAI forwards the zero data retention option", {
+  llm <- create_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  expect_true(llm@config@zero_data_retention)
+})
+
+
+test_that("zero data retention requires list-valued provider preferences", {
+  config <- config_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    extra_body = list(provider = "Novita"),
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hello."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  expect_error(
+    build_chat_request_body(config, state = state),
+    "must be a list"
+  )
 })
 
 

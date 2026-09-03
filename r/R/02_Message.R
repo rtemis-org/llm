@@ -598,7 +598,7 @@ ToolMessage <- new_class(
     content,
     name,
     tool_call_id = NULL,
-    metadata = list()
+    metadata = NULL
   ) {
     new_object(
       Message(

@@ -16,6 +16,7 @@ config_OpenAI(
   timeout = OPENAI_TIMEOUT_DEFAULT,
   extra_headers = NULL,
   extra_body = NULL,
+  zero_data_retention = NULL,
   enable_thinking = NULL,
   validate_model = FALSE
 )
@@ -43,6 +44,9 @@ config_OpenAI(
 
 \item{extra_body}{Optional list: Additional request body fields.}
 
+\item{zero_data_retention}{Optional logical: Whether to require OpenRouter to route each request
+only to a zero-data-retention endpoint. Supported only with an OpenRouter base URL.}
+
 \item{enable_thinking}{Optional logical: Whether to enable model thinking for compatible local
 servers.}
 
@@ -54,11 +58,24 @@ OpenAIConfig object
 \description{
 Creates an OpenAIConfig object which can be passed to \code{create_agent()}
 }
+\details{
+With \code{zero_data_retention = TRUE}, each OpenRouter request includes
+\code{provider.zdr = true}. OpenRouter will then consider only endpoints with a ZDR policy. This
+option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
+}
 \examples{
 cfg <- config_OpenAI(
    model_name = "local-model",
    temperature = 0.4,
    base_url = "http://localhost:1234/v1/",
+   validate_model = FALSE
+)
+# Require an OpenRouter endpoint that does not retain prompts or responses:
+openrouter_cfg <- config_OpenAI(
+   model_name = "inclusionai/ling-3.0-flash-fin:free",
+   base_url = "https://openrouter.ai/api/v1",
+   api_key_env = "OPENROUTER_API_KEY",
+   zero_data_retention = TRUE,
    validate_model = FALSE
 )
 }
