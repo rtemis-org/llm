@@ -7,11 +7,14 @@
 responses(x)
 }
 \arguments{
-\item{x}{\code{Message} object, list of \code{Message} objects, or list of lists of \code{Message} objects.}
+\item{x}{\code{Message} object, list of \code{Message} objects, or list of lists of \code{Message} objects.
+\code{NULL} elements are allowed: \link{llmapply} and \link{agentapply} leave one in the slot of every call
+that failed under \code{on_error = "na"}.}
 }
 \value{
 Character vector of assistant responses. Returns \code{NA_character_} in slots where no
-assistant message is present, so that the length of the result matches the length of \code{x}.
+assistant message is present (including failed calls), so that the length of the result
+matches the length of \code{x}.
 }
 \description{
 Returns the assistant content from a single \code{Message}, from a flat list of \code{Message} objects

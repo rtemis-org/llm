@@ -26,7 +26,12 @@ method(build_chat_messages, OllamaConfig) <- function(x, state) {
 #' @keywords internal
 #' @noRd
 method(build_chat_messages, OpenAIConfig) <- function(x, state) {
-  lapply(
+  # `get_messages()` names the list by role for readable inspection, and
+  # `lapply()` preserves those names, which `toJSON()` then emits as an object
+  # keyed by role instead of the array the API requires -- a 400 on every
+  # request. `get_message_list()` unnames for the same reason on the Ollama
+  # path; this adapter builds its own list and must do it too.
+  unname(lapply(
     get_messages(state),
     function(msg) {
       if (S7_inherits(msg, InputMessage) && !is.null(msg@image_path)) {
@@ -57,7 +62,7 @@ method(build_chat_messages, OpenAIConfig) <- function(x, state) {
       }
       out
     }
-  )
+  ))
 }
 
 
@@ -128,6 +133,13 @@ method(build_response_format, OpenAIConfig) <- function(
 #' @param stop Optional character: Stop sequence(s).
 #' @param top_k Optional integer \[1, Inf): Top-K sampling cutoff.
 #' @param seed Optional integer: Sampling seed for deterministic output.
+#' @param num_ctx Optional integer \[1, Inf): Context window size, in tokens
+#' (mapped to Ollama's `options.num_ctx`).
+#' @param keep_alive Optional character or numeric: How long to keep the model loaded after the
+#' request - a duration string such as `"10m"`, or seconds as a number.
+#' @param logprobs Optional logical: Whether to return log probabilities for the generated tokens.
+#' @param top_logprobs Optional integer \[0, Inf): How many alternative tokens to return log
+#' probabilities for at each position. Requires `logprobs = TRUE`.
 #'
 #' @return Named list.
 #'
@@ -146,7 +158,11 @@ method(build_chat_request_body, OllamaConfig) <- function(
   max_tokens = NULL,
   stop = NULL,
   top_k = NULL,
-  seed = NULL
+  seed = NULL,
+  num_ctx = NULL,
+  keep_alive = NULL,
+  logprobs = NULL,
+  top_logprobs = NULL
 ) {
   effective_think <- think %||% x@think
   .check_ollama_think(effective_think, "think")
@@ -168,12 +184,28 @@ method(build_chat_request_body, OllamaConfig) <- function(
   if (!is.null(stop)) {
     options[["stop"]] <- as.character(stop)
   }
+  if (!is.null(num_ctx)) {
+    options[["num_ctx"]] <- as.integer(num_ctx)
+  }
   request_body <- list(
     model = x@model_name,
     messages = build_chat_messages(x, state),
     stream = FALSE,
     options = options
   )
+  # `keep_alive` is a top-level request field, not a sampling option.
+  if (!is.null(keep_alive)) {
+    request_body[["keep_alive"]] <- keep_alive
+  }
+  # So are `logprobs` and `top_logprobs`. Nested under `options` the Ollama
+  # server ignores them silently -- no error, and no `logprobs` in the response.
+  if (!is.null(logprobs)) {
+    check_logical_scalar(logprobs, "logprobs")
+    request_body[["logprobs"]] <- logprobs
+  }
+  if (!is.null(top_logprobs)) {
+    request_body[["top_logprobs"]] <- as.integer(top_logprobs)
+  }
   if (!is.null(effective_think)) {
     request_body[["think"]] <- effective_think
   }
@@ -201,6 +233,9 @@ method(build_chat_request_body, OllamaConfig) <- function(
 #' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate.
 #' @param stop Optional character: Stop sequence(s).
 #' @param seed Optional integer: Sampling seed for deterministic output.
+#' @param logprobs Optional logical: Whether to return log probabilities for the generated tokens.
+#' @param top_logprobs Optional integer \[0, 20\]: How many alternative tokens to return log
+#' probabilities for at each position. Requires `logprobs = TRUE`.
 #'
 #' @return Named list.
 #'
@@ -218,7 +253,9 @@ method(build_chat_request_body, OpenAIConfig) <- function(
   top_p = NULL,
   max_tokens = NULL,
   stop = NULL,
-  seed = NULL
+  seed = NULL,
+  logprobs = NULL,
+  top_logprobs = NULL
 ) {
   request_body <- list(
     model = x@model_name,
@@ -237,6 +274,13 @@ method(build_chat_request_body, OpenAIConfig) <- function(
   }
   if (!is.null(seed)) {
     request_body[["seed"]] <- as.integer(seed)
+  }
+  if (!is.null(logprobs)) {
+    check_logical_scalar(logprobs, "logprobs")
+    request_body[["logprobs"]] <- logprobs
+  }
+  if (!is.null(top_logprobs)) {
+    request_body[["top_logprobs"]] <- as.integer(top_logprobs)
   }
   if (!is.null(tools) && use_tools) {
     request_body[["tools"]] <- lapply(tools, as_list)
@@ -376,6 +420,16 @@ method(parse_chat_response, OpenAIConfig) <- function(x, resp) {
   metadata <- res[setdiff(names(res), "choices")]
   metadata[["finish_reason"]] <- choice[["finish_reason"]]
   metadata[["request_id"]] <- httr2::resp_header(resp, "x-request-id")
+  # Ollama returns its token log probabilities as a flat top-level list, which
+  # the Ollama parser sweeps into metadata for free; OpenAI nests the same
+  # per-token shape under `choices[[1]]$logprobs$content`. Unwrap it here so
+  # `metadata[["logprobs"]]` means the same thing on both backends and
+  # `logprobs()` needs no per-provider branch. (The sibling `$refusal` trace is
+  # not carried: it describes a refusal message, not the response content.)
+  token_logprobs <- choice[["logprobs"]][["content"]]
+  if (!is.null(token_logprobs)) {
+    metadata[["logprobs"]] <- token_logprobs
+  }
   list(
     content = content,
     reasoning = reasoning,

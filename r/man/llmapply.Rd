@@ -12,6 +12,7 @@ llmapply(
   output_schema = NULL,
   verbosity = 1L,
   extract_responses = TRUE,
+  on_error = c("na", "abort"),
   ...
 )
 }
@@ -38,12 +39,19 @@ pre-built \code{LLM}, supplying this here is a conflict and will error.}
 (with \code{NA_character_} for missing assistant content). If \code{FALSE}, return the raw list of
 \code{Message} objects from each call.}
 
+\item{on_error}{Character \{"na", "abort"\}: What to do when a single call fails. \code{"na"} warns,
+keeps that element's slot as \code{NA_character_} (or \code{NULL} when \code{extract_responses = FALSE}), and
+carries on, so a run of thousands of calls is not lost to one timeout. \code{"abort"} propagates
+the error and discards every result in the batch.}
+
 \item{...}{Additional per-call arguments forwarded to \link{generate} (e.g. \code{temperature}, \code{top_p},
-\code{max_tokens}, \code{stop}, \code{think}, \code{top_k}, \code{seed}).}
+\code{max_tokens}, \code{stop}, \code{think}, \code{top_k}, \code{seed}, and for Ollama \code{num_ctx} and \code{keep_alive}).}
 }
 \value{
 If \code{extract_responses = TRUE}, a character vector the same length as \code{x}. Otherwise, a
-list of \code{Message} objects.
+list of \code{Message} objects. Under \code{on_error = "na"} the result carries an \code{errors} attribute:
+a data.frame of \code{index} and \code{message}, one row per failed call, so failures can be retried by
+position rather than found by scanning for \code{NA}.
 }
 \description{
 \code{llmapply} is the \code{lapply}-style entry point for running a single prompt against an \code{LLM}
@@ -54,6 +62,11 @@ on the fly using \code{backend}, \code{system_prompt}, \code{output_schema}) or 
 Per-call overrides such as \code{temperature}, \code{top_p}, \code{max_tokens}, \code{stop}, \code{think}, plus
 backend-specific options like \code{top_k} or \code{seed}, are forwarded via \code{...} to \link{generate}. Vectors
 passed via \code{...} are \strong{not} yet recycled across \code{x} — they are forwarded as-is to each call.
+
+Progress is reported through rtemis.core's nested progress API: one status line labelled with
+the model name, ticking once per element, with an ETA. Set \code{verbosity = 0L} to silence it. When
+a message sink is set (see \code{rtemis.core::set_msg_sink()}), progress is forwarded as structured
+events instead of being drawn, and nests under any enclosing progress node.
 }
 \examples{
 # Requires running Ollama server and gemma4:e4b model

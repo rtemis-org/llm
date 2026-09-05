@@ -296,7 +296,9 @@ method(print, Anthropic) <- function(x, output_type = NULL, ...) {
 #' @param think Optional logical or character: Whether to enable thinking.
 #' @param output_schema Optional Schema: Per-call output schema override.
 #' @param verbosity Integer: Verbosity level.
-#' @param ... Additional per-call options: `top_k` (integer), `seed` (integer).
+#' @param ... Additional per-call options: `top_k` (integer), `seed` (integer),
+#' `num_ctx` (integer), `keep_alive` (character or numeric), `logprobs` (logical),
+#' `top_logprobs` (integer).
 #'
 #' @return OllamaMessage object
 #' @author EDG
@@ -319,6 +321,10 @@ method(generate, Ollama) <- function(
   extra <- list(...)
   top_k <- extra[["top_k"]]
   seed <- extra[["seed"]]
+  num_ctx <- extra[["num_ctx"]]
+  keep_alive <- extra[["keep_alive"]]
+  logprobs <- extra[["logprobs"]]
+  top_logprobs <- extra[["top_logprobs"]]
   # The chat endpoint, via the same adapter the OpenAI and Anthropic backends
   # use. The legacy completion endpoint (`/api/generate`) returns an empty
   # response for harmony-format reasoning models such as gpt-oss.
@@ -349,7 +355,11 @@ method(generate, Ollama) <- function(
     max_tokens = max_tokens,
     stop = stop,
     top_k = top_k,
-    seed = seed
+    seed = seed,
+    num_ctx = num_ctx,
+    keep_alive = keep_alive,
+    logprobs = logprobs,
+    top_logprobs = top_logprobs
   )
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
   resp <- perform_chat_request(
@@ -382,7 +392,8 @@ method(generate, Ollama) <- function(
 #' @param think Optional logical: Whether to enable thinking options.
 #' @param output_schema Optional Schema: Per-call output schema override.
 #' @param verbosity Integer: Verbosity level.
-#' @param ... Additional per-call options: `seed` (integer).
+#' @param ... Additional per-call options: `seed` (integer), `logprobs` (logical),
+#' `top_logprobs` (integer).
 #'
 #' @return OpenAIMessage object
 #' @author EDG
@@ -403,6 +414,8 @@ method(generate, OpenAI) <- function(
   check_inherits(prompt, "character")
   extra <- list(...)
   seed <- extra[["seed"]]
+  logprobs <- extra[["logprobs"]]
+  top_logprobs <- extra[["top_logprobs"]]
   state <- InProcessAgentMemory()
   append_message(
     state,
@@ -429,7 +442,9 @@ method(generate, OpenAI) <- function(
     top_p = top_p,
     max_tokens = max_tokens,
     stop = stop,
-    seed = seed
+    seed = seed,
+    logprobs = logprobs,
+    top_logprobs = top_logprobs
   )
   msg(repr_bracket(x@config@model_name), "working...", verbosity = verbosity)
   resp <- perform_chat_request(

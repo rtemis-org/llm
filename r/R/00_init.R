@@ -15,11 +15,24 @@ get_model_name <- new_generic("get_model_name", "x")
 #'
 #' @param x A character vector or list to map over.
 #' @param f An `LLM` or `Agent` object.
-#' @param ... Additional arguments passed to `generate()`.
+#' @param ... Additional arguments passed to `generate()`, plus the two arguments the methods
+#' accept: `verbosity` and `on_error`. See Details.
 #'
 #' @details
 #' Use [responses] to retrieve just the content from the assistant messages, or [reasoning] to
 #' retrieve the reasoning traces (if enabled).
+#'
+#' Both methods accept:
+#' - `verbosity` Integer \[0, Inf): Verbosity level. Progress is reported through rtemis.core's
+#'   nested progress API - one status line labelled with the model name, ticking once per element,
+#'   with an ETA - and `verbosity = 0L` silences it. The per-call verbosity is `verbosity - 1L`.
+#'   When a message sink is set (see `rtemis.core::set_msg_sink()`), progress is forwarded as
+#'   structured events instead of being drawn, and nests under any enclosing progress node.
+#' - `on_error` Character \{"na", "abort"\}: What to do when a single call fails. `"na"` (the
+#'   default) warns, leaves `NULL` in that element's slot, and carries on; the result then carries
+#'   an `errors` attribute, a data.frame of `index` and `message` with one row per failed call.
+#'   [responses] and [reasoning] map those `NULL` slots to `NA_character_`. `"abort"` propagates
+#'   the error and discards every result in the batch.
 #'
 #' @return A list of `Message` objects (for `LLM`) or list of lists of `Message` objects
 #' (for `Agent`).
@@ -70,8 +83,11 @@ to_json <- new_generic("to_json", "x")
 #' overridable per call. Construct a new agent if you need a different system prompt.
 #'
 #' Backend-specific extra arguments accepted via `...`:
-#' - **Ollama**: `top_k` (integer), `seed` (integer)
-#' - **OpenAI**: `seed` (integer)
+#' - **Ollama**: `top_k` (integer), `seed` (integer), `num_ctx` (integer, mapped to
+#'   `options.num_ctx`), `keep_alive` (character duration such as `"10m"`, or seconds as a
+#'   number, controlling how long the model stays loaded after the request), `logprobs`
+#'   (logical), `top_logprobs` (integer)
+#' - **OpenAI**: `seed` (integer), `logprobs` (logical), `top_logprobs` (integer \[0, 20\])
 #' - **Anthropic**: `top_k` (integer)
 #'
 #' Any argument set to `NULL` (the default) falls back to the value baked into the

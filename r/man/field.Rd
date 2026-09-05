@@ -8,6 +8,7 @@ field(
   name,
   description = name,
   type = c("string", "number", "integer", "boolean", "array", "object"),
+  enum = NULL,
   required = TRUE
 )
 }
@@ -18,6 +19,10 @@ field(
 
 \item{type}{Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
 type.}
+
+\item{enum}{Optional Character: Permitted values for this field. Only for \code{type} "string",
+"number" or "integer". Backends that support constrained decoding (e.g. Ollama) make any
+other value impossible rather than merely detectable.}
 
 \item{required}{Logical: Whether the field is required.}
 }
@@ -31,6 +36,7 @@ Define a schema field
 # `type` defaults to "string", `required` defaults to TRUE
 field("lab_name", "Name of the lab test")
 field("normal_range_low", "Lower bound of normal range", type = "number")
+field("flag", "Whether the result is out of range", enum = c("low", "normal", "high"))
 }
 \author{
 EDG

@@ -55,8 +55,11 @@ overridable per call. Construct a new agent if you need a different system promp
 
 Backend-specific extra arguments accepted via \code{...}:
 \itemize{
-\item \strong{Ollama}: \code{top_k} (integer), \code{seed} (integer)
-\item \strong{OpenAI}: \code{seed} (integer)
+\item \strong{Ollama}: \code{top_k} (integer), \code{seed} (integer), \code{num_ctx} (integer, mapped to
+\code{options.num_ctx}), \code{keep_alive} (character duration such as \code{"10m"}, or seconds as a
+number, controlling how long the model stays loaded after the request), \code{logprobs}
+(logical), \code{top_logprobs} (integer)
+\item \strong{OpenAI}: \code{seed} (integer), \code{logprobs} (logical), \code{top_logprobs} (integer [0, 20])
 \item \strong{Anthropic}: \code{top_k} (integer)
 }
 
