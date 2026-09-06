@@ -20,7 +20,7 @@ Imports:
     digest,
     httr2,
     jsonlite,
-    rtemis.core (>= 0.4.1),
+    rtemis.core (>= 0.4.6),
     S7
 Suggests:
     keyring,

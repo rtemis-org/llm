@@ -2,7 +2,7 @@
 # configuration error, not a reason to call an API unauthenticated.
 
 test_that("a literal api_key wins over every other source", {
-  withr::with_envvar(c(FAKE_KEY_ENV = "from-env"), {
+  with_env(c(FAKE_KEY_ENV = "from-env"), {
     expect_identical(
       rtemis.llm:::.resolve_key_sources(
         api_key = "literal",
@@ -16,7 +16,7 @@ test_that("a literal api_key wins over every other source", {
 })
 
 test_that("a set environment variable resolves", {
-  withr::with_envvar(c(FAKE_KEY_ENV = "from-env"), {
+  with_env(c(FAKE_KEY_ENV = "from-env"), {
     expect_identical(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,
@@ -32,7 +32,7 @@ test_that("a set environment variable resolves", {
 test_that("naming a non-default variable that is unset is an error", {
   # The failure this prevents: every call in a batch goes out without
   # credentials and comes back NA, long after the typo was made.
-  withr::with_envvar(c(FAKE_KEY_ENV = NA), {
+  with_env(c(FAKE_KEY_ENV = NA), {
     expect_error(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,
@@ -48,7 +48,7 @@ test_that("naming a non-default variable that is unset is an error", {
 test_that("the backend default being unset is not an error", {
   # A local OpenAI-compatible server legitimately needs no key, so an unset
   # default variable is ambient rather than a stated intent.
-  withr::with_envvar(c(OPENAI_API_KEY = NA), {
+  with_env(c(OPENAI_API_KEY = NA), {
     expect_null(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,
@@ -77,7 +77,7 @@ test_that("an unset variable does not mask a key the keychain holds", {
   local_mocked_bindings(
     get_keychain_secret = function(service, ...) "from-keychain"
   )
-  withr::with_envvar(c(FAKE_KEY_ENV = NA), {
+  with_env(c(FAKE_KEY_ENV = NA), {
     expect_identical(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,
@@ -116,7 +116,7 @@ test_that("a named keychain service outranks the ambient default variable", {
   local_mocked_bindings(
     get_keychain_secret = function(service, ...) "from-keychain"
   )
-  withr::with_envvar(c(OPENAI_API_KEY = "ambient-openai-key"), {
+  with_env(c(OPENAI_API_KEY = "ambient-openai-key"), {
     expect_identical(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,
@@ -130,7 +130,7 @@ test_that("a named keychain service outranks the ambient default variable", {
 })
 
 test_that("the default variable is still used when nothing else is named", {
-  withr::with_envvar(c(OPENAI_API_KEY = "ambient-openai-key"), {
+  with_env(c(OPENAI_API_KEY = "ambient-openai-key"), {
     expect_identical(
       rtemis.llm:::.resolve_key_sources(
         api_key = NULL,

@@ -553,6 +553,35 @@ test_that("OpenAI request body carries logprobs and top_logprobs", {
   expect_false("top_logprobs" %in% names(plain))
 })
 
+test_that("OpenAI rejects top_logprobs without logprobs", {
+  # The server returns a 400 for this pairing; catching it here costs nothing.
+  config <- config_OpenAI(
+    model_name = "local-model",
+    base_url = "http://localhost:1234/v1",
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  expect_error(
+    build_chat_request_body(config, state = state, top_logprobs = 5L),
+    "logprobs"
+  )
+  expect_error(
+    build_chat_request_body(
+      config,
+      state = state,
+      logprobs = FALSE,
+      top_logprobs = 5L
+    ),
+    "logprobs"
+  )
+})
+
 
 # %% parse_chat_response.OpenAIConfig logprobs ----
 test_that("OpenAI response parsing unwraps logprobs onto metadata", {

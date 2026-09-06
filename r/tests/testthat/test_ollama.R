@@ -171,6 +171,36 @@ test_that("Ollama request body carries logprobs at the top level", {
   expect_false("top_logprobs" %in% names(body[["options"]]))
 })
 
+test_that("Ollama rejects top_logprobs without logprobs", {
+  # Ollama drops a lone `top_logprobs` and returns no logprobs at all, so the
+  # request would succeed and `token_probs()` would come back empty.
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  config <- config_Ollama(model_name = model_name)
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  expect_error(
+    build_chat_request_body(config, state = state, top_logprobs = 5L),
+    "logprobs"
+  )
+  expect_error(
+    build_chat_request_body(
+      config,
+      state = state,
+      logprobs = FALSE,
+      top_logprobs = 5L
+    ),
+    "logprobs"
+  )
+})
+
 
 # %% parse_chat_response.OllamaConfig logprobs ----
 test_that("Ollama response parsing carries logprobs onto metadata", {

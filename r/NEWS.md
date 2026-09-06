@@ -16,6 +16,13 @@
   probability of each candidate answer straight off the model's token distribution, which is
   better calibrated than asking a model to emit a number. Anthropic does not return log
   probabilities; its messages yield `NULL` rather than an error.
+- Per-call options passed to `generate()` (`temperature`, `top_p`, `max_tokens`, `stop`,
+  `top_k`, `seed`, `num_ctx`, `keep_alive`, `logprobs`, `top_logprobs`) are validated against
+  each backend's documented bounds before a request is built, so an out-of-range or wrong-typed
+  value fails locally instead of on the server. Bounds follow the backend: `temperature` accepts
+  up to 2 on Ollama and OpenAI-compatible backends and up to 1 on Anthropic, and `top_logprobs`
+  up to 20 on OpenAI. `top_logprobs` requires `logprobs = TRUE`, which every backend that
+  returns alternatives needs in order to return them.
 
 ## 0.8.4
 

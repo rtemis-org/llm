@@ -476,7 +476,8 @@ token_probs <- function(x, tokens, position = 1L) {
             i,
             " failed: ",
             conditionMessage(e),
-            "\nIt is NA in the result; retry the indices in ",
+            "\nIts slot is NA_character_ in the result, or NULL with ",
+            "`extract_responses = FALSE`; retry the indices in ",
             'attr(result, "errors").',
             use_warning = TRUE
           )
