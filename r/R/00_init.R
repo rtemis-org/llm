@@ -1,445 +1,8 @@
-# %% --- S7 Properties -----------------------------------------------------------------------------
-
-# %% Logical ----
-#' Logical scalar S7 property
-#'
-#' S7 property accepting a single non-NA logical value.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-logical_scalar <- new_property(
-  class_logical,
-  validator = function(value) {
-    if (length(value) != 1L || is.na(value)) {
-      return("must be a logical scalar (TRUE or FALSE)")
-    }
-    NULL
-  }
-)
-
-
-# %% Character ----
-#' Non-empty character scalar S7 property
-#'
-#' S7 property accepting a single non-NA, non-empty (after trimming whitespace) string.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-character_scalar <- new_property(
-  class_character,
-  validator = function(value) {
-    if (length(value) != 1L || is.na(value) || !nzchar(trimws(value))) {
-      return("must be a non-empty character scalar")
-    }
-    NULL
-  }
-)
-
-
-#' Optional non-empty character scalar S7 property
-#'
-#' S7 property accepting `NULL` or a single non-NA, non-empty (after trimming whitespace) string.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-optional_character_scalar <- new_property(
-  class = new_union(class_character, NULL),
-  default = NULL,
-  validator = function(value) {
-    if (
-      !is.null(value) &&
-        (length(value) != 1L || is.na(value) || !nzchar(trimws(value)))
-    ) {
-      return("must be NULL or a non-empty character scalar")
-    }
-    NULL
-  }
-)
-
-
-#' Positive integer scalar S7 property
-#'
-#' S7 property accepting a single non-NA integer value strictly greater than zero (e.g. `1L`).
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-pos_integer_scalar <- new_property(
-  class_integer,
-  validator = function(value) {
-    if (length(value) != 1L || is.na(value) || value <= 0L) {
-      return("must be a positive integer scalar (> 0, e.g. 1L)")
-    }
-    NULL
-  }
-)
-
-
-# %% Bounded double scalars ----
-#' Probability scalar S7 property
-#'
-#' S7 property accepting a single finite double in \eqn{[0, 1]}.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-prob_scalar <- new_property(
-  class_double,
-  validator = function(value) {
-    if (length(value) != 1L || is.na(value) || value < 0 || value > 1) {
-      return("must be a finite double in [0, 1]")
-    }
-    NULL
-  }
-)
-
-
-# %% Factory ----
-#' Create a bounded double S7 property
-#'
-#' Returns a `new_property()` for a double scalar constrained to a given interval.
-#' Useful for bounds not covered by the pre-built properties.
-#'
-#' @param lower Numeric scalar. Lower bound. Default `-Inf`.
-#' @param upper Numeric scalar. Upper bound. Default `Inf`.
-#' @param lower_open Logical scalar. If `TRUE`, lower bound is exclusive `(lower, ...]`.
-#'   Default `FALSE`.
-#' @param upper_open Logical scalar. If `TRUE`, upper bound is exclusive `[..., upper)`.
-#'   Default `FALSE`.
-#' @param nullable Logical scalar. If `TRUE`, `NULL` is also accepted. Default `FALSE`.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' # Learning rate in (0, 1]
-#' lr_prop <- bounded_double_property(0, 1, lower_open = TRUE)
-bounded_double_property <- function(
-  lower = -Inf,
-  upper = Inf,
-  lower_open = FALSE,
-  upper_open = FALSE,
-  nullable = FALSE
-) {
-  lower_sym <- if (lower_open) "(" else "["
-  upper_sym <- if (upper_open) ")" else "]"
-  bound_desc <- paste0(
-    "must be a finite double in ",
-    lower_sym,
-    lower,
-    ", ",
-    upper,
-    upper_sym
-  )
-
-  check_lower <- if (lower_open) {
-    function(v) v > lower
-  } else {
-    function(v) v >= lower
-  }
-  check_upper <- if (upper_open) {
-    function(v) v < upper
-  } else {
-    function(v) v <= upper
-  }
-
-  cls <- if (nullable) new_union(class_double, NULL) else class_double
-
-  new_property(
-    class = cls,
-    validator = function(value) {
-      if (is.null(value)) {
-        return(NULL)
-      }
-      if (length(value) != 1L || is.na(value) || !is.finite(value)) {
-        return(paste0(bound_desc, " (must be a finite scalar)"))
-      }
-      if (!check_lower(value) || !check_upper(value)) {
-        return(bound_desc)
-      }
-      NULL
-    }
-  )
-}
-
-
-# %% enum() ----
-#' Create an enum S7 property
-#'
-#' Returns a `new_property()` for a character scalar constrained to a fixed set of allowed values.
-#'
-#' @param values Character: Allowed values.
-#' @param default Optional Character: Default value.
-#' @param nullable Logical scalar. If `TRUE`, `NULL` is also accepted. Default `FALSE`.
-#'
-#' @return An S7 property object.
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' type_prop <- enum(c("string", "number", "boolean"), default = "string")
-enum <- function(values, default = NULL, nullable = FALSE) {
-  cls <- if (nullable) new_union(class_character, NULL) else class_character
-  new_property(
-    class = cls,
-    validator = function(value) {
-      if (is.null(value)) {
-        return(NULL)
-      }
-      if (length(value) != 1L || is.na(value)) {
-        return("must be a single non-NA character scalar")
-      }
-      if (!value %in% values) {
-        return(paste0(
-          "must be one of ",
-          paste(paste0('"', values, '"'), collapse = ", ")
-        ))
-      }
-      NULL
-    },
-    default = default
-  )
-}
-
-
-# %% --- Checks ------------------------------------------------------------------------------------
-# %% check_logical_scalar ----
-#' Check logical scalar
-#'
-#' @param x Logical: Value to check. Must be a single non-NA `TRUE` or `FALSE`.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_logical_scalar(TRUE)
-#' check_logical_scalar(FALSE)
-#' # Throw error:
-#' try(check_logical_scalar(NA))
-#' try(check_logical_scalar(1L))
-#' try(check_logical_scalar(c(TRUE, FALSE)))
-check_logical_scalar <- function(x, arg_name = deparse(substitute(x))) {
-  if (!is.logical(x)) {
-    abort("`", arg_name, "` must be TRUE or FALSE.")
-  }
-  if (length(x) != 1L || is.na(x)) {
-    abort("`", arg_name, "` must be a single TRUE or FALSE.")
-  }
-  invisible()
-} # /rtemis.core::check_logical_scalar
-
-
-# %% check_scalar_character() ----
-#' Check Scalar Character
-#'
-#' @param x Object: Object to check.
-#' @param name Character: Argument name to report.
-#'
-#' @return NULL, invisibly.
-#'
-#' @author EDG
-#' @keywords internal
-#' @noRd
-check_scalar_character <- function(x, name) {
-  if (
-    !is.character(x) ||
-      length(x) != 1L ||
-      is.na(x) ||
-      !nzchar(trimws(x))
-  ) {
-    abort("`", name, "` must be a non-empty character scalar.")
-  }
-  invisible(NULL)
-}
-
-
-# %% check_optional_scalar_character ----
-#' Check Optional Scalar Character
-#'
-#' @param x Optional Character: Value to check.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects.
-#'
-#' @author EDG
-#' @keywords internal
-#' @noRd
-#'
-#' @examples
-#' check_optional_scalar_character(NULL, "my_arg") # Passes
-#' check_optional_scalar_character("hello", "my_arg") # Passes
-#' # Throw error:
-#' try(check_optional_scalar_character(c("hello", "world"), "my_arg"))
-#' try(check_optional_scalar_character(123, "my_arg"))
-check_optional_scalar_character <- function(
-  x,
-  arg_name = deparse(substitute(x))
-) {
-  check_character(x, allow_null = TRUE, arg_name = arg_name)
-  if (!is.null(x) && length(x) != 1L) {
-    abort("`", arg_name, "` must be NULL or a single string.")
-  }
-  invisible()
-}
-
-
-# %% check_integer_scalar ----
-#' Check integer scalar
-#'
-#' @details
-#' Accepts any single numeric value that is a whole number. Integer-typed inputs (`1L`) and
-#' double-typed whole numbers (`1`, `100`) are both accepted for user convenience.
-#'
-#' @param x Numeric: Value to check. Must be a single non-NA whole number.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_integer_scalar(5L)
-#' check_integer_scalar(100)
-#' # Throw error:
-#' try(check_integer_scalar(1.5))
-#' try(check_integer_scalar(NA_integer_))
-check_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
-  if (!is.numeric(x)) {
-    abort("`", arg_name, "` must be numeric.")
-  }
-  if (length(x) != 1L || is.na(x)) {
-    abort("`", arg_name, "` must be a single non-NA number.")
-  }
-  if (x != round(x)) {
-    abort("`", arg_name, "` must be a whole number.")
-  }
-  invisible()
-} # /rtemis.core::check_integer_scalar
-
-
-# %% check_pos_integer_scalar ----
-#' Check positive integer scalar
-#'
-#' @details
-#' Accepts any single numeric value that is a whole number strictly greater than zero.
-#' Integer-typed inputs (`1L`) and double-typed whole numbers (`1`, `100`) are both accepted for
-#' user convenience.
-#'
-#' @param x Numeric: Value to check. Must be a single non-NA whole number greater than zero.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_pos_integer_scalar(1L)
-#' check_pos_integer_scalar(10)
-#' # Throw error:
-#' try(check_pos_integer_scalar(0))
-#' try(check_pos_integer_scalar(-1L))
-#' try(check_pos_integer_scalar(1.5))
-check_pos_integer_scalar <- function(x, arg_name = deparse(substitute(x))) {
-  check_integer_scalar(x, arg_name = arg_name)
-  if (x <= 0) {
-    abort("`", arg_name, "` must be a whole number greater than 0.")
-  }
-  invisible()
-} # /rtemis.core::check_pos_integer_scalar
-
-
-# %% check_double_scalar ----
-#' Check double scalar
-#'
-#' @param x Numeric: Value to check. Must be a single non-NA number (integer inputs are accepted).
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_double_scalar(3.14)
-#' check_double_scalar(1L)
-#' # Throw error:
-#' try(check_double_scalar(NA_real_))
-#' try(check_double_scalar(c(1.0, 2.0)))
-check_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
-  if (!is.numeric(x)) {
-    abort("`", arg_name, "` must be numeric.")
-  }
-  if (length(x) != 1L || is.na(x)) {
-    abort("`", arg_name, "` must be a single non-NA number.")
-  }
-  invisible()
-} # /rtemis.core::check_double_scalar
-
-
-# %% check_optional_pos_double_scalar ----
-#' Check optional positive double scalar
-#'
-#' @param x Optional Numeric: Value to check. Must be `NULL` or a single finite number
-#'   strictly greater than zero.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_optional_pos_double_scalar(NULL)
-#' check_optional_pos_double_scalar(2.5)
-#' # Throw error:
-#' try(check_optional_pos_double_scalar(0))
-check_optional_pos_double_scalar <- function(
-  x,
-  arg_name = deparse(substitute(x))
-) {
-  if (is.null(x)) {
-    return(invisible())
-  }
-  check_pos_double_scalar(x, arg_name = arg_name)
-  invisible()
-} # /rtemis.core::check_optional_pos_double_scalar
-
-
-# %% check_pos_double_scalar ----
-#' Check positive double scalar
-#'
-#' @param x Numeric: Value to check. Must be a single finite number strictly greater than zero.
-#' @param arg_name Character: Argument name to use in error messages.
-#'
-#' @return Called for side effects. Throws an error if checks fail.
-#'
-#' @author EDG
-#' @noRd
-#'
-#' @examples
-#' check_pos_double_scalar(0.001)
-#' check_pos_double_scalar(100)
-#' # Throw error:
-#' try(check_pos_double_scalar(0))
-#' try(check_pos_double_scalar(-1))
-#' try(check_pos_double_scalar(Inf))
-check_pos_double_scalar <- function(x, arg_name = deparse(substitute(x))) {
-  check_double_scalar(x, arg_name = arg_name)
-  if (!is.finite(x) || x <= 0) {
-    abort("`", arg_name, "` must be a finite number greater than 0.")
-  }
-  invisible()
-} # /rtemis.core::check_pos_double_scalar
-
+# %% --- S7 Properties and checks ------------------------------------------------------------------
+# Class properties are declared with the `prop_*()` factories from rtemis.core, which this
+# package imports in full: one call carries the type, default, bounds, enum and description, and
+# generates the S7 validator from them. The `check_*()` helpers used for argument validation in
+# function bodies come from there too (rtemis.core R/00_S7_prop_factories.R and R/check.R).
 
 # --- Generics -------------------------------------------------------------------------------------
 
@@ -452,14 +15,30 @@ get_model_name <- new_generic("get_model_name", "x")
 #'
 #' @param x A character vector or list to map over.
 #' @param f An `LLM` or `Agent` object.
-#' @param ... Additional arguments passed to `generate()`.
+#' @param ... Additional arguments passed to `generate()`, plus the two arguments the methods
+#' accept: `verbosity` and `on_error`. See Details.
 #'
 #' @details
 #' Use [responses] to retrieve just the content from the assistant messages, or [reasoning] to
 #' retrieve the reasoning traces (if enabled).
 #'
+#' Both methods accept:
+#' - `verbosity` Integer \[0, Inf): Verbosity level. Progress is reported through rtemis.core's
+#'   nested progress API - one status line labelled with the model name, ticking once per element,
+#'   with an ETA - and `verbosity = 0L` silences it. The per-call verbosity is `verbosity - 1L`.
+#'   When a message sink is set (see `rtemis.core::set_msg_sink()`), progress is forwarded as
+#'   structured events instead of being drawn, and nests under any enclosing progress node.
+#' - `on_error` Character \{"na", "abort"\}: What to do when a single call fails. `"na"` (the
+#'   default) warns, leaves `NULL` in that element's slot, and carries on; the result then carries
+#'   an `errors` attribute, a data.frame of `index` and `message` with one row per failed call.
+#'   [responses] and [reasoning] map those `NULL` slots to `NA_character_`. `"abort"` propagates
+#'   the error and discards every result in the batch.
+#'
 #' @return A list of `Message` objects (for `LLM`) or list of lists of `Message` objects
-#' (for `Agent`).
+#' (for `Agent`). With an output schema, [validation_results] retrieves an aligned
+#' report. Validation happens per item; `on_validation_failure = "warn"` emits
+#' one summary message at completion, respecting verbosity. Validation options
+#' are forwarded to [generate].
 #'
 #' @author EDG
 #' @export
@@ -499,6 +78,11 @@ to_json <- new_generic("to_json", "x")
 #' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
 #' @param output_schema Optional Schema: Output schema to enforce on this call's response.
 #' If omitted, the object's default schema (if any) is used.
+#' @param validate_output Logical: Validate final output locally when a schema is supplied.
+#'   Disabling this does not disable the schema sent to the model.
+#' @param on_validation_failure Character \{"warn", "collect", "abort"\}: Preserve invalid output
+#'   and report a styled rtemis.core message (not an R warning), collect silently, or
+#'   abort with an error carrying `output` and `validation`. See [validate_output].
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional backend-specific per-call arguments. See Details.
 #'
@@ -507,14 +91,20 @@ to_json <- new_generic("to_json", "x")
 #' overridable per call. Construct a new agent if you need a different system prompt.
 #'
 #' Backend-specific extra arguments accepted via `...`:
-#' - **Ollama**: `top_k` (integer), `seed` (integer)
-#' - **OpenAI**: `seed` (integer)
+#' - **Ollama**: `top_k` (integer), `seed` (integer), `num_ctx` (integer, mapped to
+#'   `options.num_ctx`), `keep_alive` (character duration such as `"10m"`, or seconds as a
+#'   number, controlling how long the model stays loaded after the request), `logprobs`
+#'   (logical), `top_logprobs` (integer)
+#' - **OpenAI**: `seed` (integer), `logprobs` (logical), `top_logprobs` (integer \[0, 20\])
 #' - **Anthropic**: `top_k` (integer)
 #'
 #' Any argument set to `NULL` (the default) falls back to the value baked into the
 #' underlying `LLMConfig` at construction time.
 #'
-#' @return `Message` object or list of `Message` objects (for `Agent`).
+#' @return `Message` object or list of `Message` objects (for `Agent`). With a
+#'   schema, [validation_results] retrieves the attached validation report. Invalid
+#'   output is retained unless explicitly configured to abort. Agent validation
+#'   checks only the final answer, before committing that answer to memory.
 #'
 #' @author EDG
 #' @export
@@ -543,6 +133,8 @@ generate <- new_generic(
     think = NULL,
     output_schema = NULL,
     verbosity = 1L,
+    validate_output = TRUE,
+    on_validation_failure = c("warn", "collect", "abort"),
     ...
   ) {
     S7_dispatch()
@@ -796,7 +388,7 @@ build_response_format <- new_generic("build_response_format", "x")
 AIThinking <- new_class(
   "AIThinking",
   properties = list(
-    content = character_scalar,
+    content = prop_string(description = "Thinking content"),
     metadata = class_list
   ),
   constructor = function(content, metadata = list()) {
@@ -839,7 +431,7 @@ AIThinking <- new_class(
 #' @keywords internal
 #' @noRd
 .clean_base_url <- function(x) {
-  check_scalar_character(x, "base_url")
+  check_character_scalar(x, "base_url")
   sub("/+$", "", trimws(x))
 }
 

@@ -99,6 +99,17 @@ test_that("AgentMessage class works", {
 }) # /AgentMessage
 
 
+# %% ToolMessage Class ----
+test_that("ToolMessage defaults optional metadata to NULL", {
+  msg <- ToolMessage(
+    name = "addition",
+    content = "The result is 5."
+  )
+  testthat::expect_true(S7_inherits(msg, ToolMessage))
+  testthat::expect_null(msg@metadata)
+}) # /ToolMessage
+
+
 # %% create_llm_message.OllamaConfig ----
 test_that("create_llm_message.OllamaConfig works", {
   skip_if_ollama_model_missing(model_name)

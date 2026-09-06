@@ -20,16 +20,13 @@ ANTHROPIC_STRUCTURED_OUTPUT_TOOL_DESCRIPTION <-
 #' @keywords internal
 #' @noRd
 resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
-  api_key <- config@api_key
-  if (is.null(api_key) && nzchar(config@api_key_env)) {
-    env_key <- Sys.getenv(config@api_key_env, unset = "")
-    if (nzchar(env_key)) {
-      api_key <- env_key
-    }
-  }
-  if (is.null(api_key) && !is.null(config@keychain_service)) {
-    api_key <- get_keychain_secret(service = config@keychain_service)
-  }
+  api_key <- .resolve_key_sources(
+    api_key = config@api_key,
+    api_key_env = config@api_key_env,
+    keychain_service = config@keychain_service,
+    default_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
+    provider = "Anthropic"
+  )
   if (is.null(api_key) && error_if_missing) {
     abort(
       "No Anthropic API key was found.\n",
@@ -323,6 +320,22 @@ clean_anthropic_schema <- function(x) {
   if (is.null(content) || length(content) == 0L) {
     return("")
   }
+  # The forced synthetic tool carries the answer, even when accompanied by prose.
+  # simplifyVector = FALSE in the response parser preserves named empty objects
+  # and list arrays; serialize without rounding numbers or dropping JSON nulls.
+  for (block in content) {
+    if (
+      identical(block[["type"]], "tool_use") &&
+        identical(block[["name"]], ANTHROPIC_STRUCTURED_OUTPUT_TOOL_NAME)
+    ) {
+      return(as.character(jsonlite::toJSON(
+        block[["input"]],
+        auto_unbox = TRUE,
+        null = "null",
+        digits = NA
+      )))
+    }
+  }
   text_parts <- unlist(
     lapply(
       content,
@@ -411,7 +424,10 @@ clean_anthropic_schema <- function(x) {
   calls <- lapply(
     content,
     function(block) {
-      if (identical(block[["type"]], "tool_use")) {
+      if (
+        identical(block[["type"]], "tool_use") &&
+          !identical(block[["name"]], ANTHROPIC_STRUCTURED_OUTPUT_TOOL_NAME)
+      ) {
         return(.anthropic_tool_use_block_to_call(block))
       }
       NULL

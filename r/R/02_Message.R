@@ -32,11 +32,17 @@ TOOL_MESSAGE_ROLE <- "tool"
 Message <- new_class(
   "Message",
   properties = list(
-    content = character_scalar,
-    role = character_scalar,
-    name = optional_character_scalar,
+    # Empty content is a real value, not an unset one: a model answering with
+    # tool calls or with a reasoning trace alone returns "", as does a tool
+    # whose result is empty.
+    content = prop_string(
+      allow_empty = TRUE,
+      description = "Message content"
+    ),
+    role = prop_string(description = "Message role"),
+    name = prop_string(nullable = TRUE, description = "Message author name"),
     timestamp = class_POSIXct,
-    metadata = optional(S7::class_list)
+    metadata = prop_bag(description = "Arbitrary metadata")
   ),
   constructor = function(
     content,
@@ -184,7 +190,10 @@ InputMessage <- new_class(
   "InputMessage",
   parent = Message,
   properties = list(
-    image_path = optional_character_scalar
+    image_path = prop_string(
+      nullable = TRUE,
+      description = "Path to the image file"
+    )
   ),
   constructor = function(
     content,
@@ -271,9 +280,11 @@ LLMMessage <- new_class(
   "LLMMessage",
   parent = Message,
   properties = list(
-    reasoning = optional_character_scalar,
+    reasoning = prop_string(nullable = TRUE, description = "Reasoning trace"),
     tool_calls = optional(S7::class_list),
-    model_name = character_scalar
+    model_name = prop_string(
+      description = "Model that produced the message"
+    )
   ),
   constructor = function(
     content,
@@ -578,13 +589,16 @@ ToolMessage <- new_class(
   "ToolMessage",
   parent = Message,
   properties = list(
-    tool_call_id = optional_character_scalar
+    tool_call_id = prop_string(
+      nullable = TRUE,
+      description = "ID of the tool call being answered"
+    )
   ),
   constructor = function(
     content,
     name,
     tool_call_id = NULL,
-    metadata = list()
+    metadata = NULL
   ) {
     new_object(
       Message(

@@ -23,8 +23,7 @@ rtemis.llm_version <- packageVersion("rtemis.llm")
     bold(pkgname),
     " v.",
     rtemis.llm_version,
-    " \U1F99C",
-    " ",
+    " \Ub7 ",
     sessionInfo()[[2]]
   ))
   if (interactive()) {

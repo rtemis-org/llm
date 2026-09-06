@@ -7,11 +7,13 @@
 reasoning(x)
 }
 \arguments{
-\item{x}{\code{Message} object, list of \code{Message} objects, or list of lists of \code{Message} objects.}
+\item{x}{\code{Message} object, list of \code{Message} objects, or list of lists of \code{Message} objects.
+\code{NULL} elements are allowed: \link{llmapply} and \link{agentapply} leave one in the slot of every call
+that failed under \code{on_error = "na"}.}
 }
 \value{
 Character vector of reasoning traces, with \code{NA_character_} in slots where no reasoning
-is available.
+is available (including failed calls).
 }
 \description{
 Returns the assistant's reasoning trace (if any). Only \code{LLMMessage} objects carry a \code{reasoning}

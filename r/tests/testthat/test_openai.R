@@ -80,8 +80,109 @@ test_that("OpenAI-compatible request body uses chat completions shape", {
   expect_equal(body[["top_p"]], 0.9)
   expect_false("options" %in% names(body))
   expect_false("format" %in% names(body))
+  expect_false("provider" %in% names(body))
+  expect_null(config@zero_data_retention)
   expect_equal(body[["messages"]][[1]][["role"]], "system")
   expect_equal(body[["messages"]][[2]][["role"]], "user")
+})
+
+
+# %% OpenRouter zero data retention ----
+test_that("OpenRouter requests can require zero data retention", {
+  config <- config_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    extra_body = list(provider = list(only = list("Novita"), zdr = FALSE)),
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hello."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(config, state = state)
+  expect_true(body[["provider"]][["zdr"]])
+  expect_equal(body[["provider"]][["only"]], list("Novita"))
+  expect_true(as_list(config)[["zero_data_retention"]])
+})
+
+
+test_that("zero data retention fails closed for unsupported endpoints", {
+  expect_error(
+    config_OpenAI(
+      model_name = "gpt-test",
+      api_key = "test-key",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "local-model",
+      base_url = "http://localhost:1234/v1",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "test-model",
+      base_url = "https://openrouter.ai.example.com/api/v1",
+      zero_data_retention = TRUE,
+      validate_model = FALSE
+    ),
+    "only supported for OpenRouter"
+  )
+  expect_error(
+    config_OpenAI(
+      model_name = "test-model",
+      base_url = "https://openrouter.ai/api/v1",
+      zero_data_retention = NA,
+      validate_model = FALSE
+    ),
+    "single TRUE or FALSE"
+  )
+})
+
+
+test_that("create_OpenAI forwards the zero data retention option", {
+  llm <- create_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  expect_true(llm@config@zero_data_retention)
+})
+
+
+test_that("zero data retention requires list-valued provider preferences", {
+  config <- config_OpenAI(
+    model_name = "inclusionai/ling-3.0-flash-fin:free",
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = "test-key",
+    extra_body = list(provider = "Novita"),
+    zero_data_retention = TRUE,
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hello."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  expect_error(
+    build_chat_request_body(config, state = state),
+    "must be a list"
+  )
 })
 
 
@@ -420,4 +521,167 @@ test_that("OpenAI request body honors per-call overrides", {
   expect_equal(body[["max_tokens"]], 128L)
   expect_equal(body[["stop"]], "\n\n")
   expect_equal(body[["seed"]], 42L)
+})
+
+
+# %% build_chat_request_body.OpenAIConfig logprobs ----
+test_that("OpenAI request body carries logprobs and top_logprobs", {
+  config <- config_OpenAI(
+    model_name = "local-model",
+    base_url = "http://localhost:1234/v1",
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  body <- build_chat_request_body(
+    config,
+    state = state,
+    logprobs = TRUE,
+    top_logprobs = 5L
+  )
+  expect_true(body[["logprobs"]])
+  expect_equal(body[["top_logprobs"]], 5L)
+
+  # Absent unless asked for.
+  plain <- build_chat_request_body(config, state = state)
+  expect_false("logprobs" %in% names(plain))
+  expect_false("top_logprobs" %in% names(plain))
+})
+
+test_that("OpenAI rejects top_logprobs without logprobs", {
+  # The server returns a 400 for this pairing; catching it here costs nothing.
+  config <- config_OpenAI(
+    model_name = "local-model",
+    base_url = "http://localhost:1234/v1",
+    validate_model = FALSE
+  )
+  state <- InProcessAgentMemory()
+  append_message(
+    state,
+    InputMessage(content = "Hi"),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  expect_error(
+    build_chat_request_body(config, state = state, top_logprobs = 5L),
+    "logprobs"
+  )
+  expect_error(
+    build_chat_request_body(
+      config,
+      state = state,
+      logprobs = FALSE,
+      top_logprobs = 5L
+    ),
+    "logprobs"
+  )
+})
+
+
+# %% parse_chat_response.OpenAIConfig logprobs ----
+test_that("OpenAI response parsing unwraps logprobs onto metadata", {
+  config <- config_OpenAI(
+    model_name = "local-model",
+    base_url = "http://localhost:1234/v1",
+    validate_model = FALSE
+  )
+  # OpenAI nests the per-token entries under choices[[1]]$logprobs$content;
+  # metadata must carry the flat entry list, matching what Ollama returns.
+  body <- jsonlite::toJSON(
+    list(
+      id = "chatcmpl_test",
+      model = "local-model",
+      choices = list(list(
+        index = 0,
+        message = list(role = "assistant", content = "Yes"),
+        logprobs = list(
+          content = list(
+            list(
+              token = "Yes",
+              logprob = -0.25,
+              top_logprobs = list(
+                list(token = "Yes", logprob = -0.25),
+                list(token = "No", logprob = -2.5)
+              )
+            )
+          )
+        ),
+        finish_reason = "stop"
+      ))
+    ),
+    auto_unbox = TRUE
+  )
+  resp <- httr2::response(
+    status_code = 200,
+    headers = list(`content-type` = "application/json"),
+    body = charToRaw(body)
+  )
+  parsed <- parse_chat_response(config, resp)
+  token_logprobs <- parsed[["metadata"]][["logprobs"]]
+  expect_length(token_logprobs, 1L)
+  expect_equal(token_logprobs[[1L]][["token"]], "Yes")
+  expect_equal(token_logprobs[[1L]][["logprob"]], -0.25)
+
+  # And the accessors read that shape without a per-provider branch.
+  msg <- LLMMessage(
+    content = "Yes",
+    model_name = "local-model",
+    metadata = parsed[["metadata"]]
+  )
+  expect_equal(logprobs(msg)[["token"]], "Yes")
+  expect_equal(
+    unname(token_probs(msg, c("Yes", "No"))),
+    c(exp(-0.25), exp(-2.5))
+  )
+})
+
+
+# %% messages must serialize as a JSON array ----
+test_that("OpenAI chat messages serialize as an array, not an object by role", {
+  # `get_messages()` names its list by role for readable inspection. If those
+  # names survive into the request body, jsonlite emits
+  #   "messages": {"user": {...}, "user": {...}}
+  # instead of an array, and every request is rejected with HTTP 400. The
+  # Ollama path unnames for this reason; the OpenAI adapter must too.
+  mem <- InProcessAgentMemory()
+  mem <- append_message(mem, InputMessage(content = "first"))
+  mem <- append_message(mem, InputMessage(content = "second"))
+  config <- config_OpenAI(
+    model_name = "gpt-test",
+    api_key = "test-key",
+    validate_model = FALSE
+  )
+  msgs <- build_chat_messages(config, mem)
+  expect_null(names(msgs))
+
+  json <- as.character(jsonlite::toJSON(
+    list(messages = msgs),
+    auto_unbox = TRUE
+  ))
+  expect_true(grepl('"messages":[', json, fixed = TRUE))
+  expect_false(grepl('"messages":{', json, fixed = TRUE))
+})
+
+test_that("a repeated role does not collapse two messages into one", {
+  # Roles are not unique across a conversation, so an object-keyed body would
+  # also silently lose turns rather than merely being the wrong shape.
+  mem <- InProcessAgentMemory()
+  mem <- append_message(mem, InputMessage(content = "first"))
+  mem <- append_message(mem, InputMessage(content = "second"))
+  config <- config_OpenAI(
+    model_name = "gpt-test",
+    api_key = "test-key",
+    validate_model = FALSE
+  )
+  msgs <- build_chat_messages(config, mem)
+  expect_length(msgs, 2L)
+  expect_identical(
+    vapply(msgs, function(m) m[["content"]], character(1L)),
+    c("first", "second")
+  )
 })

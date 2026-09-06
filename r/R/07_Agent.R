@@ -34,14 +34,26 @@ Agent <- new_class(
   properties = list(
     llmconfig = LLMConfig,
     state = AgentMemory,
-    system_prompt = optional_character_scalar,
-    use_memory = logical_scalar,
+    system_prompt = prop_string(
+      nullable = TRUE,
+      description = "System prompt"
+    ),
+    use_memory = prop_boolean(
+      default = NULL,
+      description = "Retain conversation history across calls"
+    ),
     tools = optional(S7::class_list),
-    max_tool_rounds = pos_integer_scalar,
+    max_tool_rounds = prop_integer(
+      min = 1L,
+      description = "Maximum tool-call rounds per generation"
+    ),
     output_schema = optional(Schema),
-    name = optional_character_scalar,
-    allow_custom_tools = logical_scalar,
-    logfile = character_scalar
+    name = prop_string(nullable = TRUE, description = "Agent name"),
+    allow_custom_tools = prop_boolean(
+      default = NULL,
+      description = "Allow tools defined at runtime"
+    ),
+    logfile = prop_string(description = "Path to the log file")
   ),
   constructor = function(
     llmconfig,
@@ -73,7 +85,7 @@ Agent <- new_class(
         tempfile("rtemis_security_log_", fileext = ".jsonl")
       )
     }
-    check_scalar_character(logfile, "logfile")
+    check_character_scalar(logfile, "logfile")
     new_object(
       S7_object(),
       llmconfig = llmconfig,
@@ -435,13 +447,13 @@ create_agent <- function(
   logfile = NULL,
   verbosity = 1L
 ) {
-  check_optional_scalar_character(system_prompt, "system_prompt")
+  check_optional_character_scalar(system_prompt, "system_prompt")
   check_logical_scalar(use_memory, "use_memory")
   max_tool_rounds <- clean_int(max_tool_rounds)
   check_pos_integer_scalar(max_tool_rounds, "max_tool_rounds")
-  check_optional_scalar_character(name, "name")
+  check_optional_character_scalar(name, "name")
   check_logical_scalar(allow_custom_tools, "allow_custom_tools")
-  check_optional_scalar_character(logfile, "logfile")
+  check_optional_character_scalar(logfile, "logfile")
   agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
@@ -480,6 +492,7 @@ create_agent <- function(
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response.
 #' Important: if NULL, the agent's default output_schema, if defined, will be used. This means that
 #' the generate call's schema takes precedence over the agent's schema.
+#' @inheritParams generate
 #' @param commit_to_memory Logical: Whether to commit this interaction to the agent's memory.
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
@@ -514,15 +527,23 @@ method(generate, Agent) <- function(
   echo = FALSE,
   logfile = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   # Get output schema: First check function argument, then agent's default
   if (is.null(output_schema)) {
     output_schema <- x@output_schema
   }
+  on_validation_failure <- match.arg(on_validation_failure)
+  validator <- .prepare_output_validation(
+    output_schema,
+    validate_output,
+    on_validation_failure
+  )
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
-  check_scalar_character(logfile, "logfile")
+  check_character_scalar(logfile, "logfile")
   # Check input
   check_inherits(prompt, "character")
   update_state <- x@use_memory && commit_to_memory
@@ -592,16 +613,26 @@ method(generate, Agent) <- function(
   # {<<} Initial response
   res <- parse_chat_response(x@llmconfig, resp)
 
-  # {++} Append initial response
+  # Validate terminal answers before committing them to memory.
+  message <- create_llm_message(
+    x,
+    content = res[["content"]],
+    reasoning = res[["reasoning"]],
+    tool_calls = res[["tool_calls"]],
+    metadata = res[["metadata"]]
+  )
+  if (!length(res[["tool_calls"]])) {
+    message <- .validate_generated_message(
+      message,
+      output_schema,
+      validator,
+      on_validation_failure,
+      verbosity
+    )
+  }
   append_message(
     running_state,
-    create_llm_message(
-      x,
-      content = res[["content"]],
-      reasoning = res[["reasoning"]],
-      tool_calls = res[["tool_calls"]],
-      metadata = res[["metadata"]]
-    ),
+    message,
     echo = echo,
     verbosity = verbosity - 1L
   )
@@ -794,16 +825,26 @@ method(generate, Agent) <- function(
       # {<<} Follow-up response
       res <- parse_chat_response(x@llmconfig, followup_resp)
 
-      # {++} Append response to messages as LLMMessage
+      # Validate terminal answers before committing them to memory.
+      message <- create_llm_message(
+        x,
+        content = res[["content"]],
+        reasoning = res[["reasoning"]],
+        tool_calls = res[["tool_calls"]],
+        metadata = res[["metadata"]]
+      )
+      if (!length(res[["tool_calls"]])) {
+        message <- .validate_generated_message(
+          message,
+          output_schema,
+          validator,
+          on_validation_failure,
+          verbosity
+        )
+      }
       append_message(
         running_state,
-        create_llm_message(
-          x,
-          content = res[["content"]],
-          reasoning = res[["reasoning"]],
-          tool_calls = res[["tool_calls"]],
-          metadata = res[["metadata"]]
-        ),
+        message,
         echo = echo,
         verbosity = verbosity - 1L
       )
@@ -812,5 +853,17 @@ method(generate, Agent) <- function(
       break
     }
   } # /while max_tool_rounds < max_tool_rounds
-  get_messages(running_state)
+  out <- get_messages(running_state)
+  attr(out, "agent_output") <- TRUE
+  if (!is.null(output_schema)) {
+    # Exhausting tool rounds has not produced a final answer; never validate an
+    # older assistant message from the persistent history in its place.
+    if (length(res[["tool_calls"]])) {
+      report <- .validate_output_text(output_schema, NA_character_)
+    } else {
+      report <- validation_results(message)
+    }
+    attr(out, "validation") <- report
+  }
+  out
 }

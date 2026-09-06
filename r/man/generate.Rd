@@ -14,6 +14,8 @@ generate(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 )
 }
@@ -41,10 +43,20 @@ If omitted, the object's default schema (if any) is used.}
 
 \item{verbosity}{Integer: Verbosity level.}
 
+\item{validate_output}{Logical: Validate final output locally when a schema is supplied.
+Disabling this does not disable the schema sent to the model.}
+
+\item{on_validation_failure}{Character \{"warn", "collect", "abort"\}: Preserve invalid output
+and report a styled rtemis.core message (not an R warning), collect silently, or
+abort with an error carrying \code{output} and \code{validation}. See \link{validate_output}.}
+
 \item{...}{Additional backend-specific per-call arguments. See Details.}
 }
 \value{
-\code{Message} object or list of \code{Message} objects (for \code{Agent}).
+\code{Message} object or list of \code{Message} objects (for \code{Agent}). With a
+schema, \link{validation_results} retrieves the attached validation report. Invalid
+output is retained unless explicitly configured to abort. Agent validation
+checks only the final answer, before committing that answer to memory.
 }
 \description{
 Generic method for generating text or structured output from LLMs and Agents.
@@ -55,8 +67,11 @@ overridable per call. Construct a new agent if you need a different system promp
 
 Backend-specific extra arguments accepted via \code{...}:
 \itemize{
-\item \strong{Ollama}: \code{top_k} (integer), \code{seed} (integer)
-\item \strong{OpenAI}: \code{seed} (integer)
+\item \strong{Ollama}: \code{top_k} (integer), \code{seed} (integer), \code{num_ctx} (integer, mapped to
+\code{options.num_ctx}), \code{keep_alive} (character duration such as \code{"10m"}, or seconds as a
+number, controlling how long the model stays loaded after the request), \code{logprobs}
+(logical), \code{top_logprobs} (integer)
+\item \strong{OpenAI}: \code{seed} (integer), \code{logprobs} (logical), \code{top_logprobs} (integer [0, 20])
 \item \strong{Anthropic}: \code{top_k} (integer)
 }
 

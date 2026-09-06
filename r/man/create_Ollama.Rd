@@ -28,7 +28,8 @@ create_Ollama(
 \item{base_url}{Character: Base URL of Ollama server.}
 
 \item{think}{Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
-Logical values target models like deepseek or qwen3; character values target gpt-oss.}
+Logical values target models like deepseek or qwen3; character values target gpt-oss.
+When \code{NULL}, the field is omitted from requests and Ollama uses the model default.}
 }
 \value{
 Ollama LLM object

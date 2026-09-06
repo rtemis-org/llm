@@ -11,11 +11,15 @@ map(x, f, ...)
 
 \item{f}{An \code{LLM} or \code{Agent} object.}
 
-\item{...}{Additional arguments passed to \code{generate()}.}
+\item{...}{Additional arguments passed to \code{generate()}, plus the two arguments the methods
+accept: \code{verbosity} and \code{on_error}. See Details.}
 }
 \value{
 A list of \code{Message} objects (for \code{LLM}) or list of lists of \code{Message} objects
-(for \code{Agent}).
+(for \code{Agent}). With an output schema, \link{validation_results} retrieves an aligned
+report. Validation happens per item; \code{on_validation_failure = "warn"} emits
+one summary message at completion, respecting verbosity. Validation options
+are forwarded to \link{generate}.
 }
 \description{
 Map
@@ -23,6 +27,20 @@ Map
 \details{
 Use \link{responses} to retrieve just the content from the assistant messages, or \link{reasoning} to
 retrieve the reasoning traces (if enabled).
+
+Both methods accept:
+\itemize{
+\item \code{verbosity} Integer [0, Inf): Verbosity level. Progress is reported through rtemis.core's
+nested progress API - one status line labelled with the model name, ticking once per element,
+with an ETA - and \code{verbosity = 0L} silences it. The per-call verbosity is \code{verbosity - 1L}.
+When a message sink is set (see \code{rtemis.core::set_msg_sink()}), progress is forwarded as
+structured events instead of being drawn, and nests under any enclosing progress node.
+\item \code{on_error} Character \{"na", "abort"\}: What to do when a single call fails. \code{"na"} (the
+default) warns, leaves \code{NULL} in that element's slot, and carries on; the result then carries
+an \code{errors} attribute, a data.frame of \code{index} and \code{message} with one row per failed call.
+\link{responses} and \link{reasoning} map those \code{NULL} slots to \code{NA_character_}. \code{"abort"} propagates
+the error and discards every result in the batch.
+}
 }
 \examples{
 # Requires running Ollama server and gemma4:e4b model

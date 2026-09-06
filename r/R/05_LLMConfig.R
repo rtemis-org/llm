@@ -38,10 +38,14 @@ ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
 LLMConfig <- new_class(
   "LLMConfig",
   properties = list(
-    model_name = character_scalar,
-    temperature = class_numeric,
-    backend = character_scalar,
-    base_url = character_scalar
+    model_name = prop_string(description = "Model name"),
+    temperature = prop_float(
+      min = 0,
+      max = 2,
+      description = "Sampling temperature"
+    ),
+    backend = prop_string(description = "Backend name"),
+    base_url = prop_string(description = "API base URL")
   ),
   constructor = function(
     model_name,
@@ -49,11 +53,7 @@ LLMConfig <- new_class(
     backend,
     base_url
   ) {
-    # --- Validate inputs ---
-    # Temperature must be numeric between 0.0 and 2.0
-    if (temperature < 0.0 || temperature > 2.0) {
-      abort("`temperature` must be between 0.0 and 2.0.")
-    }
+    # `temperature`'s bounds are carried by its property declaration.
     new_object(
       S7_object(),
       model_name = model_name,
@@ -154,17 +154,40 @@ OpenAIConfig <- new_class(
   "OpenAIConfig",
   parent = LLMConfig,
   properties = list(
-    temperature = bounded_double_property(0, 2),
-    api_key = optional_character_scalar,
-    api_key_env = character_scalar,
-    keychain_service = optional_character_scalar,
-    organization = optional_character_scalar,
-    project = optional_character_scalar,
-    timeout = class_numeric,
-    extra_headers = optional(S7::class_list),
-    extra_body = optional(S7::class_list),
-    enable_thinking = optional(S7::class_logical),
-    validate_model = class_logical
+    temperature = prop_float(
+      min = 0,
+      max = 2,
+      description = "Sampling temperature"
+    ),
+    api_key = prop_string(nullable = TRUE, description = "API key"),
+    api_key_env = prop_string(
+      description = "Environment variable holding the API key"
+    ),
+    keychain_service = prop_string(
+      nullable = TRUE,
+      description = "Keychain service holding the API key"
+    ),
+    organization = prop_string(nullable = TRUE, description = "Organization"),
+    project = prop_string(nullable = TRUE, description = "Project"),
+    timeout = prop_float(
+      exclusive_min = 0,
+      description = "Request timeout (seconds)"
+    ),
+    extra_headers = prop_bag(description = "Extra HTTP headers"),
+    extra_body = prop_bag(description = "Extra request body fields"),
+    zero_data_retention = prop_boolean(
+      default = NULL,
+      nullable = TRUE,
+      description = "Require OpenRouter zero-data-retention routing"
+    ),
+    enable_thinking = prop_boolean(
+      nullable = TRUE,
+      description = "Enable reasoning"
+    ),
+    validate_model = prop_boolean(
+      default = NULL,
+      description = "Check the model name against the endpoint"
+    )
   ),
   constructor = function(
     model_name,
@@ -178,23 +201,24 @@ OpenAIConfig <- new_class(
     timeout = OPENAI_TIMEOUT_DEFAULT,
     extra_headers = NULL,
     extra_body = NULL,
+    zero_data_retention = NULL,
     enable_thinking = NULL,
     validate_model = FALSE
   ) {
-    check_scalar_character(model_name, "model_name")
-    check_scalar_character(base_url, "base_url")
+    check_character_scalar(model_name, "model_name")
+    check_character_scalar(base_url, "base_url")
     if (!is.null(api_key)) {
-      check_scalar_character(api_key, "api_key")
+      check_character_scalar(api_key, "api_key")
     }
-    check_scalar_character(api_key_env, "api_key_env")
+    check_character_scalar(api_key_env, "api_key_env")
     if (!is.null(keychain_service)) {
-      check_scalar_character(keychain_service, "keychain_service")
+      check_character_scalar(keychain_service, "keychain_service")
     }
     if (!is.null(organization)) {
-      check_scalar_character(organization, "organization")
+      check_character_scalar(organization, "organization")
     }
     if (!is.null(project)) {
-      check_scalar_character(project, "project")
+      check_character_scalar(project, "project")
     }
     if (length(timeout) != 1L || is.na(timeout) || timeout <= 0) {
       abort("`timeout` must be a positive numeric scalar.")
@@ -205,6 +229,10 @@ OpenAIConfig <- new_class(
     if (!is.null(extra_body) && !.is_named_list(extra_body)) {
       abort("`extra_body` must be a named list or NULL.")
     }
+    check_optional_logical_scalar(
+      zero_data_retention,
+      "zero_data_retention"
+    )
     if (
       !is.null(enable_thinking) &&
         (length(enable_thinking) != 1L || is.na(enable_thinking))
@@ -215,6 +243,18 @@ OpenAIConfig <- new_class(
       abort("`validate_model` must be a logical scalar.")
     }
     base_url <- .clean_base_url(base_url)
+    if (
+      isTRUE(zero_data_retention) &&
+        !grepl(
+          "^https://(openrouter\\.ai|eu\\.openrouter\\.ai)(:[0-9]+)?(/|$)",
+          base_url
+        )
+    ) {
+      abort(
+        "`zero_data_retention = TRUE` is only supported for OpenRouter requests.\n",
+        "Use an OpenRouter base URL, or configure ZDR in the provider account/workspace."
+      )
+    }
     if (validate_model) {
       openai_check_model(
         x = model_name,
@@ -241,6 +281,7 @@ OpenAIConfig <- new_class(
       timeout = timeout,
       extra_headers = extra_headers,
       extra_body = extra_body,
+      zero_data_retention = zero_data_retention,
       enable_thinking = enable_thinking,
       validate_model = validate_model
     )
@@ -260,18 +301,43 @@ AnthropicConfig <- new_class(
   "AnthropicConfig",
   parent = LLMConfig,
   properties = list(
-    temperature = prob_scalar,
-    api_key = optional_character_scalar,
-    api_key_env = character_scalar,
-    keychain_service = optional_character_scalar,
-    anthropic_version = character_scalar,
-    anthropic_beta = optional_character_scalar,
-    max_tokens = class_integer,
-    timeout = class_numeric,
-    extra_headers = optional(S7::class_list),
-    extra_body = optional(S7::class_list),
-    thinking_budget_tokens = optional(S7::class_integer),
-    validate_model = class_logical
+    temperature = prop_float(
+      min = 0,
+      max = 1,
+      description = "Sampling temperature"
+    ),
+    api_key = prop_string(nullable = TRUE, description = "API key"),
+    api_key_env = prop_string(
+      description = "Environment variable holding the API key"
+    ),
+    keychain_service = prop_string(
+      nullable = TRUE,
+      description = "Keychain service holding the API key"
+    ),
+    anthropic_version = prop_string(description = "Anthropic API version"),
+    anthropic_beta = prop_string(
+      nullable = TRUE,
+      description = "Anthropic beta feature header"
+    ),
+    max_tokens = prop_integer(
+      min = 1L,
+      description = "Maximum tokens to generate"
+    ),
+    timeout = prop_float(
+      exclusive_min = 0,
+      description = "Request timeout (seconds)"
+    ),
+    extra_headers = prop_bag(description = "Extra HTTP headers"),
+    extra_body = prop_bag(description = "Extra request body fields"),
+    thinking_budget_tokens = prop_integer(
+      nullable = TRUE,
+      min = 1L,
+      description = "Token budget for extended thinking"
+    ),
+    validate_model = prop_boolean(
+      default = NULL,
+      description = "Check the model name against the endpoint"
+    )
   ),
   constructor = function(
     model_name,
@@ -289,16 +355,16 @@ AnthropicConfig <- new_class(
     thinking_budget_tokens = NULL,
     validate_model = FALSE
   ) {
-    check_scalar_character(model_name, "model_name")
-    check_scalar_character(base_url, "base_url")
+    check_character_scalar(model_name, "model_name")
+    check_character_scalar(base_url, "base_url")
     if (!is.null(api_key)) {
-      check_scalar_character(api_key, "api_key")
+      check_character_scalar(api_key, "api_key")
     }
-    check_scalar_character(api_key_env, "api_key_env")
+    check_character_scalar(api_key_env, "api_key_env")
     if (!is.null(keychain_service)) {
-      check_scalar_character(keychain_service, "keychain_service")
+      check_character_scalar(keychain_service, "keychain_service")
     }
-    check_scalar_character(anthropic_version, "anthropic_version")
+    check_character_scalar(anthropic_version, "anthropic_version")
     if (!is.null(anthropic_beta)) {
       if (
         !is.character(anthropic_beta) ||
@@ -445,6 +511,7 @@ method(as_list, OpenAIConfig) <- function(x) {
     timeout = x@timeout,
     extra_headers = x@extra_headers,
     extra_body = x@extra_body,
+    zero_data_retention = x@zero_data_retention,
     enable_thinking = x@enable_thinking,
     validate_model = x@validate_model
   )
