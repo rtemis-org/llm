@@ -14,7 +14,8 @@ that failed under \code{on_error = "na"}.}
 \value{
 Character vector of assistant responses. Returns \code{NA_character_} in slots where no
 assistant message is present (including failed calls), so that the length of the result
-matches the length of \code{x}.
+matches the length of \code{x}. An agent history returned by \link{generate} yields
+only the final assistant response. Attached validation reports are preserved.
 }
 \description{
 Returns the assistant content from a single \code{Message}, from a flat list of \code{Message} objects

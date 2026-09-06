@@ -16,6 +16,8 @@ agentapply(
   verbosity = 1L,
   extract_responses = TRUE,
   on_error = c("na", "abort"),
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 )
 }
@@ -48,13 +50,23 @@ keeps that element's slot as \code{NA_character_} (or \code{NULL} when \code{ext
 carries on, so a run of thousands of calls is not lost to one timeout. \code{"abort"} propagates
 the error and discards every result in the batch.}
 
+\item{validate_output}{Logical: Validate final output locally when a schema is supplied.
+Disabling this does not disable the schema sent to the model.}
+
+\item{on_validation_failure}{Character \{"warn", "collect", "abort"\}: Preserve invalid output
+and report a styled rtemis.core message (not an R warning), collect silently, or
+abort with an error carrying \code{output} and \code{validation}. See \link{validate_output}.}
+
 \item{...}{Additional per-call arguments forwarded to \link{generate}.}
 }
 \value{
 If \code{extract_responses = TRUE}, a character vector the same length as \code{x}. Otherwise, a
 list of lists of \code{Message} objects. Under \code{on_error = "na"} the result carries an \code{errors}
 attribute: a data.frame of \code{index} and \code{message}, one row per failed call, so failures can be
-retried by position rather than found by scanning for \code{NA}.
+retried by position rather than found by scanning for \code{NA}. With a schema,
+\link{validation_results} retrieves per-input statuses and diagnostics. Invalid
+outputs remain in place under warn/collect; warn emits one informational
+summary message for the batch, respecting verbosity.
 }
 \description{
 \code{agentapply} is the \code{lapply}-style entry point for running a single prompt against an \code{Agent}

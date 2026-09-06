@@ -11,7 +11,8 @@
 #'
 #' @return Character vector of assistant responses. Returns `NA_character_` in slots where no
 #'   assistant message is present (including failed calls), so that the length of the result
-#'   matches the length of `x`.
+#'   matches the length of `x`. An agent history returned by [generate] yields
+#'   only the final assistant response. Attached validation reports are preserved.
 #'
 #' @author EDG
 #' @export
@@ -27,10 +28,13 @@
 #'   ) |> responses()
 #' }
 responses <- function(x) {
+  if (isTRUE(attr(x, "agent_output"))) {
+    return(.keep_output_validation(unname(responses(list(x))), x))
+  }
   # Single Message object
   if (S7_inherits(x, Message)) {
     if (x@role == "assistant") {
-      return(x@content)
+      return(.keep_output_validation(x@content, x))
     }
     return(NA_character_)
   }
@@ -40,12 +44,19 @@ responses <- function(x) {
   # result still lines up with the input.
   if (is.list(x) && all(vapply(x, .is_null_or_message, logical(1L)))) {
     return(
-      vapply(
-        x,
-        function(m) {
-          if (!is.null(m) && m@role == "assistant") m@content else NA_character_
-        },
-        character(1L)
+      .keep_output_validation(
+        vapply(
+          x,
+          function(m) {
+            if (!is.null(m) && m@role == "assistant") {
+              m@content
+            } else {
+              NA_character_
+            }
+          },
+          character(1L)
+        ),
+        x
       )
     )
   }
@@ -56,16 +67,23 @@ responses <- function(x) {
       all(vapply(x, .is_null_or_message_list, logical(1L)))
   ) {
     return(
-      vapply(
-        x,
-        function(messages) {
-          if (is.null(messages)) {
-            return(NA_character_)
-          }
-          asst <- Filter(function(m) m@role == "assistant", messages)
-          if (length(asst) > 0L) asst[[length(asst)]]@content else NA_character_
-        },
-        character(1L)
+      .keep_output_validation(
+        vapply(
+          x,
+          function(messages) {
+            if (is.null(messages)) {
+              return(NA_character_)
+            }
+            asst <- Filter(function(m) m@role == "assistant", messages)
+            if (length(asst) > 0L) {
+              asst[[length(asst)]]@content
+            } else {
+              NA_character_
+            }
+          },
+          character(1L)
+        ),
+        x
       )
     )
   }
@@ -434,6 +452,10 @@ token_probs <- function(x, tokens, position = 1L) {
   if (!is.null(errors)) {
     attr(out, "errors") <- errors
   }
+  validation <- validation_results(from)
+  if (!is.null(validation)) {
+    attr(out, "validation") <- validation
+  }
   out
 }
 
@@ -441,36 +463,66 @@ token_probs <- function(x, tokens, position = 1L) {
 # %% .map_iter ----
 # Internal: shared iteration body for map methods. Uses rtemis.core's nested progress API and
 # forwards backend-specific per-call args via `...` to `generate()`.
-.map_iter <- function(x, f, verbosity, on_error = c("na", "abort"), ...) {
+.map_iter <- function(
+  x,
+  f,
+  verbosity,
+  on_error = c("na", "abort"),
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
+  ...
+) {
   on_error <- match.arg(on_error)
-  label <- repr_bracket(get_model_name(f))
-  # `kind` labels the node in the message-sink envelope, so a consumer reading
-  # the progress stream can tell an LLM batch apart from any other loop.
-  if (on_error == "abort") {
-    return(progress_lapply(
-      x,
-      function(el) {
-        generate(f, el, verbosity = verbosity - 1L, ...)
-      },
-      label = label,
-      kind = "llm_map",
-      verbosity = verbosity
-    ))
+  on_validation_failure <- match.arg(on_validation_failure)
+  extra <- list(...)
+  schema <- extra[["output_schema"]]
+  if (is.null(schema) && "output_schema" %in% prop_names(f)) {
+    schema <- f@output_schema
   }
-
-  # `on_error = "na"`: every completed call is paid for, so one failure must not
-  # discard the rest of the batch. Iterate over indices rather than elements so
-  # that a failure can be reported against the position the caller retries by.
-  error_index <- integer(0L)
-  error_message <- character(0L)
+  # Configuration/compilation errors must fail once, before any batch requests.
+  .prepare_output_validation(schema, validate_output, on_validation_failure)
+  label <- repr_bracket(get_model_name(f))
+  error_index <- integer()
+  error_message <- character()
+  validation_failures <- vector("list", length(x))
   out <- progress_lapply(
     seq_along(x),
     function(i) {
-      tryCatch(
-        generate(f, x[[i]], verbosity = verbosity - 1L, ...),
-        error = function(e) {
-          error_index[[length(error_index) + 1L]] <<- i
-          error_message[[length(error_message) + 1L]] <<- conditionMessage(e)
+      run <- function() {
+        generate(
+          f,
+          x[[i]],
+          verbosity = verbosity - 1L,
+          validate_output = validate_output,
+          on_validation_failure = if (on_validation_failure == "warn") {
+            "collect"
+          } else {
+            on_validation_failure
+          },
+          ...
+        )
+      }
+      if (on_error == "abort") {
+        return(run())
+      }
+      tryCatch(run(), error = function(e) {
+        # An engine failure is an implementation/configuration error, not bad model output.
+        if (inherits(e, "llm_validation_engine_error")) {
+          stop(e)
+        }
+        error_index[[length(error_index) + 1L]] <<- i
+        error_message[[length(error_message) + 1L]] <<- conditionMessage(e)
+        if (inherits(e, "llm_output_validation_error")) {
+          validation_failures[[i]] <<- e[["validation"]]
+          # Explicit validation aborts retain their original text in the batch report.
+          warn(
+            "Element ",
+            i,
+            " failed schema validation. See validation_results().",
+            use_warning = FALSE,
+            verbosity = verbosity
+          )
+        } else {
           warn(
             "Element ",
             i,
@@ -481,16 +533,25 @@ token_probs <- function(x, tokens, position = 1L) {
             'attr(result, "errors").',
             use_warning = TRUE
           )
-          NULL
         }
-      )
+        NULL
+      })
     },
     label = label,
     kind = "llm_map",
     verbosity = verbosity
   )
   names(out) <- names(x)
-  attr(out, "errors") <- .map_errors(error_index, error_message)
+  if (on_error == "na") {
+    attr(out, "errors") <- .map_errors(error_index, error_message)
+  }
+  if (!is.null(schema)) {
+    report <- .combine_output_validation(out, schema, validation_failures)
+    attr(out, "validation") <- report
+    if (on_validation_failure == "warn") {
+      .report_output_validation(report, "warn", verbosity)
+    }
+  }
   out
 }
 
@@ -567,6 +628,7 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #'   `model_or_llm` is a string, this is baked into the built `LLM`. When `model_or_llm` is a
 #'   pre-built `LLM`, supplying this here is a conflict and will error.
 #' @param verbosity Integer \[0, Inf): Verbosity level. The per-call verbosity is `verbosity - 1L`.
+#' @inheritParams generate
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses
 #'   (with `NA_character_` for missing assistant content). If `FALSE`, return the raw list of
 #'   `Message` objects from each call.
@@ -580,7 +642,10 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #' @return If `extract_responses = TRUE`, a character vector the same length as `x`. Otherwise, a
 #'   list of `Message` objects. Under `on_error = "na"` the result carries an `errors` attribute:
 #'   a data.frame of `index` and `message`, one row per failed call, so failures can be retried by
-#'   position rather than found by scanning for `NA`.
+#'   position rather than found by scanning for `NA`. With a schema,
+#'   [validation_results] retrieves per-input statuses and diagnostics. Invalid
+#'   outputs remain in place under warn/collect; warn emits one informational
+#'   summary message for the batch, respecting verbosity.
 #'
 #' @author EDG
 #' @export
@@ -604,6 +669,8 @@ llmapply <- function(
   verbosity = 1L,
   extract_responses = TRUE,
   on_error = c("na", "abort"),
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   call <- match.call()
@@ -652,7 +719,15 @@ llmapply <- function(
     )
   }
 
-  out <- map(x, llm, verbosity = verbosity, on_error = on_error, ...)
+  out <- map(
+    x,
+    llm,
+    verbosity = verbosity,
+    on_error = on_error,
+    validate_output = validate_output,
+    on_validation_failure = on_validation_failure,
+    ...
+  )
   if (extract_responses) .keep_errors(responses(out), out) else out
 }
 
@@ -684,6 +759,7 @@ llmapply <- function(
 #' @param max_tool_rounds Integer \[1, Inf): Maximum number of tool call rounds per query.
 #' @param output_schema Optional Schema: Output schema for the on-the-fly `Agent`.
 #' @param verbosity Integer \[0, Inf): Verbosity level.
+#' @inheritParams generate
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses.
 #'   If `FALSE`, return the raw list of lists of `Message` objects.
 #' @param on_error Character \{"na", "abort"\}: What to do when a single call fails. `"na"` warns,
@@ -695,7 +771,10 @@ llmapply <- function(
 #' @return If `extract_responses = TRUE`, a character vector the same length as `x`. Otherwise, a
 #'   list of lists of `Message` objects. Under `on_error = "na"` the result carries an `errors`
 #'   attribute: a data.frame of `index` and `message`, one row per failed call, so failures can be
-#'   retried by position rather than found by scanning for `NA`.
+#'   retried by position rather than found by scanning for `NA`. With a schema,
+#'   [validation_results] retrieves per-input statuses and diagnostics. Invalid
+#'   outputs remain in place under warn/collect; warn emits one informational
+#'   summary message for the batch, respecting verbosity.
 #'
 #' @author EDG
 #' @export
@@ -723,6 +802,8 @@ agentapply <- function(
   verbosity = 1L,
   extract_responses = TRUE,
   on_error = c("na", "abort"),
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   call <- match.call()
@@ -775,6 +856,14 @@ agentapply <- function(
     )
   }
 
-  out <- map(x, agent, verbosity = verbosity, on_error = on_error, ...)
+  out <- map(
+    x,
+    agent,
+    verbosity = verbosity,
+    on_error = on_error,
+    validate_output = validate_output,
+    on_validation_failure = on_validation_failure,
+    ...
+  )
   if (extract_responses) .keep_errors(responses(out), out) else out
 }

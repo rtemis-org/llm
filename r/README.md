@@ -83,3 +83,39 @@ agent <- create_agent(
 ```r
 generate(agent, "Explain quantum superposition in seven bullet points.")
 ```
+
+### Structured output validation
+
+Validation runs locally when an output schema is supplied. Invalid output is
+retained by default, with an informational message through `rtemis.core::warn()`
+(not an R warning). This applies to single responses and batches, including small
+local models that may not reliably follow schemas.
+
+```r
+sch <- schema("Count", field("n", type = "integer"))
+out <- llmapply(
+  c("How many days are in a week?", "How many months are in a year?"),
+  "gemma4:e4b",
+  output_schema = sch
+)
+report <- validation_results(out)
+report@status   # valid, invalid, unavailable, or not_validated
+report@issues   # input index, JSON path, keyword, and diagnostic message
+```
+
+Set `on_validation_failure = "collect"` to record diagnostics silently, or
+`"abort"` to raise an error on a mismatch. Batch validation occurs per response;
+the default logs a single summary. Validation aborts follow the batch's `on_error`
+policy, with rejected text retained in the validation report.
+
+You can also generate with `validate_output = FALSE` and validate later, or check
+any saved JSON directly:
+
+```r
+report <- validate_output(c('{"n":10}', '{"n":"10"}'), sch)
+report@status  # "valid" "invalid"
+```
+
+Validation checks the requested schema without coercing values, stripping Markdown,
+or repairing JSON. Current schemas allow extra properties, optional fields permit
+omission but not null, and array/object fields constrain only the outer type.

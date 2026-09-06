@@ -492,6 +492,7 @@ create_agent <- function(
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response.
 #' Important: if NULL, the agent's default output_schema, if defined, will be used. This means that
 #' the generate call's schema takes precedence over the agent's schema.
+#' @inheritParams generate
 #' @param commit_to_memory Logical: Whether to commit this interaction to the agent's memory.
 #' @param use_tools Logical: Whether to allow the agent to use tools.
 #' @param echo Logical: Whether to echo the prompt and response.
@@ -526,12 +527,20 @@ method(generate, Agent) <- function(
   echo = FALSE,
   logfile = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   # Get output schema: First check function argument, then agent's default
   if (is.null(output_schema)) {
     output_schema <- x@output_schema
   }
+  on_validation_failure <- match.arg(on_validation_failure)
+  validator <- .prepare_output_validation(
+    output_schema,
+    validate_output,
+    on_validation_failure
+  )
   # Resolve logfile: per-call arg > agent field
   logfile <- logfile %||% x@logfile
   check_character_scalar(logfile, "logfile")
@@ -604,16 +613,26 @@ method(generate, Agent) <- function(
   # {<<} Initial response
   res <- parse_chat_response(x@llmconfig, resp)
 
-  # {++} Append initial response
+  # Validate terminal answers before committing them to memory.
+  message <- create_llm_message(
+    x,
+    content = res[["content"]],
+    reasoning = res[["reasoning"]],
+    tool_calls = res[["tool_calls"]],
+    metadata = res[["metadata"]]
+  )
+  if (!length(res[["tool_calls"]])) {
+    message <- .validate_generated_message(
+      message,
+      output_schema,
+      validator,
+      on_validation_failure,
+      verbosity
+    )
+  }
   append_message(
     running_state,
-    create_llm_message(
-      x,
-      content = res[["content"]],
-      reasoning = res[["reasoning"]],
-      tool_calls = res[["tool_calls"]],
-      metadata = res[["metadata"]]
-    ),
+    message,
     echo = echo,
     verbosity = verbosity - 1L
   )
@@ -806,16 +825,26 @@ method(generate, Agent) <- function(
       # {<<} Follow-up response
       res <- parse_chat_response(x@llmconfig, followup_resp)
 
-      # {++} Append response to messages as LLMMessage
+      # Validate terminal answers before committing them to memory.
+      message <- create_llm_message(
+        x,
+        content = res[["content"]],
+        reasoning = res[["reasoning"]],
+        tool_calls = res[["tool_calls"]],
+        metadata = res[["metadata"]]
+      )
+      if (!length(res[["tool_calls"]])) {
+        message <- .validate_generated_message(
+          message,
+          output_schema,
+          validator,
+          on_validation_failure,
+          verbosity
+        )
+      }
       append_message(
         running_state,
-        create_llm_message(
-          x,
-          content = res[["content"]],
-          reasoning = res[["reasoning"]],
-          tool_calls = res[["tool_calls"]],
-          metadata = res[["metadata"]]
-        ),
+        message,
         echo = echo,
         verbosity = verbosity - 1L
       )
@@ -824,5 +853,17 @@ method(generate, Agent) <- function(
       break
     }
   } # /while max_tool_rounds < max_tool_rounds
-  get_messages(running_state)
+  out <- get_messages(running_state)
+  attr(out, "agent_output") <- TRUE
+  if (!is.null(output_schema)) {
+    # Exhausting tool rounds has not produced a final answer; never validate an
+    # older assistant message from the persistent history in its place.
+    if (length(res[["tool_calls"]])) {
+      report <- .validate_output_text(output_schema, NA_character_)
+    } else {
+      report <- validation_results(message)
+    }
+    attr(out, "validation") <- report
+  }
+  out
 }

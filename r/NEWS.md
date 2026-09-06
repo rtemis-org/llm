@@ -1,5 +1,21 @@
 # rtemis.llm NEWS
 
+## Development
+
+- Structured responses are validated locally by default with a cached Ajv validator.
+  `validate_output = FALSE` skips validation while still requesting the schema.
+  `on_validation_failure = "warn"` retains invalid output and emits an informational
+  rtemis.core message, not an R warning; `"collect"` is silent and `"abort"` raises
+  an error carrying the response and diagnostics. Batches validate per item and
+  summarize mismatches once at completion.
+- Added standalone `validate_output()` and the `validation_results()` accessor.
+  Reports preserve original text, input positions/names, statuses, and diagnostics,
+  including when batch responses are extracted. Validation does not repair output.
+- Agent final answers are validated before memory commit. `responses()` recognizes
+  histories returned by `generate(agent, ...)` and extracts their final answer.
+- Anthropic synthetic structured-output tool inputs are returned as answer JSON,
+  retaining raw content metadata and excluding the synthetic tool from execution.
+
 ## 0.8.5
 
 - Added `enum` to `field()`: restrict a field to a fixed set of permitted values. Emitted as the

@@ -256,6 +256,8 @@ method(generate, StubLLM) <- function(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   if (prompt %in% x@fail_on) {
@@ -298,6 +300,8 @@ method(generate, StubAgent) <- function(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   if (prompt %in% x@fail_on) {

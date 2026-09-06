@@ -16,7 +16,10 @@ accept: \code{verbosity} and \code{on_error}. See Details.}
 }
 \value{
 A list of \code{Message} objects (for \code{LLM}) or list of lists of \code{Message} objects
-(for \code{Agent}).
+(for \code{Agent}). With an output schema, \link{validation_results} retrieves an aligned
+report. Validation happens per item; \code{on_validation_failure = "warn"} emits
+one summary message at completion, respecting verbosity. Validation options
+are forwarded to \link{generate}.
 }
 \description{
 Map

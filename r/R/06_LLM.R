@@ -295,6 +295,7 @@ method(print, Anthropic) <- function(x, output_type = NULL, ...) {
 #' @param stop Optional character: Stop sequence(s).
 #' @param think Optional logical or character: Whether to enable thinking.
 #' @param output_schema Optional Schema: Per-call output schema override.
+#' @inheritParams generate
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `top_k` (integer), `seed` (integer),
 #' `num_ctx` (integer), `keep_alive` (character or numeric), `logprobs` (logical),
@@ -314,9 +315,18 @@ method(generate, Ollama) <- function(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
   # Check input
+  on_validation_failure <- match.arg(on_validation_failure)
+  output_schema <- output_schema %||% x@output_schema
+  validator <- .prepare_output_validation(
+    output_schema,
+    validate_output,
+    on_validation_failure
+  )
   check_inherits(prompt, "character")
   extra <- list(...)
   top_k <- extra[["top_k"]]
@@ -347,7 +357,7 @@ method(generate, Ollama) <- function(
   request_body <- build_chat_request_body(
     x@config,
     state = state,
-    output_schema = output_schema %||% x@output_schema,
+    output_schema = output_schema,
     think = think,
     use_tools = FALSE,
     temperature = temperature,
@@ -369,13 +379,20 @@ method(generate, Ollama) <- function(
   )
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
   res <- parse_chat_response(x@config, resp)
-  OllamaMessage(
+  message <- OllamaMessage(
     name = x@name,
     content = res[["content"]],
     metadata = res[["metadata"]],
     model_name = x@config@model_name,
     reasoning = res[["reasoning"]],
     tool_calls = res[["tool_calls"]]
+  )
+  .validate_generated_message(
+    message,
+    output_schema,
+    validator,
+    on_validation_failure,
+    verbosity
   )
 }
 
@@ -391,6 +408,7 @@ method(generate, Ollama) <- function(
 #' @param stop Optional character: Stop sequence(s).
 #' @param think Optional logical: Whether to enable thinking options.
 #' @param output_schema Optional Schema: Per-call output schema override.
+#' @inheritParams generate
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `seed` (integer), `logprobs` (logical),
 #' `top_logprobs` (integer).
@@ -409,8 +427,17 @@ method(generate, OpenAI) <- function(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
+  on_validation_failure <- match.arg(on_validation_failure)
+  output_schema <- output_schema %||% x@output_schema
+  validator <- .prepare_output_validation(
+    output_schema,
+    validate_output,
+    on_validation_failure
+  )
   check_inherits(prompt, "character")
   extra <- list(...)
   seed <- extra[["seed"]]
@@ -435,7 +462,7 @@ method(generate, OpenAI) <- function(
   request_body <- build_chat_request_body(
     x@config,
     state = state,
-    output_schema = output_schema %||% x@output_schema,
+    output_schema = output_schema,
     think = think,
     use_tools = FALSE,
     temperature = temperature,
@@ -454,7 +481,7 @@ method(generate, OpenAI) <- function(
   )
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
   res <- parse_chat_response(x@config, resp)
-  OpenAIMessage(
+  message <- OpenAIMessage(
     name = x@name,
     content = res[["content"]],
     metadata = res[["metadata"]],
@@ -462,6 +489,13 @@ method(generate, OpenAI) <- function(
     reasoning = res[["reasoning"]],
     tool_calls = res[["tool_calls"]],
     provider = .openai_provider_name(x@config)
+  )
+  .validate_generated_message(
+    message,
+    output_schema,
+    validator,
+    on_validation_failure,
+    verbosity
   )
 }
 
@@ -477,6 +511,7 @@ method(generate, OpenAI) <- function(
 #' @param stop Optional character: Stop sequence(s) (mapped to `stop_sequences`).
 #' @param think Optional logical: Whether to enable extended thinking for this call.
 #' @param output_schema Optional Schema: Per-call output schema override.
+#' @inheritParams generate
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional per-call options: `top_k` (integer).
 #'
@@ -494,8 +529,17 @@ method(generate, Anthropic) <- function(
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
+  validate_output = TRUE,
+  on_validation_failure = c("warn", "collect", "abort"),
   ...
 ) {
+  on_validation_failure <- match.arg(on_validation_failure)
+  output_schema <- output_schema %||% x@output_schema
+  validator <- .prepare_output_validation(
+    output_schema,
+    validate_output,
+    on_validation_failure
+  )
   check_inherits(prompt, "character")
   extra <- list(...)
   top_k <- extra[["top_k"]]
@@ -518,7 +562,7 @@ method(generate, Anthropic) <- function(
   request_body <- build_chat_request_body(
     x@config,
     state = state,
-    output_schema = output_schema %||% x@output_schema,
+    output_schema = output_schema,
     think = think,
     use_tools = FALSE,
     temperature = temperature,
@@ -535,13 +579,20 @@ method(generate, Anthropic) <- function(
   )
   msg(repr_bracket(x@config@model_name), "done.", verbosity = verbosity)
   res <- parse_chat_response(x@config, resp)
-  AnthropicMessage(
+  message <- AnthropicMessage(
     name = x@name,
     content = res[["content"]],
     metadata = res[["metadata"]],
     model_name = x@config@model_name,
     reasoning = res[["reasoning"]],
     tool_calls = res[["tool_calls"]]
+  )
+  .validate_generated_message(
+    message,
+    output_schema,
+    validator,
+    on_validation_failure,
+    verbosity
   )
 }
 

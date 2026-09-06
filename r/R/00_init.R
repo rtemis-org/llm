@@ -35,7 +35,10 @@ get_model_name <- new_generic("get_model_name", "x")
 #'   the error and discards every result in the batch.
 #'
 #' @return A list of `Message` objects (for `LLM`) or list of lists of `Message` objects
-#' (for `Agent`).
+#' (for `Agent`). With an output schema, [validation_results] retrieves an aligned
+#' report. Validation happens per item; `on_validation_failure = "warn"` emits
+#' one summary message at completion, respecting verbosity. Validation options
+#' are forwarded to [generate].
 #'
 #' @author EDG
 #' @export
@@ -75,6 +78,11 @@ to_json <- new_generic("to_json", "x")
 #' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
 #' @param output_schema Optional Schema: Output schema to enforce on this call's response.
 #' If omitted, the object's default schema (if any) is used.
+#' @param validate_output Logical: Validate final output locally when a schema is supplied.
+#'   Disabling this does not disable the schema sent to the model.
+#' @param on_validation_failure Character \{"warn", "collect", "abort"\}: Preserve invalid output
+#'   and report a styled rtemis.core message (not an R warning), collect silently, or
+#'   abort with an error carrying `output` and `validation`. See [validate_output].
 #' @param verbosity Integer: Verbosity level.
 #' @param ... Additional backend-specific per-call arguments. See Details.
 #'
@@ -93,7 +101,10 @@ to_json <- new_generic("to_json", "x")
 #' Any argument set to `NULL` (the default) falls back to the value baked into the
 #' underlying `LLMConfig` at construction time.
 #'
-#' @return `Message` object or list of `Message` objects (for `Agent`).
+#' @return `Message` object or list of `Message` objects (for `Agent`). With a
+#'   schema, [validation_results] retrieves the attached validation report. Invalid
+#'   output is retained unless explicitly configured to abort. Agent validation
+#'   checks only the final answer, before committing that answer to memory.
 #'
 #' @author EDG
 #' @export
@@ -122,6 +133,8 @@ generate <- new_generic(
     think = NULL,
     output_schema = NULL,
     verbosity = 1L,
+    validate_output = TRUE,
+    on_validation_failure = c("warn", "collect", "abort"),
     ...
   ) {
     S7_dispatch()

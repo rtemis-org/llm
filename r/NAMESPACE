@@ -35,9 +35,12 @@ export(tool_duckduckgo_ia)
 export(tool_param)
 export(tool_semanticscholar)
 export(tool_wikipedia)
+export(validate_output)
+export(validation_results)
 import(S7)
 import(data.table)
 import(rtemis.core)
+importFrom(jsonvalidate,json_validator)
 importFrom(stats,setNames)
 importFrom(utils,
   View,
