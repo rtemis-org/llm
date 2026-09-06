@@ -21,12 +21,14 @@ test_that("AnthropicConfig class and config_Anthropic work", {
 
 # %% config_Anthropic API key handling ----
 test_that("config_Anthropic aborts when no API key is resolvable", {
-  config <- config_Anthropic(
-    model_name = "claude-sonnet-4-6",
-    api_key_env = "RTEMIS_LLM_ANTHROPIC_EMPTY_TEST_KEY",
-    validate_model = FALSE
-  )
-  expect_error(resolve_anthropic_api_key(config), "No Anthropic API key")
+  with_env(c(RTEMIS_LLM_ANTHROPIC_EMPTY_TEST_KEY = NA), {
+    config <- config_Anthropic(
+      model_name = "claude-sonnet-4-6",
+      api_key_env = "RTEMIS_LLM_ANTHROPIC_EMPTY_TEST_KEY",
+      validate_model = FALSE
+    )
+    expect_error(resolve_anthropic_api_key(config), "No Anthropic API key")
+  })
 })
 
 

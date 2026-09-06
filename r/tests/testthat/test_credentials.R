@@ -61,6 +61,7 @@ test_that("the backend default being unset is not an error", {
 })
 
 test_that("a named keychain service with no item is an error", {
+  skip_if_no_keychain()
   expect_error(
     rtemis.llm:::.resolve_key_sources(
       api_key = NULL,
@@ -94,6 +95,7 @@ test_that("get_keychain_secret returns NULL for a missing item", {
   # Not character(0): a zero-length result is not NULL, so a caller guarding on
   # is.null() would read a failed lookup as a successful one and go on to send
   # an empty credential.
+  skip_if_no_keychain()
   out <- rtemis.llm:::get_keychain_secret(
     service = "rtemis_llm_service_that_does_not_exist"
   )
@@ -103,6 +105,7 @@ test_that("get_keychain_secret returns NULL for a missing item", {
 test_that("get_keychain_secret does not let the shell interpret a service name", {
   # `system2()` quotes the command but not its arguments, so an unquoted
   # service name would be evaluated rather than matched.
+  skip_if_no_keychain()
   out <- rtemis.llm:::get_keychain_secret(
     service = "no_such; echo pwned"
   )

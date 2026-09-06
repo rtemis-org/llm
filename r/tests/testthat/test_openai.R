@@ -4,26 +4,33 @@
 
 # %% OpenAIConfig ----
 test_that("OpenAIConfig class works for local compatible servers", {
-  config <- config_OpenAI(
-    model_name = "local-model",
-    temperature = 0.4,
-    base_url = "http://localhost:1234/v1/",
-    validate_model = FALSE
-  )
-  expect_true(S7_inherits(config, OpenAIConfig))
-  expect_equal(config@base_url, "http://localhost:1234/v1")
-  expect_null(resolve_api_key(config))
+  # `OPENAI_API_KEY` is pinned unset: an ambient key would resolve as the
+  # backend default and the key would be non-NULL for a reason that has
+  # nothing to do with what this checks.
+  with_env(c(OPENAI_API_KEY = NA), {
+    config <- config_OpenAI(
+      model_name = "local-model",
+      temperature = 0.4,
+      base_url = "http://localhost:1234/v1/",
+      validate_model = FALSE
+    )
+    expect_true(S7_inherits(config, OpenAIConfig))
+    expect_equal(config@base_url, "http://localhost:1234/v1")
+    expect_null(resolve_api_key(config))
+  })
 })
 
 
 # %% OpenAIConfig API key handling ----
 test_that("OpenAIConfig requires API key only for official OpenAI URL", {
-  config <- config_OpenAI(
-    model_name = "gpt-test",
-    api_key_env = "RTEMIS_LLM_EMPTY_TEST_KEY",
-    validate_model = FALSE
-  )
-  expect_error(resolve_api_key(config), "No OpenAI API key")
+  with_env(c(RTEMIS_LLM_EMPTY_TEST_KEY = NA), {
+    config <- config_OpenAI(
+      model_name = "gpt-test",
+      api_key_env = "RTEMIS_LLM_EMPTY_TEST_KEY",
+      validate_model = FALSE
+    )
+    expect_error(resolve_api_key(config), "No OpenAI API key")
+  })
 })
 
 

@@ -1,6 +1,10 @@
 ollama_test_url <- "http://localhost:11434"
 
 skip_if_ollama_unavailable <- function(base_url = ollama_test_url) {
+  # Never probe from a check farm: no Ollama server is running there, and the
+  # probe is an outbound request whose failure mode (hang, then timeout) is
+  # slower and less informative than skipping outright.
+  testthat::skip_on_cran()
   tryCatch(
     ollama_list_models(base_url = base_url),
     error = function(e) {
