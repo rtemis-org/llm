@@ -151,7 +151,6 @@ method(build_response_format, OpenAIConfig) <- function(
 }
 # /.check_keep_alive
 
-
 # %% .check_logprobs_args() ----
 #' Validate the logprobs Argument Pair
 #'
@@ -181,7 +180,6 @@ method(build_response_format, OpenAIConfig) <- function(
   )
 }
 # /.check_logprobs_args
-
 
 # %% .check_call_options() ----
 #' Validate Per-Call Request Options
@@ -256,7 +254,6 @@ method(build_response_format, OpenAIConfig) <- function(
   invisible(NULL)
 }
 # /.check_call_options
-
 
 # %% build_chat_request_body.OllamaConfig ----
 #' Build Ollama Chat Request Body

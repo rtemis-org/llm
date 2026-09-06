@@ -1,6 +1,6 @@
 # rtemis.llm NEWS
 
-## Development
+## 0.8.5
 
 - Structured responses are validated locally by default with a cached Ajv validator.
   `validate_output = FALSE` skips validation while still requesting the schema.
@@ -15,9 +15,6 @@
   histories returned by `generate(agent, ...)` and extracts their final answer.
 - Anthropic synthetic structured-output tool inputs are returned as answer JSON,
   retaining raw content metadata and excluding the synthetic tool from execution.
-
-## 0.8.5
-
 - Added `enum` to `field()`: restrict a field to a fixed set of permitted values. Emitted as the
   JSON Schema `enum` key and passed through unchanged by all three backends, so a backend with
   constrained decoding (Ollama) makes an invalid value impossible rather than merely detectable.
