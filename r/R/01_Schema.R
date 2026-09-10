@@ -14,6 +14,40 @@
 # than a scalar, which the `Field` class does not model.
 .SCHEMA_ENUM_TYPES <- c("string", "number", "integer")
 
+# Element types an array can be declared to hold by name alone. An array of
+# objects is declared by passing a Schema instead.
+.SCHEMA_ITEM_TYPES <- c("string", "number", "integer", "boolean")
+
+
+# %% .item_schema() ----
+#' Convert a Field's `items` to a JSON Schema item definition
+#'
+#' Three ways to say what an array holds, in increasing detail: a type name, a
+#' [field] carrying a description or `enum` for the elements, or a [schema] for
+#' an array of objects.
+#'
+#' @param items Character, Field or Schema: Element declaration.
+#'
+#' @return Named list, or NULL if `items` is not one of those.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.item_schema <- function(items) {
+  if (is.character(items)) {
+    if (length(items) != 1L || !items %in% .SCHEMA_ITEM_TYPES) {
+      return(NULL)
+    }
+    return(list(type = items))
+  }
+  if (S7_inherits(items, Field) || S7_inherits(items, Schema)) {
+    # An item schema is positional, so a Field's name has nowhere to go and is
+    # dropped by as_list() already.
+    return(as_list(items))
+  }
+  NULL
+}
+
 
 # %% .enum_values() ----
 #' Coerce a Field's `enum` to its declared type
@@ -97,9 +131,47 @@ Field <- S7::new_class(
     required = prop_boolean(
       default = NULL,
       description = "Whether the parent schema requires the field"
+    ),
+    # Typed as `any` because the permitted classes include Field and Schema,
+    # neither of which is bound while this class is being defined. The
+    # validator below is what actually constrains it.
+    items = new_property(
+      class = class_any,
+      default = NULL
     )
   ),
   validator = function(self) {
+    # An array with no `items` is valid JSON Schema and useless in practice:
+    # OpenAI's strict mode rejects it and a constrained-decoding backend has
+    # nothing to constrain, so the model is left to guess the element type.
+    if (self@type == "array") {
+      if (is.null(self@items)) {
+        abort(
+          "An \"array\" field must declare what it contains.\n",
+          "Set `items` to one of ",
+          paste0("\"", .SCHEMA_ITEM_TYPES, "\"", collapse = ", "),
+          ", to a field() for elements carrying their own description or ",
+          "`enum`, or to a schema() for an array of objects."
+        )
+      }
+      if (is.null(.item_schema(self@items))) {
+        abort(
+          "`items` must be one of ",
+          paste0("\"", .SCHEMA_ITEM_TYPES, "\"", collapse = ", "),
+          ", a Field from field(), or a Schema from schema().\n",
+          "Got ",
+          paste(class(self@items), collapse = "/"),
+          "."
+        )
+      }
+    } else if (!is.null(self@items)) {
+      abort(
+        "`items` cannot be set on a \"",
+        self@type,
+        "\" field.\n",
+        "Drop `items`, or set `type` to \"array\"."
+      )
+    }
     if (!is.null(self@enum)) {
       # A fixed value set only means something for a scalar type.
       if (!self@type %in% .SCHEMA_ENUM_TYPES) {
@@ -137,6 +209,7 @@ method(repr, Field) <- function(x, pad = 0L, output_type = NULL) {
           type = x@type,
           description = x@description,
           enum = x@enum,
+          items = if (is.null(x@items)) NULL else .item_schema(x@items),
           required = x@required
         )
       ),
@@ -233,6 +306,7 @@ method(repr, Schema) <- function(x, pad = 0L, output_type = NULL) {
                 type = f@type,
                 description = f@description,
                 enum = f@enum,
+                items = if (is.null(f@items)) NULL else .item_schema(f@items),
                 required = f@required
               )
             ),
@@ -274,6 +348,11 @@ method(as_list, Field) <- function(x) {
   # `auto_unbox` collapsing a single permitted value to a bare scalar.
   if (!is.null(x@enum)) {
     out[["enum"]] <- I(.enum_values(x@enum, x@type))
+  }
+  # `items` says what an array holds. The validator guarantees it is present
+  # and convertible whenever `type` is "array", and absent otherwise.
+  if (!is.null(x@items)) {
+    out[["items"]] <- .item_schema(x@items)
   }
   out
 }
@@ -351,6 +430,11 @@ method(to_json, Schema) <- function(x) {
 #' @param enum Optional Character: Permitted values for this field. Only for `type` "string",
 #'   "number" or "integer". Backends that support constrained decoding (e.g. Ollama) make any
 #'   other value impossible rather than merely detectable.
+#' @param items Character, Field or Schema: What an array field contains.
+#'   Required for `type = "array"` and forbidden otherwise. Give a type name
+#'   (`"string"`, `"number"`, `"integer"`, `"boolean"`), a [field] where the
+#'   elements need their own description or `enum`, or a [schema] for an array
+#'   of objects.
 #' @param required Logical: Whether the field is required.
 #'
 #' @return Field object
@@ -363,11 +447,34 @@ method(to_json, Schema) <- function(x) {
 #' field("lab_name", "Name of the lab test")
 #' field("normal_range_low", "Lower bound of normal range", type = "number")
 #' field("flag", "Whether the result is out of range", enum = c("low", "normal", "high"))
+#'
+#' # An array of strings: one element per item, so nothing has to be delimited
+#' # inside a single string and later split back apart.
+#' field("questions", "Each question, quoted as written", type = "array", items = "string")
+#'
+#' # An array whose elements carry their own description
+#' field(
+#'   "codes", "ICD-10 codes found",
+#'   type = "array",
+#'   items = field("code", "One ICD-10 code, e.g. \"E11.9\"")
+#' )
+#'
+#' # An array of objects
+#' field(
+#'   "results", "One row per lab result",
+#'   type = "array",
+#'   items = schema(
+#'     "LabResult",
+#'     field("name", "Test name"),
+#'     field("value", "Result value", type = "number")
+#'   )
+#' )
 field <- function(
   name,
   description = name,
   type = c("string", "number", "integer", "boolean", "array", "object"),
   enum = NULL,
+  items = NULL,
   required = TRUE
 ) {
   type <- match.arg(type)
@@ -376,6 +483,7 @@ field <- function(
     type = type,
     description = description,
     enum = enum,
+    items = items,
     required = required
   )
 }

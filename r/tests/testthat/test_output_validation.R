@@ -99,13 +99,13 @@ test_that("validation follows JSON types and the user schema, without implicit c
     "Types",
     field("n", type = "integer"),
     field("o", type = "object"),
-    field("a", type = "array"),
+    field("a", type = "array", items = "string"),
     field("b", type = "boolean"),
     field("optional", required = FALSE)
   )
   input <- c(
     '{"n":10.0,"o":{},"a":[],"b":true,"extra":1}',
-    '{"n":1e1,"o":{"arbitrary":1},"a":[1,"anything"],"b":false}',
+    '{"n":1e1,"o":{"arbitrary":1},"a":["anything"],"b":false}',
     '{"n":10.5,"o":{},"a":[],"b":true}',
     '{"n":10,"o":[],"a":{},"b":"true"}',
     '{"n":10,"o":{},"a":[],"b":true,"optional":null}',
@@ -436,7 +436,7 @@ test_that("Anthropic synthetic output is an answer, preserving JSON containers a
   sch <- schema(
     "Structured",
     field("n", type = "number"),
-    field("a", type = "array"),
+    field("a", type = "array", items = "integer"),
     field("optional", required = FALSE)
   )
   raw <- paste0(

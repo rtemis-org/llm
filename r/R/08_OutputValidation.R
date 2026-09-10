@@ -198,7 +198,8 @@ method(.validate_output_text, optional(Schema)) <- function(
 #' Checks strict JSON syntax and the requested schema locally, without changing
 #' responses or logging validation failures. Does not coerce values or repair JSON.
 #' Extra properties are allowed by the current Schema; optional fields may be absent
-#' but may not be null. Array and object fields constrain only their outer type.
+#' but may not be null. An object field constrains only its outer type; an array
+#' field also constrains its elements, since `items` says what it holds.
 #'
 #' @param x Character, Message, or list: JSON response text(s), a single message,
 #'   an LLM batch, or a list of agent conversations. A flat message list is an LLM

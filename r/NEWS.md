@@ -1,5 +1,19 @@
 # rtemis.llm NEWS
 
+## 0.8.6
+
+- Added `items` to `field()`: an `"array"` field now says what it contains, as a type
+  name (`items = "string"`), a `field()` where the elements carry their own description
+  or `enum`, or a `schema()` for an array of objects. Emitted as the JSON Schema `items`
+  key and passed through by all three backends, so a list of values can be requested as
+  a list instead of as one delimited string the caller splits back apart.
+- An `"array"` field declared without `items` is now an error rather than a schema that
+  fails at request time: OpenAI's strict mode rejects an array with no element type, and
+  a constrained-decoding backend has nothing to constrain. `items` on any other type is
+  likewise refused.
+- `validate_output()` checks array elements against `items`, where before an array field
+  constrained only its outer type.
+
 ## 0.8.5
 
 - Structured responses are validated locally by default with a cached Ajv validator.
