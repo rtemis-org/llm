@@ -1,5 +1,17 @@
 # rtemis.llm NEWS
 
+## 0.8.7
+
+- Added `config_Apple()` and `create_Apple()` for Apple Foundation Models: Apple's
+  on-device model, served over the OpenAI Chat Completions wire by the `rtemis-afm`
+  bridge on `http://127.0.0.1:1977`. `AppleConfig` is an `OpenAIConfig`, so chat,
+  structured output, tool calling, agents, and batch generation work unchanged; no API
+  key is resolved or sent. `config_Apple()` reads the bridge's `/health` endpoint by
+  default and stops with instructions when the bridge is not running or the model is
+  unavailable (`validate_model = FALSE` skips the check). `apple_health()` returns the
+  served model, its availability, and its context window; `apple_check_available()`
+  performs the check on its own.
+
 ## 0.8.6
 
 - Added `items` to `field()`: an `"array"` field now says what it contains, as a type

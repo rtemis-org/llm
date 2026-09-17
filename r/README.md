@@ -6,7 +6,8 @@ Unified interface for creating **`LLM`** and **`Agent`** objects, generating res
 performing batch inference.  
 Built on a type-checked and validated '**S7**' backend.  
 Features **reasoning**, **structured output**, **memory management**, and **tool use**.  
-Supports **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible endpoints.
+Supports **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible endpoints, and
+**Apple Foundation Models** on-device through the [rtemis-afm](https://github.com/rtemis-org/rtemis-afm) bridge.
 
 ## Features
 
@@ -83,6 +84,25 @@ agent <- create_agent(
 ```r
 generate(agent, "Explain quantum superposition in seven bullet points.")
 ```
+
+### Apple Foundation Models
+
+On an Apple silicon Mac with macOS 27 and Apple Intelligence turned on, the on-device
+model is served by the [rtemis-afm](https://github.com/rtemis-org/rtemis-afm) bridge.
+Install and start it once in a terminal (`curl -fsSL https://live.rtemis.org/afm.sh | sh`,
+or `brew install rtemis-org/tap/rtemis-afm` then `rtemis-afm`); no API key is needed.
+
+```r
+llm <- create_Apple(system_prompt = "You are a meticulous research assistant.")
+generate(llm, "What is the role of the telomere?")
+
+agent <- create_agent(config_Apple(), tools = list(tool_datetime))
+generate(agent, "What is the date today?")
+```
+
+`config_Apple()` checks the bridge's health first and says what to do if it is not
+running or the model is unavailable; `apple_health()` reports the served model and its
+context window (8,192 tokens on macOS 27.0).
 
 ### Structured output validation
 

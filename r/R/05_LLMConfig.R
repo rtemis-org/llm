@@ -4,6 +4,7 @@
 # Tool calling: https://docs.ollama.com/capabilities/tool-calling#tool-calling
 # OpenAI API: https://developers.openai.com/api/reference/overview
 # Anthropic API: https://platform.claude.com/docs/en/api/getting-started
+# Apple Foundation Models, through the rtemis-afm bridge: https://github.com/rtemis-org/rtemis-afm
 
 # %% Constants ----
 TEMPERATURE_DEFAULT <- 0.3
@@ -19,6 +20,13 @@ ANTHROPIC_API_VERSION_DEFAULT <- "2023-06-01"
 ANTHROPIC_MAX_TOKENS_DEFAULT <- 4096L
 ANTHROPIC_TIMEOUT_DEFAULT <- 60
 ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
+# rtemis-afm serves Apple's on-device model over the OpenAI wire on loopback; the
+# model id is fixed at "afm" so a stored configuration survives a macOS update
+# that renames the variant (spec: rtemis-afm/wire#get-v1models).
+APPLE_URL_DEFAULT <- "http://127.0.0.1:1977/v1"
+APPLE_MODEL_DEFAULT <- "afm"
+APPLE_TIMEOUT_DEFAULT <- 60
+APPLE_PROVIDER_NAME <- "Apple Foundation Models"
 
 
 # --- Internal API ---------------------------------------------------------------------------------
@@ -287,6 +295,83 @@ OpenAIConfig <- new_class(
     )
   }
 )
+
+
+# %% AppleConfig ----
+#' @title AppleConfig Class
+#'
+#' @description
+#' Apple Foundation Models configuration class: an `OpenAIConfig` for the
+#' `rtemis-afm` bridge, which serves Apple's on-device model over the OpenAI
+#' Chat Completions wire on loopback. Every `OpenAIConfig` method applies
+#' unchanged; the constructor fixes what the bridge fixes (the backend name,
+#' the model id, the loopback URL) and carries no API key, so nothing found
+#' in the environment is ever sent to the local server.
+#'
+#' @author EDG
+#' @noRd
+AppleConfig <- new_class(
+  "AppleConfig",
+  parent = OpenAIConfig,
+  constructor = function(
+    model_name = APPLE_MODEL_DEFAULT,
+    temperature = TEMPERATURE_DEFAULT,
+    base_url = APPLE_URL_DEFAULT,
+    timeout = APPLE_TIMEOUT_DEFAULT,
+    extra_headers = NULL,
+    extra_body = NULL,
+    validate_model = TRUE
+  ) {
+    check_character_scalar(model_name, "model_name")
+    check_character_scalar(base_url, "base_url")
+    if (length(validate_model) != 1L || is.na(validate_model)) {
+      abort("`validate_model` must be a logical scalar.")
+    }
+    # The parent constructor validates the shared arguments; its own model
+    # check is skipped because /health says why a model is unavailable and
+    # /v1/models does not (spec: llm/apple#health).
+    config <- OpenAIConfig(
+      model_name = model_name,
+      temperature = temperature,
+      base_url = base_url,
+      timeout = timeout,
+      extra_headers = extra_headers,
+      extra_body = extra_body,
+      validate_model = FALSE
+    )
+    if (validate_model) {
+      apple_check_available(base_url = config@base_url)
+    }
+    new_object(
+      config,
+      backend = "apple",
+      validate_model = validate_model
+    )
+  }
+)
+
+
+# %% as_list.AppleConfig ----
+#' as_list method for AppleConfig
+#'
+#' @param x AppleConfig object.
+#'
+#' @return List representation of AppleConfig.
+#'
+#' @author EDG
+#' @noRd
+method(as_list, AppleConfig) <- function(x) {
+  list(
+    model_name = x@model_name,
+    temperature = x@temperature,
+    backend = x@backend,
+    base_url = x@base_url,
+    timeout = x@timeout,
+    extra_headers = x@extra_headers,
+    extra_body = x@extra_body,
+    validate_model = x@validate_model
+  )
+} # /as_list.AppleConfig
 
 
 # %% AnthropicConfig ----

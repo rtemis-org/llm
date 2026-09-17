@@ -24,7 +24,9 @@
 #' @keywords internal
 #' @noRd
 .openai_provider_name <- function(x) {
-  if (.is_official_openai_url(x@base_url)) {
+  if (S7_inherits(x, AppleConfig)) {
+    APPLE_PROVIDER_NAME
+  } else if (.is_official_openai_url(x@base_url)) {
     "OpenAI"
   } else {
     "OpenAI-compatible"
@@ -44,6 +46,11 @@
 #' @keywords internal
 #' @noRd
 resolve_api_key <- function(config, error_if_missing = TRUE) {
+  # The Apple bridge is loopback with no authentication: an `OPENAI_API_KEY`
+  # left in the environment must not be sent to it.
+  if (S7_inherits(config, AppleConfig)) {
+    return(NULL)
+  }
   api_key <- .resolve_key_sources(
     api_key = config@api_key,
     api_key_env = config@api_key_env,

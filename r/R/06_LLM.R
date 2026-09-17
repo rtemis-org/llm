@@ -174,7 +174,8 @@ OpenAI <- new_class(
 method(repr, OpenAI) <- function(x, output_type = NULL) {
   output_type <- get_output_type(output_type)
   paste0(
-    repr_S7name("OpenAI", output_type = output_type),
+    # The class name rather than a literal, so an `Apple` prints as `Apple`.
+    repr_S7name(sub(".*::", "", class(x)[1]), output_type = output_type),
     if (!is.null(x@name)) {
       paste0(
         fmt("         Name: ", bold = TRUE, output_type = output_type),
@@ -208,6 +209,39 @@ method(repr, OpenAI) <- function(x, output_type = NULL) {
 method(print, OpenAI) <- function(x, output_type = NULL, ...) {
   cat(repr(x, output_type = output_type), "\n")
 } # /print.OpenAI
+
+
+# %% Apple ----
+#' @title Apple Class
+#'
+#' @description
+#' Apple Foundation Models LLM class: an `OpenAI` whose configuration is an
+#' `AppleConfig`. It adds no behavior of its own; `generate.OpenAI` serves it.
+#'
+#' @author EDG
+#' @noRd
+Apple <- new_class(
+  "Apple",
+  parent = OpenAI,
+  properties = list(
+    config = AppleConfig
+  ),
+  constructor = function(
+    name = NULL,
+    config,
+    system_prompt,
+    output_schema = NULL
+  ) {
+    new_object(
+      OpenAI(
+        name = name,
+        config = config,
+        system_prompt = system_prompt,
+        output_schema = output_schema
+      )
+    )
+  }
+)
 
 
 # %% Anthropic ----
@@ -864,6 +898,124 @@ create_OpenAI <- function(
     output_schema = output_schema
   )
 } # /create_OpenAI
+
+
+# %% config_Apple ----
+#' Create an Apple Foundation Models Config Object
+#'
+#' Creates an AppleConfig object which can be passed to `create_agent()`.
+#'
+#' Apple's on-device Foundation Model (the model behind Apple Intelligence) is reached
+#' through the `rtemis-afm` bridge, which serves it over the OpenAI Chat Completions wire
+#' on `http://127.0.0.1:1977`. Install and start the bridge with
+#' `curl -fsSL https://live.rtemis.org/afm.sh | sh` (or
+#' `brew install rtemis-org/tap/rtemis-afm`, then `rtemis-afm`). It needs an Apple silicon
+#' Mac, macOS 27 or later, and Apple Intelligence turned on. No API key is used or sent.
+#'
+#' The model supports chat, structured output, and tool calling, with an 8,192-token
+#' context window on macOS 27.0; a prompt that does not fit is refused by the bridge with
+#' a `context_length_exceeded` error.
+#'
+#' @param temperature Numeric \[0, 2\]: The temperature for the model.
+#' @param model_name Character: The model id the bridge serves; `"afm"` unless the bridge says
+#' otherwise.
+#' @param base_url Character: Base URL of the bridge's OpenAI-compatible wire.
+#' @param timeout Numeric (0, Inf): Request timeout in seconds.
+#' @param extra_headers Optional list: Additional HTTP headers.
+#' @param extra_body Optional list: Additional request body fields.
+#' @param validate_model Logical: Whether to check the bridge's `/health` endpoint now with
+#' [apple_check_available], so that a bridge that is not running or a model that is not
+#' available fails here with a message saying what to do, rather than at the first request.
+#'
+#' @return AppleConfig object
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' # Requires a running rtemis-afm bridge
+#' \dontrun{
+#'   cfg <- config_Apple(temperature = 0.2)
+#'   agent <- create_agent(cfg, system_prompt = "You are a concise assistant.")
+#' }
+#' # Build the configuration without contacting the bridge:
+#' cfg <- config_Apple(validate_model = FALSE)
+config_Apple <- function(
+  temperature = TEMPERATURE_DEFAULT,
+  model_name = APPLE_MODEL_DEFAULT,
+  base_url = APPLE_URL_DEFAULT,
+  timeout = APPLE_TIMEOUT_DEFAULT,
+  extra_headers = NULL,
+  extra_body = NULL,
+  validate_model = TRUE
+) {
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_character_scalar(model_name, "model_name")
+  check_character_scalar(base_url, "base_url")
+  AppleConfig(
+    model_name = model_name,
+    temperature = temperature,
+    base_url = base_url,
+    timeout = timeout,
+    extra_headers = extra_headers,
+    extra_body = extra_body,
+    validate_model = validate_model
+  )
+} # /config_Apple
+
+
+# %% create_Apple ----
+#' Create an Apple Foundation Models LLM Object
+#'
+#' A stateless LLM backed by Apple's on-device Foundation Model through the `rtemis-afm`
+#' bridge; see [config_Apple] for what the bridge is and how to start it.
+#'
+#' @inheritParams config_Apple
+#' @param system_prompt Character: The system prompt to use.
+#' @param output_schema Optional Schema: Output schema created using [schema].
+#' @param name Optional character: Name for the LLM object.
+#'
+#' @return Apple LLM object
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' # Requires a running rtemis-afm bridge
+#' \dontrun{
+#'   llm <- create_Apple(system_prompt = "You are a meticulous research assistant.")
+#'   generate(llm, "What is the capital of France?")
+#' }
+create_Apple <- function(
+  system_prompt = SYSTEM_PROMPT_DEFAULT,
+  temperature = TEMPERATURE_DEFAULT,
+  output_schema = NULL,
+  name = NULL,
+  model_name = APPLE_MODEL_DEFAULT,
+  base_url = APPLE_URL_DEFAULT,
+  timeout = APPLE_TIMEOUT_DEFAULT,
+  extra_headers = NULL,
+  extra_body = NULL,
+  validate_model = TRUE
+) {
+  check_character_scalar(system_prompt, "system_prompt")
+  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_optional_character_scalar(name, "name")
+  Apple(
+    name = name,
+    config = config_Apple(
+      temperature = temperature,
+      model_name = model_name,
+      base_url = base_url,
+      timeout = timeout,
+      extra_headers = extra_headers,
+      extra_body = extra_body,
+      validate_model = validate_model
+    ),
+    system_prompt = system_prompt,
+    output_schema = output_schema
+  )
+} # /create_Apple
 
 
 # %% config_Anthropic ----
