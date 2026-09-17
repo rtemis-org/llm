@@ -98,26 +98,32 @@ test_that("validation follows JSON types and the user schema, without implicit c
   sch <- schema(
     "Types",
     field("n", type = "integer"),
-    field("o", type = "object"),
     field("a", type = "array", items = "string"),
     field("b", type = "boolean"),
     field("optional", required = FALSE)
   )
   input <- c(
-    '{"n":10.0,"o":{},"a":[],"b":true,"extra":1}',
-    '{"n":1e1,"o":{"arbitrary":1},"a":["anything"],"b":false}',
-    '{"n":10.5,"o":{},"a":[],"b":true}',
-    '{"n":10,"o":[],"a":{},"b":"true"}',
-    '{"n":10,"o":{},"a":[],"b":true,"optional":null}',
+    '{"n":10.0,"a":[],"b":true,"extra":1}',
+    '{"n":1e1,"a":["anything"],"b":false}',
+    '{"n":10.5,"a":[],"b":true}',
+    '{"n":10,"a":{},"b":"true"}',
+    '{"n":10,"a":[1],"b":true}',
+    '{"n":10,"a":[],"b":true,"optional":null}',
     '[]',
     'null',
     '10',
     '"text"'
   )
+  report <- validate_output(input, sch)
   expect_identical(
-    validate_output(input, sch)@status,
-    c("valid", "valid", rep("invalid", 7L))
+    report@status,
+    c("valid", "valid", rep("invalid", 8L))
   )
+  # Array elements are checked against `items`, not just the outer type.
+  element_issue <- report@issues[
+    report@issues[["index"]] == 5L & report@issues[["path"]] == "/a/0",
+  ]
+  expect_identical(element_issue[["keyword"]], "type")
   numeric_enum <- schema(
     "Precision",
     field("n", type = "number", enum = "0.123456789")
@@ -577,10 +583,17 @@ test_that("JSON property names cannot be interpreted as JavaScript prototypes", 
     "valid"
   )
   expect_identical(validate_output('{}', special)@status, "invalid")
-  object_key <- schema("Object key", field("__proto__", type = "object"))
+  object_key <- schema(
+    "Object key",
+    field(
+      "__proto__",
+      type = "array",
+      items = schema("Entry", field("k", required = FALSE))
+    )
+  )
   expect_identical(validate_output('{}', object_key)@status, "invalid")
   expect_identical(
-    validate_output('{"__proto__":{}}', object_key)@status,
+    validate_output('{"__proto__":[{}]}', object_key)@status,
     "valid"
   )
   expect_identical(

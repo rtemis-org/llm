@@ -247,9 +247,7 @@ OpenAIConfig <- new_class(
     ) {
       abort("`enable_thinking` must be a logical scalar or NULL.")
     }
-    if (length(validate_model) != 1L || is.na(validate_model)) {
-      abort("`validate_model` must be a logical scalar.")
-    }
+    check_logical_scalar(validate_model, "validate_model")
     base_url <- .clean_base_url(base_url)
     if (
       isTRUE(zero_data_retention) &&
@@ -324,9 +322,7 @@ AppleConfig <- new_class(
   ) {
     check_character_scalar(model_name, "model_name")
     check_character_scalar(base_url, "base_url")
-    if (length(validate_model) != 1L || is.na(validate_model)) {
-      abort("`validate_model` must be a logical scalar.")
-    }
+    check_logical_scalar(validate_model, "validate_model")
     # The parent constructor validates the shared arguments; its own model
     # check is skipped because /health says why a model is unavailable and
     # /v1/models does not (spec: llm/apple#health).
@@ -504,9 +500,7 @@ AnthropicConfig <- new_class(
         )
       }
     }
-    if (length(validate_model) != 1L || is.na(validate_model)) {
-      abort("`validate_model` must be a logical scalar.")
-    }
+    check_logical_scalar(validate_model, "validate_model")
     base_url <- .clean_base_url(base_url)
     if (validate_model) {
       anthropic_check_model(

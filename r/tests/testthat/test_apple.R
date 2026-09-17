@@ -36,6 +36,17 @@ test_that("AppleConfig rejects invalid arguments", {
   expect_error(config_Apple(base_url = 1977, validate_model = FALSE))
   expect_error(config_Apple(timeout = 0, validate_model = FALSE), "timeout")
   expect_error(config_Apple(validate_model = NA), "validate_model")
+  # A non-logical `validate_model` is refused before the bridge is contacted.
+  calls <- 0L
+  local_mocked_bindings(
+    apple_check_available = function(base_url) {
+      calls <<- calls + 1L
+      invisible(apple_health_body())
+    },
+    .package = "rtemis.llm"
+  )
+  expect_error(config_Apple(validate_model = 1), "validate_model")
+  expect_identical(calls, 0L)
 })
 
 

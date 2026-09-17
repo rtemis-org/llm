@@ -384,6 +384,29 @@ test_that("an array with no items is refused, and items is refused elsewhere", {
   )
 })
 
+test_that("a field cannot be an object, at the top level or as items", {
+  # A Field carries no properties, so an "object" Field is a schema OpenAI and
+  # Anthropic reject; it fails here instead of at request time.
+  testthat::expect_error(
+    field("meta", "Arbitrary metadata", type = "object"),
+    "items = schema"
+  )
+  testthat::expect_error(
+    field(
+      "rows",
+      "Rows",
+      type = "array",
+      items = field("row", "A row", type = "object")
+    ),
+    "items = schema"
+  )
+  # A tool parameter is not a Field and keeps "object".
+  testthat::expect_identical(
+    tool_param("payload", "object", "Arbitrary payload")@type,
+    "object"
+  )
+})
+
 test_that("every backend passes an array schema through intact", {
   sch <- schema(
     "Extraction",

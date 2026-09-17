@@ -1,17 +1,20 @@
 # %% Schema constants and helpers ----
-# Allowed JSON Schema field types.
+# Allowed JSON Schema field types. "object" is deliberately absent: a Field
+# carries no `properties`, and OpenAI and Anthropic reject an object schema
+# without them, so an "object" Field could only fail at request time. An
+# object is a Schema; an array of objects is an "array" Field whose `items`
+# is a Schema.
 .SCHEMA_FIELD_TYPES <- c(
   "string",
   "number",
   "integer",
   "boolean",
-  "array",
-  "object"
+  "array"
 )
 
 # Field types a fixed value set (`enum`) can be declared for. "boolean" is
-# already a two-value type, and "array"/"object" enumerate a structure rather
-# than a scalar, which the `Field` class does not model.
+# already a two-value type, and "array" enumerates a structure rather than a
+# scalar, which the `Field` class does not model.
 .SCHEMA_ENUM_TYPES <- c("string", "number", "integer")
 
 # Element types an array can be declared to hold by name alone. An array of
@@ -96,7 +99,7 @@
 #' Internal S7 class for one JSON Schema property.
 #'
 #' @field name Optional Character: Field name.
-#' @field type Character \{"string", "number", "integer", "boolean", "array", "object"\}: JSON
+#' @field type Character \{"string", "number", "integer", "boolean", "array"\}: JSON
 #' Schema type.
 #' @field description Optional Character: Field description.
 #' @field enum Optional Character: Permitted values for this field.
@@ -425,8 +428,9 @@ method(to_json, Schema) <- function(x) {
 #'
 #' @param name Optional Character: The name of the field.
 #' @param description Optional Character: A brief description of the field.
-#' @param type Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
-#'   type.
+#' @param type Character \{"string", "number", "integer", "boolean", "array"\}: The field
+#'   type. A field cannot be an object, because it carries no properties; for
+#'   an array of objects, set `type = "array"` and `items = schema(...)`.
 #' @param enum Optional Character: Permitted values for this field. Only for `type` "string",
 #'   "number" or "integer". Backends that support constrained decoding (e.g. Ollama) make any
 #'   other value impossible rather than merely detectable.
@@ -472,11 +476,21 @@ method(to_json, Schema) <- function(x) {
 field <- function(
   name,
   description = name,
-  type = c("string", "number", "integer", "boolean", "array", "object"),
+  type = c("string", "number", "integer", "boolean", "array"),
   enum = NULL,
   items = NULL,
   required = TRUE
 ) {
+  # Named ahead of match.arg() so the message says where an object goes,
+  # rather than only which values are allowed.
+  if (identical(type, "object")) {
+    abort(
+      "A field cannot be an \"object\": it carries no properties, and OpenAI ",
+      "and Anthropic reject an object schema without them.\n",
+      "For an array of objects, set `type = \"array\"` and ",
+      "`items = schema(...)`."
+    )
+  }
   type <- match.arg(type)
   Field(
     name = name,

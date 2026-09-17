@@ -7,7 +7,7 @@
 field(
   name,
   description = name,
-  type = c("string", "number", "integer", "boolean", "array", "object"),
+  type = c("string", "number", "integer", "boolean", "array"),
   enum = NULL,
   items = NULL,
   required = TRUE
@@ -18,8 +18,9 @@ field(
 
 \item{description}{Optional Character: A brief description of the field.}
 
-\item{type}{Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
-type.}
+\item{type}{Character \{"string", "number", "integer", "boolean", "array"\}: The field
+type. A field cannot be an object, because it carries no properties; for
+an array of objects, set \code{type = "array"} and \code{items = schema(...)}.}
 
 \item{enum}{Optional Character: Permitted values for this field. Only for \code{type} "string",
 "number" or "integer". Backends that support constrained decoding (e.g. Ollama) make any

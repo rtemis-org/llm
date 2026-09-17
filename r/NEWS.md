@@ -23,6 +23,9 @@
   fails at request time: OpenAI's strict mode rejects an array with no element type, and
   a constrained-decoding backend has nothing to constrain. `items` on any other type is
   likewise refused.
+- `field()` refuses `type = "object"`: a field carries no properties, which OpenAI and
+  Anthropic require of an object schema. Declare an array of objects with
+  `type = "array"` and `items = schema(...)`. `tool_param()` still accepts `"object"`.
 - `validate_output()` checks array elements against `items`, where before an array field
   constrained only its outer type.
 
