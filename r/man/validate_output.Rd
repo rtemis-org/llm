@@ -25,7 +25,8 @@ unavailable; malformed JSON is invalid. Empty input gives an empty report.
 Checks strict JSON syntax and the requested schema locally, without changing
 responses or logging validation failures. Does not coerce values or repair JSON.
 Extra properties are allowed by the current Schema; optional fields may be absent
-but may not be null. Array and object fields constrain only their outer type.
+but may not be null. An object field constrains only its outer type; an array
+field also constrains its elements, since \code{items} says what it holds.
 }
 \examples{
 sch <- schema("Count", field("n", type = "integer"))

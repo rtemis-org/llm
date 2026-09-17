@@ -6,7 +6,7 @@
 # rtemis llm
 
 - **Functional user-facing API** to create agents and generate responses
-- **Type-checked and validated backend** with support for **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible API endpoints
+- **Type-checked and validated backend** with support for **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible API endpoints, and **Apple Foundation Models** on-device through the [rtemis-afm](https://github.com/rtemis-org/rtemis-afm) bridge
 - Support for **structured output**, **tool calling**, **agent memory**
 
 ## R package installation

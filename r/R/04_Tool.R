@@ -1,3 +1,10 @@
+# %% Tool constants ----
+# JSON Schema types a tool parameter can declare. A tool parameter keeps
+# "object", which a Field does not have: tool schemas are not sent in strict
+# mode, and both backends accept a property-less object parameter there.
+.TOOL_PARAMETER_TYPES <- c(.SCHEMA_FIELD_TYPES, "object")
+
+
 # %% ToolParameter ----
 #' @title ToolParameter
 #'
@@ -16,7 +23,7 @@ ToolParameter <- new_class(
   properties = list(
     name = prop_string(description = "Parameter name"),
     type = prop_string(
-      enum = .SCHEMA_FIELD_TYPES,
+      enum = .TOOL_PARAMETER_TYPES,
       description = "JSON Schema type"
     ),
     description = prop_string(description = "Parameter description"),

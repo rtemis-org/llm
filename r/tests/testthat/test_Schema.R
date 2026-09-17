@@ -246,7 +246,7 @@ test_that("Field rejects enum on a type that cannot carry one", {
     "boolean"
   )
   testthat::expect_error(
-    field("tags", "Tags", type = "array", enum = c("a", "b")),
+    field("tags", "Tags", type = "array", items = "string", enum = c("a", "b")),
     "array"
   )
 })
@@ -325,5 +325,104 @@ test_that("the Anthropic structured-output tool keeps enum", {
       tool_spec[["input_schema"]][["properties"]][["support"]][["enum"]]
     ),
     c("none", "partial", "complete")
+  )
+})
+
+
+test_that("an array field says what it holds", {
+  # A type name, the common case.
+  f <- field("questions", "Each question", type = "array", items = "string")
+  testthat::expect_identical(as_list(f)[["items"]], list(type = "string"))
+
+  # A Field, where the elements need a description or an enum of their own.
+  f <- field(
+    "flags",
+    "Flags",
+    type = "array",
+    items = field("flag", "One flag", enum = c("low", "high"))
+  )
+  item <- as_list(f)[["items"]]
+  testthat::expect_identical(item[["type"]], "string")
+  testthat::expect_identical(as.character(item[["enum"]]), c("low", "high"))
+  # An item schema is positional, so the Field's name has nowhere to go.
+  testthat::expect_null(item[["name"]])
+
+  # A Schema, for an array of objects.
+  f <- field(
+    "results",
+    "Rows",
+    type = "array",
+    items = schema(
+      "Row",
+      field("name", "n"),
+      field("value", "v", type = "number")
+    )
+  )
+  item <- as_list(f)[["items"]]
+  testthat::expect_identical(item[["type"]], "object")
+  testthat::expect_named(item[["properties"]], c("name", "value"))
+})
+
+test_that("an array with no items is refused, and items is refused elsewhere", {
+  # Valid JSON Schema, useless in practice: OpenAI's strict mode rejects it and
+  # a constrained-decoding backend has nothing to constrain.
+  testthat::expect_error(
+    field("a", "A", type = "array"),
+    "must declare what it contains"
+  )
+  testthat::expect_error(
+    field("a", "A", type = "array", items = "widget"),
+    "must be one of"
+  )
+  testthat::expect_error(
+    field("a", "A", type = "array", items = list(type = "string")),
+    "must be one of"
+  )
+  testthat::expect_error(
+    field("s", "S", type = "string", items = "string"),
+    "cannot be set on a \"string\" field"
+  )
+})
+
+test_that("a field cannot be an object, at the top level or as items", {
+  # A Field carries no properties, so an "object" Field is a schema OpenAI and
+  # Anthropic reject; it fails here instead of at request time.
+  testthat::expect_error(
+    field("meta", "Arbitrary metadata", type = "object"),
+    "items = schema"
+  )
+  testthat::expect_error(
+    field(
+      "rows",
+      "Rows",
+      type = "array",
+      items = field("row", "A row", type = "object")
+    ),
+    "items = schema"
+  )
+  # A tool parameter is not a Field and keeps "object".
+  testthat::expect_identical(
+    tool_param("payload", "object", "Arbitrary payload")@type,
+    "object"
+  )
+})
+
+test_that("every backend passes an array schema through intact", {
+  sch <- schema(
+    "Extraction",
+    field("items", "Each item", type = "array", items = "string")
+  )
+  for (clean in list(clean_openai_schema, clean_anthropic_schema)) {
+    got <- clean(as_list(sch))
+    testthat::expect_identical(
+      got[["properties"]][["items"]][["items"]],
+      list(type = "string")
+    )
+  }
+  # Ollama takes the schema as-is.
+  testthat::expect_match(
+    to_json(sch),
+    '"items":\\{"type":"string"\\}',
+    fixed = FALSE
   )
 })

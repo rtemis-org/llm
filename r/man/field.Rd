@@ -7,8 +7,9 @@
 field(
   name,
   description = name,
-  type = c("string", "number", "integer", "boolean", "array", "object"),
+  type = c("string", "number", "integer", "boolean", "array"),
   enum = NULL,
+  items = NULL,
   required = TRUE
 )
 }
@@ -17,12 +18,19 @@ field(
 
 \item{description}{Optional Character: A brief description of the field.}
 
-\item{type}{Character \{"string", "number", "integer", "boolean", "array", "object"\}: The field
-type.}
+\item{type}{Character \{"string", "number", "integer", "boolean", "array"\}: The field
+type. A field cannot be an object, because it carries no properties; for
+an array of objects, set \code{type = "array"} and \code{items = schema(...)}.}
 
 \item{enum}{Optional Character: Permitted values for this field. Only for \code{type} "string",
 "number" or "integer". Backends that support constrained decoding (e.g. Ollama) make any
 other value impossible rather than merely detectable.}
+
+\item{items}{Character, Field or Schema: What an array field contains.
+Required for \code{type = "array"} and forbidden otherwise. Give a type name
+(\code{"string"}, \code{"number"}, \code{"integer"}, \code{"boolean"}), a \link{field} where the
+elements need their own description or \code{enum}, or a \link{schema} for an array
+of objects.}
 
 \item{required}{Logical: Whether the field is required.}
 }
@@ -37,6 +45,28 @@ Define a schema field
 field("lab_name", "Name of the lab test")
 field("normal_range_low", "Lower bound of normal range", type = "number")
 field("flag", "Whether the result is out of range", enum = c("low", "normal", "high"))
+
+# An array of strings: one element per item, so nothing has to be delimited
+# inside a single string and later split back apart.
+field("questions", "Each question, quoted as written", type = "array", items = "string")
+
+# An array whose elements carry their own description
+field(
+  "codes", "ICD-10 codes found",
+  type = "array",
+  items = field("code", "One ICD-10 code, e.g. \"E11.9\"")
+)
+
+# An array of objects
+field(
+  "results", "One row per lab result",
+  type = "array",
+  items = schema(
+    "LabResult",
+    field("name", "Test name"),
+    field("value", "Result value", type = "number")
+  )
+)
 }
 \author{
 EDG
