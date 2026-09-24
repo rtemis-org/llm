@@ -4,7 +4,6 @@
 ^docs$
 ^specs$
 ^.lintr$
-^AGENTS\.md$
 ^pkgdown$
 ^LICENSE\.md$
 ^justfile$
