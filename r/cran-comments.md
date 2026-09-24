@@ -1,4 +1,4 @@
-# rtemis.core CRAN comments
+# rtemis.llm CRAN comments
 
 ## URL check
 
