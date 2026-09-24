@@ -7,4 +7,5 @@
 ^pkgdown$
 ^LICENSE\.md$
 ^justfile$
+^revdep$
 ^cran-comments\.md$
