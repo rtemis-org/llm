@@ -229,7 +229,7 @@ method(validate_output, list(class_character, Schema)) <- function(x, schema) {
     .prepare_output_validation(schema, TRUE, "collect")
   )
 }
-method(validate_output, list(new_S3_class("json"), Schema)) <- function(
+method(validate_output, list(class_json, Schema)) <- function(
   x,
   schema
 ) {

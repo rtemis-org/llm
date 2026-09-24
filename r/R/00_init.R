@@ -1,6 +1,10 @@
+# %% --- S7 classes --------------------------------------------------------------------------------
+class_json <- new_S3_class("json")
+
+
 # %% --- S7 Properties and checks ------------------------------------------------------------------
 # Class properties are declared with the `prop_*()` factories from rtemis.core, which this
-# package imports in full: one call carries the type, default, bounds, enum and description, and
+# package imports: one call carries the type, default, bounds, enum and description, and
 # generates the S7 validator from them. The `check_*()` helpers used for argument validation in
 # function bodies come from there too (rtemis.core R/00_S7_prop_factories.R and R/check.R).
 
