@@ -42,9 +42,6 @@ jobs:
     needs: setup
     if: ${{ needs.setup.outputs.containers != '[]' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: r
     name: ${{ matrix.config.label }}
     strategy:
       fail-fast: false
@@ -55,6 +52,15 @@ jobs:
 
     steps:
       - uses: r-hub/actions/checkout@v1
+      - name: Move R package to workspace root
+        # The r-hub actions always operate on the workspace root, but the
+        # package lives in r/. Replace the checkout with the package contents.
+        shell: bash
+        run: |
+          shopt -s dotglob
+          mv r "$RUNNER_TEMP/rpkg"
+          rm -rf ./*
+          mv "$RUNNER_TEMP/rpkg"/* .
       - uses: r-hub/actions/platform-info@v1
         with:
           token: ${{ secrets.RHUB_TOKEN }}
@@ -72,9 +78,6 @@ jobs:
     needs: setup
     if: ${{ needs.setup.outputs.platforms != '[]' }}
     runs-on: ${{ matrix.config.os }}
-    defaults:
-      run:
-        working-directory: r
     name: ${{ matrix.config.label }}
     strategy:
       fail-fast: false
@@ -83,6 +86,15 @@ jobs:
 
     steps:
       - uses: r-hub/actions/checkout@v1
+      - name: Move R package to workspace root
+        # The r-hub actions always operate on the workspace root, but the
+        # package lives in r/. Replace the checkout with the package contents.
+        shell: bash
+        run: |
+          shopt -s dotglob
+          mv r "$RUNNER_TEMP/rpkg"
+          rm -rf ./*
+          mv "$RUNNER_TEMP/rpkg"/* .
       - uses: r-hub/actions/setup-r@v1
         with:
           job-config: ${{ matrix.config.job-config }}
