@@ -5,8 +5,7 @@
 ^specs$
 ^.lintr$
 ^AGENTS\.md$
-^CLAUDE\.md$
 ^pkgdown$
 ^LICENSE\.md$
 ^justfile$
-^SKILL\.md$
+^cran-comments\.md$
