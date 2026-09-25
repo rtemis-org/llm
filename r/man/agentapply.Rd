@@ -18,6 +18,7 @@ agentapply(
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
+  image_path = NULL,
   ...
 )
 }
@@ -56,6 +57,12 @@ Disabling this does not disable the schema sent to the model.}
 \item{on_validation_failure}{Character \{"warn", "collect", "abort"\}: Preserve invalid output
 and report a styled rtemis.core message (not an R warning), collect silently, or
 abort with an error carrying \code{output} and \code{validation}. See \link{validate_output}.}
+
+\item{image_path}{Optional character or list: Local image files to send with the prompts. A
+character vector sends one image with each element of \code{x}; a list of character vectors sends
+several (a \code{NULL} entry sends none). Length 1 is recycled across \code{x}, and a single prompt in
+\code{x} is recycled across \code{image_path}, so one question can be asked of many images. Every file
+is checked before the first request. See \link{generate}.}
 
 \item{...}{Additional per-call arguments forwarded to \link{generate}.}
 }

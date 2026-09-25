@@ -6,7 +6,7 @@ Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "c
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
 Description: Unified interface for creating LLM and Agent objects, generating responses and 
     performing batch inference based on a type-checked and validated 'S7' backend. Features 
-    reasoning, structured output, memory management, and tool use. Supports 'Ollama' 
+    reasoning, structured output, image input, memory management, and tool use. Supports 'Ollama' 
     <https://docs.ollama.com/api>, 
     'OpenAI'-compatible <https://developers.openai.com/api/reference/overview>, and 
     'Anthropic'-compatible <https://platform.claude.com/docs/en/api/getting-started> endpoints. 

@@ -44,9 +44,10 @@ test_that("InputMessage class works", {
   msg <- InputMessage(
     content = "Process this data.",
     metadata = list(project = "kmn"),
-    image_path = "path/to/image.png"
+    image_path = testthat::test_path("fixtures", "red.png")
   )
   testthat::expect_true(S7_inherits(msg, InputMessage))
+  testthat::expect_length(msg@images, 1L)
 }) # /InputMessage
 
 
