@@ -1,5 +1,10 @@
 # rtemis.llm NEWS
 
+## 0.8.8
+
+- License changed to BSD 3-clause.
+- Hashing now uses 'openssl', replacing the 'digest' dependency.
+
 ## 0.8.7
 
 - Added `config_Apple()` and `create_Apple()` for Apple Foundation Models: Apple's

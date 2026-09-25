@@ -1,5 +1,4 @@
 # %% Constants ----
-HASH_ALGO <- "sha256"
 
 # Package-authored tool allowlist: every `function_name` listed here is eligible
 # for agent dispatch. Hashes for these functions are captured at `.onLoad` into
@@ -236,13 +235,11 @@ report_agent_unauthorized_tool <- function(
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.hash_function <- function(x, algo = HASH_ALGO) {
+.hash_function <- function(x) {
   x_env_stripped <- x
   environment(x_env_stripped) <- baseenv()
-  # hash after explicit serialization (instead of serialize = TRUE in digest)
-  digest::digest(
-    serialize(object = x_env_stripped, connection = NULL),
-    algo = algo
+  as.character(
+    openssl::sha256(serialize(object = x_env_stripped, connection = NULL))
   )
 }
 

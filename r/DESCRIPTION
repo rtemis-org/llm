@@ -1,6 +1,6 @@
 Package: rtemis.llm
 Title: Large Language Models and Agentic AI
-Version: 0.8.7
+Version: 0.8.8
 Date: 2026-09-17
 Authors@R: person(given = "E.D.", family = "Gennatas", role = c("aut", "cre", "cph"),
     email = "gennatas@gmail.com", comment = c(ORCID = "0000-0001-9280-3609"))
@@ -12,17 +12,17 @@ Description: Unified interface for creating LLM and Agent objects, generating re
     'Anthropic'-compatible <https://platform.claude.com/docs/en/api/getting-started> endpoints. 
     Runs Apple's on-device 'Foundation Models' through the 'rtemis-afm' bridge 
     <https://github.com/rtemis-org/rtemis-afm>.
-License: GPL (>= 3)
+License: BSD_3_clause + file LICENSE
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
 BugReports: https://github.com/rtemis-org/llm/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
     data.table,
-    digest,
     httr2,
     jsonlite,
     jsonvalidate (>= 1.5.0),
+    openssl,
     rtemis.core (>= 0.4.6),
     S7
 Suggests:

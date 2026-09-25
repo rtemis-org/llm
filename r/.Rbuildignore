@@ -5,7 +5,6 @@
 ^specs$
 ^.lintr$
 ^pkgdown$
-^LICENSE\.md$
 ^justfile$
 ^revdep$
 ^cran-comments\.md$
