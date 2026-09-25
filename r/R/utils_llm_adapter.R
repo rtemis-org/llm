@@ -34,11 +34,18 @@ method(build_chat_messages, OpenAIConfig) <- function(x, state) {
   unname(lapply(
     get_messages(state),
     function(msg) {
-      if (S7_inherits(msg, InputMessage) && !is.null(msg@image_path)) {
-        abort(
-          "OpenAI-compatible image inputs are not implemented yet.\n",
-          "Use a text-only prompt or add a provider-specific image adapter first."
-        )
+      if (S7_inherits(msg, InputMessage) && !is.null(msg@images)) {
+        # Text first, then one `image_url` part per image, as in OpenAI's docs.
+        # An empty prompt sends the images alone.
+        return(list(
+          role = msg@role,
+          content = c(
+            if (nzchar(msg@content)) {
+              list(list(type = "text", text = msg@content))
+            },
+            .openai_image_parts(msg@images)
+          )
+        ))
       }
       if (S7_inherits(msg, ToolMessage)) {
         if (is.null(msg@tool_call_id)) {
@@ -773,15 +780,16 @@ method(build_chat_messages, AnthropicConfig) <- function(x, state) {
       next
     }
     if (S7_inherits(msg, InputMessage)) {
-      if (!is.null(msg@image_path)) {
-        abort(
-          "Anthropic image inputs are not implemented yet.\n",
-          "Use a text-only prompt or add a provider-specific image adapter first."
-        )
-      }
+      # Images before text, as Anthropic's vision guide recommends. An empty
+      # prompt with images sends the images alone: the API rejects empty text.
       out[[length(out) + 1L]] <- list(
         role = "user",
-        content = list(list(type = "text", text = msg@content))
+        content = c(
+          .anthropic_image_blocks(msg@images),
+          if (is.null(msg@images) || nzchar(msg@content)) {
+            list(list(type = "text", text = msg@content))
+          }
+        )
       )
       next
     }

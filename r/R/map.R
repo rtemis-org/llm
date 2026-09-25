@@ -470,6 +470,7 @@ token_probs <- function(x, tokens, position = 1L) {
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
+  image_path = NULL,
   ...
 ) {
   on_error <- match.arg(on_error)
@@ -481,6 +482,14 @@ token_probs <- function(x, tokens, position = 1L) {
   }
   # Configuration/compilation errors must fail once, before any batch requests.
   .prepare_output_validation(schema, validate_output, on_validation_failure)
+  # One prompt over many images: the prompt is recycled, and the images name
+  # the results when the prompt does not.
+  if (length(x) == 1L && length(image_path) > 1L) {
+    x_names <- names(image_path)
+    x <- rep(x, length(image_path))
+    names(x) <- x_names
+  }
+  image_path <- .batch_image_path(image_path, length(x))
   label <- repr_bracket(get_model_name(f))
   error_index <- integer()
   error_message <- character()
@@ -492,6 +501,7 @@ token_probs <- function(x, tokens, position = 1L) {
         generate(
           f,
           x[[i]],
+          image_path = image_path[[i]],
           verbosity = verbosity - 1L,
           validate_output = validate_output,
           on_validation_failure = if (on_validation_failure == "warn") {
@@ -629,6 +639,11 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #'   pre-built `LLM`, supplying this here is a conflict and will error.
 #' @param verbosity Integer \[0, Inf): Verbosity level. The per-call verbosity is `verbosity - 1L`.
 #' @inheritParams generate
+#' @param image_path Optional character or list: Local image files to send with the prompts. A
+#'   character vector sends one image with each element of `x`; a list of character vectors sends
+#'   several (a `NULL` entry sends none). Length 1 is recycled across `x`, and a single prompt in
+#'   `x` is recycled across `image_path`, so one question can be asked of many images. Every file
+#'   is checked before the first request. See [generate].
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses
 #'   (with `NA_character_` for missing assistant content). If `FALSE`, return the raw list of
 #'   `Message` objects from each call.
@@ -659,6 +674,17 @@ method(map, list(class_list, LLM | Agent)) <- function(
 #'     system_prompt = "Return the hexadecimal code for the color provided in format #FFFFFF",
 #'     temperature = 0.2
 #'   )
+#'   # One question over many images, with a structured answer per image
+#'   llmapply(
+#'     "Describe this figure.",
+#'     "gemma4:e4b",
+#'     output_schema = schema(
+#'       "Figure",
+#'       field("chart type", "Type of chart"),
+#'       field("series", "Number of data series", type = "integer")
+#'     ),
+#'     image_path = c("fig1.png", "fig2.png")
+#'   )
 #' }
 llmapply <- function(
   x,
@@ -671,6 +697,7 @@ llmapply <- function(
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
+  image_path = NULL,
   ...
 ) {
   call <- match.call()
@@ -726,6 +753,7 @@ llmapply <- function(
     on_error = on_error,
     validate_output = validate_output,
     on_validation_failure = on_validation_failure,
+    image_path = image_path,
     ...
   )
   if (extract_responses) .keep_errors(responses(out), out) else out
@@ -760,6 +788,11 @@ llmapply <- function(
 #' @param output_schema Optional Schema: Output schema for the on-the-fly `Agent`.
 #' @param verbosity Integer \[0, Inf): Verbosity level.
 #' @inheritParams generate
+#' @param image_path Optional character or list: Local image files to send with the prompts. A
+#'   character vector sends one image with each element of `x`; a list of character vectors sends
+#'   several (a `NULL` entry sends none). Length 1 is recycled across `x`, and a single prompt in
+#'   `x` is recycled across `image_path`, so one question can be asked of many images. Every file
+#'   is checked before the first request. See [generate].
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses.
 #'   If `FALSE`, return the raw list of lists of `Message` objects.
 #' @param on_error Character \{"na", "abort"\}: What to do when a single call fails. `"na"` warns,
@@ -804,6 +837,7 @@ agentapply <- function(
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
+  image_path = NULL,
   ...
 ) {
   call <- match.call()
@@ -863,6 +897,7 @@ agentapply <- function(
     on_error = on_error,
     validate_output = validate_output,
     on_validation_failure = on_validation_failure,
+    image_path = image_path,
     ...
   )
   if (extract_responses) .keep_errors(responses(out), out) else out

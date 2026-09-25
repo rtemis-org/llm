@@ -327,6 +327,7 @@ method(print, Anthropic) <- function(x, output_type = NULL, ...) {
 #' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate
 #' (mapped to `options.num_predict`).
 #' @param stop Optional character: Stop sequence(s).
+#' @param image_path Optional character: Paths to local image files to send with the prompt.
 #' @param think Optional logical or character: Whether to enable thinking.
 #' @param output_schema Optional Schema: Per-call output schema override.
 #' @inheritParams generate
@@ -346,6 +347,7 @@ method(generate, Ollama) <- function(
   top_p = NULL,
   max_tokens = NULL,
   stop = NULL,
+  image_path = NULL,
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
@@ -384,7 +386,7 @@ method(generate, Ollama) <- function(
   )
   append_message(
     state,
-    InputMessage(content = prompt),
+    InputMessage(content = prompt, image_path = image_path),
     echo = FALSE,
     verbosity = 0L
   )
@@ -440,6 +442,7 @@ method(generate, Ollama) <- function(
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
 #' @param max_tokens Optional integer \[1, Inf): Maximum tokens to generate.
 #' @param stop Optional character: Stop sequence(s).
+#' @param image_path Optional character: Paths to local image files to send with the prompt.
 #' @param think Optional logical: Whether to enable thinking options.
 #' @param output_schema Optional Schema: Per-call output schema override.
 #' @inheritParams generate
@@ -458,6 +461,7 @@ method(generate, OpenAI) <- function(
   top_p = NULL,
   max_tokens = NULL,
   stop = NULL,
+  image_path = NULL,
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
@@ -489,7 +493,7 @@ method(generate, OpenAI) <- function(
   )
   append_message(
     state,
-    InputMessage(content = prompt),
+    InputMessage(content = prompt, image_path = image_path),
     echo = FALSE,
     verbosity = 0L
   )
@@ -543,6 +547,7 @@ method(generate, OpenAI) <- function(
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
 #' @param max_tokens Optional integer \[1, Inf): Per-call max_tokens override.
 #' @param stop Optional character: Stop sequence(s) (mapped to `stop_sequences`).
+#' @param image_path Optional character: Paths to local image files to send with the prompt.
 #' @param think Optional logical: Whether to enable extended thinking for this call.
 #' @param output_schema Optional Schema: Per-call output schema override.
 #' @inheritParams generate
@@ -560,6 +565,7 @@ method(generate, Anthropic) <- function(
   top_p = NULL,
   max_tokens = NULL,
   stop = NULL,
+  image_path = NULL,
   think = NULL,
   output_schema = NULL,
   verbosity = 1L,
@@ -589,7 +595,7 @@ method(generate, Anthropic) <- function(
   )
   append_message(
     state,
-    InputMessage(content = prompt),
+    InputMessage(content = prompt, image_path = image_path),
     echo = FALSE,
     verbosity = 0L
   )

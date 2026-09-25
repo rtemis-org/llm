@@ -78,6 +78,9 @@ to_json <- new_generic("to_json", "x")
 #' `options.num_predict`; for OpenAI-compatible backends this maps to `max_tokens`.
 #' @param stop Optional character: Stop sequence(s). Mapped to `stop_sequences` on Anthropic
 #' and `options.stop` on Ollama.
+#' @param image_path Optional character: Paths to one or more local image files (PNG, JPEG, GIF, or
+#' WebP) to send with the prompt. Each file is checked and read before the request is sent. The
+#' model must accept image input; a model that does not is reported as an error by its server.
 #' @param think Optional logical or character: Whether to enable model thinking
 #' (reasoning trace) for this call. Character values target `gpt-oss`-style local models.
 #' @param output_schema Optional Schema: Output schema to enforce on this call's response.
@@ -134,6 +137,7 @@ generate <- new_generic(
     top_p = NULL,
     max_tokens = NULL,
     stop = NULL,
+    image_path = NULL,
     think = NULL,
     output_schema = NULL,
     verbosity = 1L,

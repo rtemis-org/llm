@@ -184,6 +184,10 @@ method(print, SystemMessage) <- function(x, output_type = NULL, ...) {
 #' @description
 #' Message subclass for input messages. These are usually from the user, but not necessarily.
 #'
+#' @details
+#' Images are checked and encoded when the message is built (see `.read_images()`), so a
+#' message in agent memory carries the bytes that were sent.
+#'
 #' @author EDG
 #' @noRd
 InputMessage <- new_class(
@@ -192,8 +196,11 @@ InputMessage <- new_class(
   properties = list(
     image_path = prop_string(
       nullable = TRUE,
-      description = "Path to the image file"
-    )
+      vector = TRUE,
+      description = "Absolute paths of the attached image files"
+    ),
+    # Internal: one list(path, media_type, data) per image, from `.read_images()`.
+    images = optional(S7::class_list)
   ),
   constructor = function(
     content,
@@ -201,6 +208,7 @@ InputMessage <- new_class(
     image_path = NULL,
     metadata = NULL
   ) {
+    images <- .read_images(image_path)
     new_object(
       Message(
         content = content,
@@ -208,7 +216,10 @@ InputMessage <- new_class(
         name = name,
         metadata = metadata
       ),
-      image_path = image_path
+      image_path = if (!is.null(images)) {
+        vapply(images, `[[`, "", "path")
+      },
+      images = images
     )
   }
 )
@@ -237,12 +248,12 @@ method(repr, InputMessage) <- function(x, output_type = NULL) {
       paste0(
         "\n",
         fmt(
-          "\nImage Path: ",
+          ngettext(length(x@image_path), "\nImage: ", "\nImages: "),
           col = col_input,
           bold = TRUE,
           output_type = output_type
         ),
-        x@image_path
+        paste(x@image_path, collapse = ", ")
       )
     }
   )

@@ -131,10 +131,16 @@ method(get_message_list, InProcessAgentMemory) <- function(x) {
   )
   # Unname to ensure JSON serialization emits an array, not an object keyed by role.
   unname(lapply(msgs, function(msg) {
-    list(
+    out <- list(
       role = msg@role,
       content = msg@content
     )
+    # Ollama reads images from `images`: raw base64 strings, no `data:` prefix.
+    # A list, not a character vector, so a single image is still a JSON array.
+    if (S7_inherits(msg, InputMessage) && !is.null(msg@images)) {
+      out[["images"]] <- lapply(msg@images, `[[`, "data")
+    }
+    out
   }))
 }
 

@@ -21,6 +21,7 @@ Supports **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible endpoin
 |          Tool use |   x   |    ✓    |
 | Memory management |   x   |    ✓    |
 |  Batch generation |   ✓   |    ✓    |
+|       Image input |   ✓   |    ✓    |
 
 ## Installation
 
@@ -124,6 +125,26 @@ generate(agent, "What is the date today?")
 `config_Apple()` checks the bridge's health first and says what to do if it is not
 running or the model is unavailable; `apple_health()` reports the served model and its
 context window (8,192 tokens on macOS 27.0).
+
+### Image input
+
+Send local PNG, JPEG, GIF, or WebP files with a prompt to any vision model on Ollama,
+OpenAI-compatible (including Apple Foundation Models), or Anthropic-compatible backends.
+
+```r
+llm <- create_Ollama("gemma4:e4b")
+generate(llm, "What does this figure show?", image_path = "figure1.png")
+
+# One question over many images
+figs <- llmapply(
+  "Describe this figure.",
+  llm,
+  image_path = c("figure1.png", "figure2.png", "figure3.png")
+)
+```
+
+A list of character vectors sends several images with each prompt. Every file is
+checked before the first request.
 
 ### Structured output validation
 

@@ -486,7 +486,7 @@ create_agent <- function(
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
 #' @param max_tokens Optional integer \[1, Inf): Per-call maximum tokens to generate.
 #' @param stop Optional character: Stop sequence(s).
-#' @param image_path Optional character: Path to an image to include in the prompt.
+#' @param image_path Optional character: Paths to local image files to send with the prompt.
 #' @param think Optional logical: Whether to enable thinking (reasoning trace) for this call. Only
 #' supported by certain models.
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response.

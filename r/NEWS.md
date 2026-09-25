@@ -1,5 +1,14 @@
 # rtemis.llm NEWS
 
+## 0.8.8
+
+- License changed to BSD 3-clause.
+- Hashing now uses 'openssl', replacing the 'digest' dependency.
+- Added image input: `image_path` on `generate()` for LLMs and Agents, and on `llmapply()` and
+  `agentapply()`, sends local PNG, JPEG, GIF, or WebP files to Ollama, OpenAI-compatible
+  (including Apple Foundation Models), and Anthropic-compatible backends. One prompt can be
+  applied over many images, and several images can be sent with each prompt.
+
 ## 0.8.7
 
 - Added `config_Apple()` and `create_Apple()` for Apple Foundation Models: Apple's

@@ -98,7 +98,7 @@ method(.prepare_output_validation, optional(Schema)) <- function(
     auto_unbox = TRUE,
     digits = NA
   )
-  key <- digest::digest(schema_json, algo = "sha256")
+  key <- as.character(openssl::sha256(as.character(schema_json)))
   if (exists(key, .output_validator_cache, inherits = FALSE)) {
     return(.output_validator_cache[[key]])
   }
