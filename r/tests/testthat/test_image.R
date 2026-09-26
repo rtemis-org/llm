@@ -137,13 +137,19 @@ test_that("OpenAI user content is text then image_url parts", {
   )
   content <- body[["messages"]][[2L]][["content"]]
   expect_length(content, 3L)
-  expect_identical(content[[1L]], list(type = "text", text = "What color is this?"))
+  expect_identical(
+    content[[1L]],
+    list(type = "text", text = "What color is this?")
+  )
   expect_identical(content[[2L]][["type"]], "image_url")
   expect_identical(
     content[[2L]][["image_url"]][["url"]],
     paste0("data:image/png;base64,", b64(red_png))
   )
-  expect_match(content[[3L]][["image_url"]][["url"]], "^data:image/jpeg;base64,")
+  expect_match(
+    content[[3L]][["image_url"]][["url"]],
+    "^data:image/jpeg;base64,"
+  )
 })
 
 test_that("OpenAI sends images alone for an empty prompt", {
@@ -197,7 +203,10 @@ test_that("Anthropic user content is image blocks then text", {
     )
   )
   expect_identical(content[[2L]][["source"]][["media_type"]], "image/jpeg")
-  expect_identical(content[[3L]], list(type = "text", text = "What color is this?"))
+  expect_identical(
+    content[[3L]],
+    list(type = "text", text = "What color is this?")
+  )
 })
 
 test_that("Anthropic sends images alone for an empty prompt", {
@@ -225,7 +234,10 @@ test_that("Images in memory are resent on later turns", {
     verbosity = 0L
   )
   body <- build_chat_request_body(anthropic_test_config(), state = state)
-  expect_identical(body[["messages"]][[1L]][["content"]][[1L]][["type"]], "image")
+  expect_identical(
+    body[["messages"]][[1L]][["content"]][[1L]][["type"]],
+    "image"
+  )
   expect_identical(
     body[["messages"]][[3L]][["content"]],
     list(list(type = "text", text = "Are you sure?"))
@@ -242,7 +254,12 @@ test_that("generate() fails on a missing image before any request", {
     validate_model = FALSE
   )
   expect_error(
-    generate(llm, "Describe.", image_path = fixture("missing.png"), verbosity = 0L),
+    generate(
+      llm,
+      "Describe.",
+      image_path = fixture("missing.png"),
+      verbosity = 0L
+    ),
     "Image file not found"
   )
 })
@@ -303,7 +320,10 @@ method(generate, ImageStubLLM) <- function(
   x@calls[["n"]] <- x@calls[["n"]] + 1L
   msg <- InputMessage(content = prompt, image_path = image_path)
   LLMMessage(
-    content = paste(c(prompt, basename(msg@image_path %||% character())), collapse = " "),
+    content = paste(
+      c(prompt, basename(msg@image_path %||% character())),
+      collapse = " "
+    ),
     model_name = "stub-model"
   )
 }
@@ -320,7 +340,12 @@ test_that("llmapply sends one image with each prompt", {
 
 test_that("llmapply recycles one prompt over many images", {
   images <- c(first = red_png, second = blue_jpg)
-  out <- llmapply("Describe", ImageStubLLM(), image_path = images, verbosity = 0L)
+  out <- llmapply(
+    "Describe",
+    ImageStubLLM(),
+    image_path = images,
+    verbosity = 0L
+  )
   expect_identical(as.vector(out), c("Describe red.png", "Describe blue.jpg"))
   expect_identical(names(out), c("first", "second"))
 })
