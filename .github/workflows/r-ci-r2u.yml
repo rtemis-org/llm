@@ -6,12 +6,14 @@ on:
     paths:
       - r/**
       - .github/workflows/r-ci-r2u.yml
+      - .gitattributes
   push:
     branches:
       - main
     paths:
       - r/**
       - .github/workflows/r-ci-r2u.yml
+      - .gitattributes
 
 permissions:
   contents: read
@@ -26,7 +28,7 @@ concurrency:
 jobs:
   r-cmd-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -39,8 +41,8 @@ jobs:
       - name: Install package dependencies
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 10
-          max_attempts: 3
+          timeout_minutes: 8
+          max_attempts: 2
           retry_wait_seconds: 30
           shell: bash
           command: |
@@ -55,7 +57,16 @@ jobs:
             '
 
       - uses: r-lib/actions/check-r-package@v2
+        timeout-minutes: 5
         with:
           working-directory: r
           upload-snapshots: true
+          error-on: '"warning"'
           build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+      - name: Preserve incomplete check diagnostics
+        if: ${{ failure() || cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: check-diagnostics
+          path: r/check
+          if-no-files-found: ignore
