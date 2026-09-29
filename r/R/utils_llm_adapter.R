@@ -498,7 +498,7 @@ method(perform_chat_request, OllamaConfig) <- function(
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis (www.rtemis.org)") |>
     httr2::req_error(is_error = function(resp) FALSE) |>
-    httr2::req_perform(verbosity = max(verbosity - 1L, 0L))
+    .req_perform_status(verbosity = verbosity)
   .check_http_response(resp, "Ollama")
   resp
 }
@@ -526,7 +526,7 @@ method(perform_chat_request, OpenAIConfig) <- function(
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_openai_headers(x)
-  resp <- httr2::req_perform(req, verbosity = max(verbosity - 1L, 0L))
+  resp <- .req_perform_status(req, verbosity = verbosity)
   .check_http_response(resp, .openai_provider_name(x))
   resp
 }
@@ -950,7 +950,7 @@ method(perform_chat_request, AnthropicConfig) <- function(
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
     .add_anthropic_headers(x)
-  resp <- httr2::req_perform(req, verbosity = max(verbosity - 1L, 0L))
+  resp <- .req_perform_status(req, verbosity = verbosity)
   .check_anthropic_response(resp)
   resp
 }

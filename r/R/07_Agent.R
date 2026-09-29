@@ -599,7 +599,15 @@ method(generate, Agent) <- function(
     )
   )
 
-  msg(repr_bracket(x@llmconfig@model_name), "working...", verbosity = verbosity)
+  # Inside chat(), a spinner drawn during the request stands in for these two lines.
+  show_status <- !.spinner_enabled(verbosity)
+  if (show_status) {
+    msg(
+      repr_bracket(x@llmconfig@model_name),
+      "working...",
+      verbosity = verbosity
+    )
+  }
 
   # {>>} Perform initial request
   resp <- perform_chat_request(
@@ -607,8 +615,9 @@ method(generate, Agent) <- function(
     request_body = request_body,
     verbosity = verbosity
   )
-  # Replace working message with done
-  msg(repr_bracket(x@llmconfig@model_name), "done.", verbosity = verbosity)
+  if (show_status) {
+    msg(repr_bracket(x@llmconfig@model_name), "done.", verbosity = verbosity)
+  }
 
   # {<<} Initial response
   res <- parse_chat_response(x@llmconfig, resp)
@@ -820,8 +829,13 @@ method(generate, Agent) <- function(
         request_body = followup_request_body,
         verbosity = verbosity
       )
-      # Replace working message with done
-      msg(repr_bracket(x@llmconfig@model_name), "done.", verbosity = verbosity)
+      if (show_status) {
+        msg(
+          repr_bracket(x@llmconfig@model_name),
+          "done.",
+          verbosity = verbosity
+        )
+      }
       # {<<} Follow-up response
       res <- parse_chat_response(x@llmconfig, followup_resp)
 

@@ -8,6 +8,9 @@
   `agentapply()`, sends local PNG, JPEG, GIF, or WebP files to Ollama, OpenAI-compatible
   (including Apple Foundation Models), and Anthropic-compatible backends. One prompt can be
   applied over many images, and several images can be sent with each prompt.
+- Added `chat()`: a multi-turn conversation in the R console with a model name, an `LLM`, or an
+  `Agent`, with `/image`, `/clear`, `/help` and `/exit` commands. Returns the `Agent` with the
+  conversation in its memory.
 
 ## 0.8.7
 
