@@ -18,7 +18,7 @@ get_model_name <- new_generic("get_model_name", "x")
 #' Map
 #'
 #' @param x A character vector or list to map over.
-#' @param f An `LLM` or `Agent` object.
+#' @param f An `LLM`, `Agent` or `DecisionModel` object.
 #' @param ... Additional arguments passed to `generate()`, plus the two arguments the methods
 #' accept: `verbosity` and `on_error`. See Details.
 #'
@@ -69,7 +69,8 @@ to_json <- new_generic("to_json", "x")
 #'
 #' Generic method for generating text or structured output from LLMs and Agents.
 #'
-#' @param x An object of class LLM or Agent.
+#' @param x An object of class LLM, Agent or DecisionModel. A `DecisionModel` fills its output
+#'   schema and takes no sampling options; see [create_DecisionModel()].
 #' @param prompt Character: The prompt to pass to the model or agent.
 #' @param temperature Optional numeric \[0, 2\]: Per-call sampling temperature.
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.

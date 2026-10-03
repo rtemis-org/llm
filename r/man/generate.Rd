@@ -21,7 +21,8 @@ generate(
 )
 }
 \arguments{
-\item{x}{An object of class LLM or Agent.}
+\item{x}{An object of class LLM, Agent or DecisionModel. A \code{DecisionModel} fills its output
+schema and takes no sampling options; see \code{\link[=create_DecisionModel]{create_DecisionModel()}}.}
 
 \item{prompt}{Character: The prompt to pass to the model or agent.}
 

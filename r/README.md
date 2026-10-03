@@ -10,7 +10,8 @@ performing batch inference.
 Built on a type-checked and validated '**S7**' backend.  
 Features **reasoning**, **structured output**, **memory management**, and **tool use**.  
 Supports **Ollama**, **OpenAI**-compatible, and **Anthropic**-compatible endpoints, and
-**Apple Foundation Models** on-device through the [rtemis-afm](https://github.com/rtemis-org/rtemis-afm) bridge.
+**Apple Foundation Models** on-device through the [rtemis-afm](https://github.com/rtemis-org/rtemis-afm) bridge.  
+Fills closed schemas with **decision models** on Ollama and OpenRouter.
 
 ## Features
 
@@ -145,6 +146,45 @@ figs <- llmapply(
 
 A list of character vectors sends several images with each prompt. Every file is
 checked before the first request.
+
+### Decision models
+
+A decision model answers typed questions about a passage, a choice among named
+options or how true a statement is, with a probability for every option, and
+writes no text. It fills a schema whose every field is closed: a field with an
+`enum`, a boolean, or an array whose `items` is a field with an `enum`.
+Ollama serves decision models such as `clef-flash` locally; OpenRouter serves
+others with an API key.
+
+```r
+triage <- schema(
+  "Triage",
+  field("team", "Team to route to", enum = c("billing", "engineering", "sales")),
+  field("urgent", "Whether it needs an answer today", type = "boolean")
+)
+is_decidable(triage)  # TRUE; otherwise the open fields are listed
+
+dm <- create_DecisionModel(config_OllamaDecision("clef-flash"), output_schema = triage)
+msg <- generate(dm, "The app crashes whenever I open the billing page.")
+probabilities(msg)    # every option's probability, per field
+
+# A batch, with the wall time of each call
+res <- dmapply(tickets, dm)
+attr(res, "elapsed")
+
+# Typed questions, without a schema
+decide(
+  dm,
+  "Please refund my last invoice.",
+  list(
+    refund = noul("Does the customer ask for a refund?"),
+    team = choice("Which team should handle this?", c("billing", "engineering", "sales"))
+  )
+)
+```
+
+`llmapply()` and `agentapply()` record the wall time of each call the same way,
+so a decision model and an LLM can be compared on the same items.
 
 ### Structured output validation
 

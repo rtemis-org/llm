@@ -1,0 +1,23 @@
+{
+    "model": "clef-flash",
+    "answers": {
+        "q1": {
+            "type": "choice",
+            "choice": "engineering",
+            "probabilities": {
+                "billing": 0.23124504902850723,
+                "engineering": 0.44052268840345704,
+                "sales": 0.3282322625680358
+            },
+            "confidence": 0.03022541526750011
+        },
+        "q2": {
+            "type": "noul",
+            "noul": 0.8161405703219152
+        }
+    },
+    "usage": {
+        "input_tokens": 263,
+        "output_tokens": 0
+    }
+}
