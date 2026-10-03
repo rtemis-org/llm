@@ -21,14 +21,33 @@ here.}
 \code{DecisionModel} object.
 }
 \description{
-A decision model answers typed questions about a passage -- a choice among named options, or
-how true a statement is -- with a probability for every option, and writes no text. It fills a
-closed \code{\link[=schema]{schema()}} with \code{\link[=generate]{generate()}} or \code{\link[=dmapply]{dmapply()}}, and answers questions built with \code{\link[=choice]{choice()}}
-and \code{\link[=noul]{noul()}} with \code{\link[=decide]{decide()}}.
+A decision model answers typed questions about a passage with a probability for every option,
+and writes no text. There are two kinds of question: a \code{\link[=choice]{choice()}} among 2 to 26 named options,
+and a \code{\link[=noul]{noul()}}, which asks how true a statement is.
 }
 \details{
-A schema is closed when every field is a field with an \code{enum}, a boolean, or an array whose
-\code{items} is a field with an \code{enum}. Use \code{\link[=is_decidable]{is_decidable()}} to check one.
+\strong{Questions are the decision model's own interface.} Ask them with \code{\link[=decide]{decide()}}, or over many
+passages with \code{dmapply(questions = ...)}. You write each question's wording and, for a choice,
+what each option means. The model judges the passage against those meanings, so well-defined
+options are usually the most accurate way to use a decision model.
+
+\strong{A schema is an adapter for code written for LLMs.} \code{\link[=generate]{generate()}} and \code{\link[=dmapply]{dmapply()}} can also
+fill a closed \code{\link[=schema]{schema()}}, returning a validated JSON document in the shape an LLM's structured
+output has. The schema is turned into questions first. \code{\link[=as_questions]{as_questions()}} returns them, so you can
+read them, edit them and pass them to \code{\link[=decide]{decide()}}.
+\itemize{
+\item A field with an \code{enum} becomes a \code{choice()}, asked as "Which value of the field \verb{<name>}
+(\verb{<description>}) does the passage support?". Each option means only its own label.
+\item A boolean field becomes a \code{noul()}.
+\item An array whose \code{items} is a field with an \code{enum} becomes one \code{noul()} per value. The values
+at or above 0.5 are kept.
+\item A field that is not required adds a \code{noul()} asking whether the passage gives it at all.
+}
+
+Use a schema when the result must be a document: to drop a decision model into a pipeline
+built for LLMs, or to validate the output. Use questions when the answer you want is the
+judgment itself, and to give options their meanings. Use \code{\link[=is_decidable]{is_decidable()}} to check whether
+a schema is closed.
 }
 \examples{
 # Requires a running Ollama server with a decision model

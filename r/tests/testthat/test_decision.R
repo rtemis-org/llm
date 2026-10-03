@@ -90,6 +90,77 @@ test_that("a schema with an open field is refused at construction, naming it", {
 })
 
 
+# %% as_questions ----
+test_that("as_questions returns the questions generate() asks, named by field", {
+  qs <- as_questions(triage_schema())
+  expect_identical(
+    names(qs),
+    c(
+      "team",
+      "urgent",
+      "severity",
+      "channels[email]",
+      "channels[phone]",
+      "channels[chat]",
+      "refund?",
+      "refund"
+    )
+  )
+  expect_true(S7_inherits(qs[["team"]], Choice))
+  expect_identical(
+    names(qs[["team"]]@options),
+    c("billing", "engineering", "sales")
+  )
+  expect_true(S7_inherits(qs[["refund?"]], Noul))
+  # The same questions, word for word, that generate() sends.
+  env <- new.env()
+  httr2::local_mocked_responses(mock_systemone(env = env))
+  generate(
+    mock_decision_model(output_schema = triage_schema()),
+    "x",
+    verbosity = 0L
+  )
+  expect_identical(
+    env[["calls"]][[1L]][["body"]][["questions"]],
+    lapply(qs, as_list)
+  )
+})
+
+
+test_that("as_questions refuses an open schema and an enum over 26 values", {
+  expect_error(
+    as_questions(schema("S", field("text"))),
+    "`text`: free text",
+    fixed = TRUE
+  )
+  big <- schema("S", field("pick", enum = sprintf("v%02d", 1:30)))
+  expect_error(as_questions(big), "split the values")
+})
+
+
+test_that("edited questions from a schema can be asked with decide()", {
+  qs <- as_questions(schema(
+    "S",
+    field("sentiment", enum = c("positive", "negative"))
+  ))
+  qs[["sentiment"]] <- choice(
+    qs[["sentiment"]]@instructions,
+    c(positive = "Approving", negative = "Critical")
+  )
+  env <- new.env()
+  httr2::local_mocked_responses(mock_systemone(
+    list(sentiment = "negative"),
+    env = env
+  ))
+  d <- decide(mock_decision_model(), "Awful.", qs, verbosity = 0L)
+  sent <- env[["calls"]][[1L]][["body"]][["questions"]][["sentiment"]][[
+    "criteria"
+  ]]
+  expect_identical(sent, list(positive = "Approving", negative = "Critical"))
+  expect_identical(d@answers[["sentiment"]][["choice"]], "negative")
+})
+
+
 # %% Questions ----
 test_that("choice() names unnamed options by themselves and fills blank meanings", {
   q <- choice("Which?", c(a = "", b = "Bee"))
@@ -248,14 +319,14 @@ test_that("generate fills a closed schema, in the harness's words", {
   env <- new.env()
   httr2::local_mocked_responses(mock_systemone(
     list(
-      q1 = "engineering",
-      q2 = 0.8,
-      q3 = "4",
-      q4.0 = 0.9,
-      q4.1 = 0.2,
-      q4.2 = 0.6,
-      `q6?` = 0.7,
-      q5 = 0.3
+      team = "engineering",
+      urgent = 0.8,
+      severity = "4",
+      `channels[email]` = 0.9,
+      `channels[phone]` = 0.2,
+      `channels[chat]` = 0.6,
+      `refund?` = 0.7,
+      refund = 0.3
     ),
     env = env
   ))
@@ -277,22 +348,31 @@ test_that("generate fills a closed schema, in the harness's words", {
   qs <- env[["calls"]][[1L]][["body"]][["questions"]]
   expect_identical(
     names(qs),
-    c("q1", "q2", "q3", "q4.0", "q4.1", "q4.2", "q6?", "q5")
+    c(
+      "team",
+      "urgent",
+      "severity",
+      "channels[email]",
+      "channels[phone]",
+      "channels[chat]",
+      "refund?",
+      "refund"
+    )
   )
   expect_identical(
-    qs[["q1"]][["instructions"]],
+    qs[["team"]][["instructions"]],
     "Which value of the field `team` (Team to route to) does the passage support?"
   )
   expect_identical(
-    qs[["q2"]][["instructions"]],
+    qs[["urgent"]][["instructions"]],
     "Is the field `urgent` (Whether it needs an answer today) true, according to the passage?"
   )
   expect_identical(
-    qs[["q4.1"]][["instructions"]],
+    qs[["channels[phone]"]][["instructions"]],
     "Does the field `channels` (Channels mentioned) include `phone`, according to the passage?"
   )
   expect_identical(
-    qs[["q6?"]][["instructions"]],
+    qs[["refund?"]][["instructions"]],
     "Does the passage give a value for the field `refund` (Whether a refund is requested)?"
   )
   p <- probabilities(m)
@@ -306,7 +386,7 @@ test_that("generate fills a closed schema, in the harness's words", {
 
 
 test_that("an optional field judged absent is left out and listed", {
-  httr2::local_mocked_responses(mock_systemone(list(`q6?` = 0.2)))
+  httr2::local_mocked_responses(mock_systemone(list(`refund?` = 0.2)))
   m <- generate(
     mock_decision_model(output_schema = triage_schema()),
     "x",
@@ -322,7 +402,7 @@ test_that("a choice over more than 26 options runs as a tournament", {
   env <- new.env()
   values <- sprintf("v%02d", 1:30)
   httr2::local_mocked_responses(mock_systemone(
-    list(`q1~1` = "v03", `q1~2` = "v20", q1 = "v20"),
+    list(`pick~1` = "v03", `pick~2` = "v20", pick = "v20"),
     env = env
   ))
   dm <- mock_decision_model(
@@ -331,10 +411,10 @@ test_that("a choice over more than 26 options runs as a tournament", {
   m <- generate(dm, "x", verbosity = 0L)
   expect_length(env[["calls"]], 2L)
   first <- env[["calls"]][[1L]][["body"]][["questions"]]
-  expect_identical(names(first), c("q1~1", "q1~2"))
-  expect_length(first[["q1~1"]][["criteria"]], 15L)
+  expect_identical(names(first), c("pick~1", "pick~2"))
+  expect_length(first[["pick~1"]][["criteria"]], 15L)
   final <- env[["calls"]][[2L]][["body"]][["questions"]]
-  expect_identical(names(final[["q1"]][["criteria"]]), c("v03", "v20"))
+  expect_identical(names(final[["pick"]][["criteria"]]), c("v03", "v20"))
   expect_identical(jsonlite::fromJSON(m@content)[["pick"]], "v20")
   expect_identical(m@fields[[1L]][["by"]], "tournament")
 })
@@ -345,7 +425,7 @@ test_that("a one-value enum is decided by elimination, without a call", {
   httr2::local_mocked_responses(mock_systemone(env = env))
   s <- schema("S", field("kind", enum = "only"), field("ok", type = "boolean"))
   m <- generate(mock_decision_model(output_schema = s), "x", verbosity = 0L)
-  expect_identical(names(env[["calls"]][[1L]][["body"]][["questions"]]), "q2")
+  expect_identical(names(env[["calls"]][[1L]][["body"]][["questions"]]), "ok")
   expect_identical(m@fields[[1L]][["by"]], "elimination")
   expect_false(m@fields[[1L]][["unsure"]])
 })
@@ -480,3 +560,18 @@ test_that("clef-flash fills a triage schema", {
   expect_true("email" %in% value[["channels"]])
   expect_identical(validation_results(m)@status, "valid")
 })
+
+
+test_that("clef-flash judges an image sent with the state", {
+  skip_if_no_decision_model()
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+  d <- decide(
+    dm,
+    "Look at the image.",
+    list(color = choice("What color is the image?", c("red", "green", "blue"))),
+    image_path = test_path("fixtures", "red.png"),
+    verbosity = 0L
+  )
+  expect_identical(d@answers[["color"]][["choice"]], "red")
+})
+

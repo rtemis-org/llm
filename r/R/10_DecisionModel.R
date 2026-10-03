@@ -483,13 +483,31 @@ noul <- function(instructions) {
 # %% create_DecisionModel() ----
 #' Create a Decision Model
 #'
-#' A decision model answers typed questions about a passage -- a choice among named options, or
-#' how true a statement is -- with a probability for every option, and writes no text. It fills a
-#' closed [schema()] with [generate()] or [dmapply()], and answers questions built with [choice()]
-#' and [noul()] with [decide()].
+#' A decision model answers typed questions about a passage with a probability for every option,
+#' and writes no text. There are two kinds of question: a [choice()] among 2 to 26 named options,
+#' and a [noul()], which asks how true a statement is.
 #'
-#' A schema is closed when every field is a field with an `enum`, a boolean, or an array whose
-#' `items` is a field with an `enum`. Use [is_decidable()] to check one.
+#' @details
+#' **Questions are the decision model's own interface.** Ask them with [decide()], or over many
+#' passages with `dmapply(questions = ...)`. You write each question's wording and, for a choice,
+#' what each option means. The model judges the passage against those meanings, so well-defined
+#' options are usually the most accurate way to use a decision model.
+#'
+#' **A schema is an adapter for code written for LLMs.** [generate()] and [dmapply()] can also
+#' fill a closed [schema()], returning a validated JSON document in the shape an LLM's structured
+#' output has. The schema is turned into questions first. [as_questions()] returns them, so you can
+#' read them, edit them and pass them to [decide()].
+#' - A field with an `enum` becomes a `choice()`, asked as "Which value of the field `<name>`
+#'   (`<description>`) does the passage support?". Each option means only its own label.
+#' - A boolean field becomes a `noul()`.
+#' - An array whose `items` is a field with an `enum` becomes one `noul()` per value. The values
+#'   at or above 0.5 are kept.
+#' - A field that is not required adds a `noul()` asking whether the passage gives it at all.
+#'
+#' Use a schema when the result must be a document: to drop a decision model into a pipeline
+#' built for LLMs, or to validate the output. Use questions when the answer you want is the
+#' judgment itself, and to give options their meanings. Use [is_decidable()] to check whether
+#' a schema is closed.
 #'
 #' @param config `DecisionConfig`: From [config_OllamaDecision()] or [config_OpenRouterDecision()].
 #' @param context Optional Character: Text placed before every prompt, in the state the questions
@@ -589,6 +607,77 @@ is_decidable <- function(x) {
 } # /is_decidable
 
 
+# %% as_questions() ----
+#' Convert a Schema to Decision Model Questions
+#'
+#' Returns the questions a decision model is asked when it fills `x` with [generate()]. Each is
+#' worded from the field's name and description, and named after the field. Edit them, for
+#' example by giving a choice's options their meanings, and ask them with [decide()] or
+#' `dmapply(questions = ...)`.
+#'
+#' The conversion:
+#' - A field with an `enum` becomes a [choice()] named after the field. Its options are the
+#'   `enum` values, each meaning only its own label.
+#' - A boolean field becomes a [noul()] named after the field.
+#' - An array whose `items` is a field with an `enum` becomes one [noul()] per value, named
+#'   `<field>[<value>]`.
+#' - A field that is not required adds a [noul()] named `<field>?`, asking whether the passage
+#'   gives it at all.
+#'
+#' @param x Schema: A closed schema (see [is_decidable()]).
+#'
+#' @return Named list of `Choice` and `Noul` objects, in field order.
+#'
+#' @details
+#' A choice takes at most 26 options. [generate()] fills an `enum` with more values by asking
+#' about groups of values and then choosing among the group winners. That has no single question
+#' to return, so it is an error here.
+#'
+#' @author EDG
+#' @export
+#'
+#' @examples
+#' sentiment <- schema(
+#'   "Sentiment",
+#'   field("sentiment", "Sentiment of the sentence", enum = c("positive", "negative", "neutral"))
+#' )
+#' qs <- as_questions(sentiment)
+#' qs
+#' # Give the options their meanings, keeping the wording
+#' qs[["sentiment"]] <- choice(
+#'   qs[["sentiment"]]@instructions,
+#'   c(
+#'     positive = "The writer is pleased or approving overall",
+#'     negative = "The writer is displeased or critical overall",
+#'     neutral = "The writer states facts, or balances praise and criticism evenly"
+#'   )
+#' )
+as_questions <- function(x) {
+  compiled <- .check_decidable(x)
+  too_many <- vapply(
+    compiled[["nodes"]],
+    function(node) {
+      node[["kind"]] == "choice" &&
+        length(node[["options"]][["label"]]) > DECISION_MAX_OPTIONS
+    },
+    logical(1L)
+  )
+  if (any(too_many)) {
+    paths <- vapply(compiled[["nodes"]][too_many], function(n) n[["path"]], "")
+    abort(
+      "A choice takes at most ",
+      DECISION_MAX_OPTIONS,
+      " options, and ",
+      paste0("`", paths, "`", collapse = ", "),
+      " has more.\n",
+      "generate() fills such a field by asking about groups of values first; ",
+      "to ask it yourself, split the values into several choice() questions."
+    )
+  }
+  .fill_questions(compiled[["nodes"]])
+} # /as_questions
+
+
 # %% decide ----
 #' Ask a Decision Model Typed Questions
 #'
@@ -601,7 +690,7 @@ is_decidable <- function(x) {
 #' @param state Character: The passage the questions are about. The model's `context`, if any, is
 #'   placed before it.
 #' @param questions Named list of [choice()] and [noul()] questions. The names identify the
-#'   answers.
+#'   answers. [as_questions()] converts a schema into such a list.
 #' @param image_path Optional Character: Paths to local images (PNG, JPEG or WebP) judged with
 #'   the state.
 #' @param verbosity Integer: Verbosity level.
