@@ -11,7 +11,8 @@ Description: Unified interface for creating LLM and Agent objects, generating re
     'OpenAI'-compatible <https://developers.openai.com/api/reference/overview>, and 
     'Anthropic'-compatible <https://platform.claude.com/docs/en/api/getting-started> endpoints. 
     Runs Apple's on-device 'Foundation Models' through the 'rtemis-afm' bridge 
-    <https://github.com/rtemis-org/rtemis-afm>.
+    <https://github.com/rtemis-org/rtemis-afm>. Fills closed schemas and answers typed questions 
+    with decision models served by 'Ollama' and 'OpenRouter' <https://openrouter.ai>.
 License: BSD_3_clause + file LICENSE
 URL: https://www.rtemis.org, https://docs.rtemis.org/r/llm, https://docs.rtemis.org/r/llm-api
 BugReports: https://github.com/rtemis-org/llm/issues

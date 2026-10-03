@@ -101,6 +101,7 @@ chat <- function(
   verbosity = 1L
 ) {
   build_args <- c("backend", "system_prompt", "tools", "max_tool_rounds")
+  .refuse_decision_model(x, "x")
   if (S7_inherits(x, Agent)) {
     .check_build_conflict(call, build_args = build_args, object_name = "x")
     if (!x@use_memory) {

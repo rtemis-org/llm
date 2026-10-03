@@ -9,7 +9,7 @@ map(x, f, ...)
 \arguments{
 \item{x}{A character vector or list to map over.}
 
-\item{f}{An \code{LLM} or \code{Agent} object.}
+\item{f}{An \code{LLM}, \code{Agent} or \code{DecisionModel} object.}
 
 \item{...}{Additional arguments passed to \code{generate()}, plus the two arguments the methods
 accept: \code{verbosity} and \code{on_error}. See Details.}

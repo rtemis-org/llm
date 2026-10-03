@@ -447,6 +447,7 @@ create_agent <- function(
   logfile = NULL,
   verbosity = 1L
 ) {
+  .refuse_decision_model(llmconfig, "llmconfig")
   check_optional_character_scalar(system_prompt, "system_prompt")
   check_logical_scalar(use_memory, "use_memory")
   max_tool_rounds <- clean_int(max_tool_rounds)
