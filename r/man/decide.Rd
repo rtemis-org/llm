@@ -13,7 +13,7 @@ decide(x, state, questions, image_path = NULL, verbosity = 1L)
 placed before it.}
 
 \item{questions}{Named list of \code{\link[=choice]{choice()}} and \code{\link[=noul]{noul()}} questions. The names identify the
-answers.}
+answers. \code{\link[=as_questions]{as_questions()}} converts a schema into such a list.}
 
 \item{image_path}{Optional Character: Paths to local images (PNG, JPEG or WebP) judged with
 the state.}

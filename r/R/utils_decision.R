@@ -6,7 +6,8 @@
 # questions that fill it. Both follow rtemis-harness (`decision.rs`,
 # `structured.rs`, `context.rs`) so a schema filled here and in rtemislive is
 # asked the same questions, in the same words, with the same thresholds
-# (spec: llm/decision-models#schema-compiler).
+# (spec: llm/decision-models#filling-a-schema). Question keys are the field
+# names, so the questions read the same in `as_questions()` and on the wire.
 
 # %% Constants ----
 # Below this, a choice is unsure. The provider's `confidence` measures how
@@ -377,11 +378,6 @@ DECISION_NOUL_MARGIN <- 0.15
 #' @keywords internal
 #' @noRd
 .fill_compile <- function(schema) {
-  n <- 0L
-  next_key <- function() {
-    n <<- n + 1L
-    paste0("q", n)
-  }
   open <- list()
   nodes <- lapply(schema@fields, function(f) {
     path <- f@name
@@ -403,7 +399,7 @@ DECISION_NOUL_MARGIN <- 0.15
       } else {
         list(
           kind = "choice",
-          key = next_key(),
+          key = path,
           path = path,
           about = about,
           options = options
@@ -414,7 +410,7 @@ DECISION_NOUL_MARGIN <- 0.15
         f@type,
         boolean = list(
           kind = "noul",
-          key = next_key(),
+          key = path,
           path = path,
           about = about
         ),
@@ -433,7 +429,7 @@ DECISION_NOUL_MARGIN <- 0.15
             if (is.list(options)) {
               list(
                 kind = "members",
-                key = next_key(),
+                key = path,
                 path = path,
                 about = about,
                 options = options
@@ -447,8 +443,7 @@ DECISION_NOUL_MARGIN <- 0.15
         }
       )
     }
-    # The presence key is taken after the field's own, as the harness does.
-    node[["presence"]] <- if (!f@required) paste0(next_key(), "?")
+    node[["presence"]] <- if (!f@required) paste0(path, "?")
     node[["about"]] <- about
     node[["name"]] <- f@name
     node
@@ -472,7 +467,7 @@ DECISION_NOUL_MARGIN <- 0.15
 #'
 #' @param node List: A choice node.
 #'
-#' @return Named list of wire questions.
+#' @return Named list of `Choice` objects.
 #'
 #' @author EDG
 #' @keywords internal
@@ -486,7 +481,7 @@ DECISION_NOUL_MARGIN <- 0.15
   }
   if (n <= DECISION_MAX_OPTIONS) {
     return(stats::setNames(
-      list(as_list(choice(instructions, labels))),
+      list(choice(instructions, labels)),
       node[["key"]]
     ))
   }
@@ -494,14 +489,66 @@ DECISION_NOUL_MARGIN <- 0.15
   size <- ceiling(n / groups)
   chunks <- split(labels, ceiling(seq_along(labels) / size))
   stats::setNames(
-    lapply(chunks, function(g) as_list(choice(instructions, g))),
+    lapply(chunks, function(g) choice(instructions, g)),
     paste0(node[["key"]], "~", seq_along(chunks))
   )
 }
 
 
-# %% .fill_first_round() ----
+# %% .fill_member_key() ----
+# The key of the noul asking whether an array field includes one value.
+.fill_member_key <- function(key, label) paste0(key, "[", label, "]")
+
+
+# %% .fill_questions() ----
 #' Every first-round question, in field order
+#'
+#' The questions `as_questions()` returns, plus the groups of any tournament.
+#'
+#' @param nodes List: Compiled nodes.
+#'
+#' @return Named list of `Choice` and `Noul` objects.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.fill_questions <- function(nodes) {
+  out <- list()
+  for (node in nodes) {
+    if (!is.null(node[["presence"]])) {
+      out[[node[["presence"]]]] <- noul(.fill_present(
+        node[["path"]],
+        node[["about"]]
+      ))
+    }
+    out <- c(
+      out,
+      switch(
+        node[["kind"]],
+        choice = .fill_choice_first(node),
+        noul = stats::setNames(
+          list(noul(.fill_noul(node[["path"]], node[["about"]]))),
+          node[["key"]]
+        ),
+        members = {
+          labels <- node[["options"]][["label"]]
+          stats::setNames(
+            lapply(labels, function(l) {
+              noul(.fill_member(node[["path"]], node[["about"]], l))
+            }),
+            .fill_member_key(node[["key"]], labels)
+          )
+        },
+        list()
+      )
+    )
+  }
+  out
+}
+
+
+# %% .fill_first_round() ----
+#' Every first-round question, in field order, on the wire
 #'
 #' @param nodes List: Compiled nodes.
 #'
@@ -511,37 +558,7 @@ DECISION_NOUL_MARGIN <- 0.15
 #' @keywords internal
 #' @noRd
 .fill_first_round <- function(nodes) {
-  out <- list()
-  for (node in nodes) {
-    if (!is.null(node[["presence"]])) {
-      out[[node[["presence"]]]] <- as_list(noul(.fill_present(
-        node[["path"]],
-        node[["about"]]
-      )))
-    }
-    out <- c(
-      out,
-      switch(
-        node[["kind"]],
-        choice = .fill_choice_first(node),
-        noul = stats::setNames(
-          list(as_list(noul(.fill_noul(node[["path"]], node[["about"]])))),
-          node[["key"]]
-        ),
-        members = {
-          labels <- node[["options"]][["label"]]
-          stats::setNames(
-            lapply(labels, function(l) {
-              as_list(noul(.fill_member(node[["path"]], node[["about"]], l)))
-            }),
-            paste0(node[["key"]], ".", seq_along(labels) - 1L)
-          )
-        },
-        list()
-      )
-    )
-  }
-  out
+  lapply(.fill_questions(nodes), as_list)
 }
 
 
@@ -635,9 +652,10 @@ DECISION_NOUL_MARGIN <- 0.15
       members = {
         labels <- node[["options"]][["label"]]
         p <- vapply(
-          seq_along(labels) - 1L,
-          function(i) noul_p(paste0(node[["key"]], ".", i)),
-          numeric(1L)
+          .fill_member_key(node[["key"]], labels),
+          noul_p,
+          numeric(1L),
+          USE.NAMES = FALSE
         )
         keep <- p >= 0.5
         list(
