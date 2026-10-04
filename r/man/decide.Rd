@@ -29,6 +29,46 @@ option chosen, a probability per option, and the provider's confidence (how conc
 probabilities are); each \code{\link[=noul]{noul()}} with the probability that it is true. More than 64 questions
 are sent as several calls.
 }
+\section{Probability and confidence}{
+
+\strong{A choice} is answered with a probability for each option, given the passage, the question's
+wording and the options' meanings. The probabilities sum to 1 over the options asked. The
+answer is the option with the highest probability, and \code{p} is that option's probability.
+
+Its \code{confidence} is computed by the provider from those probabilities: one minus their
+normalized Shannon entropy,
+\deqn{c = 1 + \frac{\sum_i p_i \log p_i}{\log n}}{c = 1 + sum(p * log(p)) / log(n)}
+over the \eqn{n} options asked, with \eqn{0 \log 0 = 0}{0 * log(0) = 0}. It is 1 when one option
+holds all the probability and 0 when the probability is spread evenly. It describes the shape
+of the distribution and adds no information beyond the probabilities.
+
+\strong{A noul} is answered with \code{p}, the probability that the statement is true; \code{1 - p} is the
+probability that it is false. A noul has no \code{confidence}: the distance of \code{p} from 0.5 shows
+how decided the answer is.
+
+\strong{Reading them.} These terms read differently in statistics:
+\itemize{
+\item \code{p} is the probability of an answer, not a p-value. No hypothesis is tested, and a \code{p} near
+1 supports the answer.
+\item \code{p} is the model's probability, as the provider returns it. It is a frequency only if the
+model is calibrated for the task: among answers given \code{p = 0.8}, 80\% are right. Calibration
+is measured on labeled passages, for example as the proportion correct in bins of \code{p}.
+\item \code{p} compares only the options asked. Adding, removing or redefining an option changes every
+probability, and an answer outside the options has no probability.
+\item \code{confidence} is not the probability that the choice is right, and not a confidence level as
+in a confidence interval. It measures how concentrated the probability is over all options,
+so it depends on the number of options and on how the remaining probability is spread. With
+two options, \code{p = 0.8} gives a confidence of 0.28, and a confidence of 0.5 needs
+\code{p = 0.89}. With four options, \code{p = 0.6} gives 0.51 when the other 0.4 is on one option and
+0.20 when it is spread over three. A tie at 0.5 between two of six options gives 0.61.
+Compare the top two probabilities in \code{\link[=probabilities]{probabilities()}} to find close calls.
+}
+
+\strong{Unsure.} An answer is flagged \code{unsure} when a choice's confidence is below 0.5, or a noul's
+\code{p} is between 0.35 and 0.65. The thresholds are fixed constants; set thresholds for a task from
+labeled passages.
+}
+
 \examples{
 # Requires a running Ollama server with a decision model
 \dontrun{

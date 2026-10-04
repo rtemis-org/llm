@@ -574,4 +574,3 @@ test_that("clef-flash judges an image sent with the state", {
   )
   expect_identical(d@answers[["color"]][["choice"]], "red")
 })
-
