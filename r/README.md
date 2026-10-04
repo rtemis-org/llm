@@ -5,7 +5,7 @@
 
 # rtemis.llm R package
 
-Unified interface for creating **`LLM`** and **`Agent`** objects, generating responses, and 
+Unified interface for creating **`LLM`**, **`Agent`**, and **`DecisionModel`** objects, generating responses, and 
 performing batch inference.  
 Built on a type-checked and validated '**S7**' backend.  
 Features **reasoning**, **structured output**, **memory management**, and **tool use**.  
