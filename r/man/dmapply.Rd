@@ -16,7 +16,8 @@ dmapply(
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
-  image_path = NULL
+  image_path = NULL,
+  concurrency = 1L
 )
 }
 \arguments{
@@ -54,6 +55,10 @@ of JSON (or, with \code{questions}, the \code{\link[=probabilities]{probabilitie
 
 \item{image_path}{Optional character or list: Local images judged with the passages, recycled
 as in \code{\link[=llmapply]{llmapply()}}.}
+
+\item{concurrency}{Positive integer: Maximum number of independent input tasks running at
+once. Defaults to 1 (sequential). Values greater than 1 require the optional 'mirai'
+package. See \code{\link[=map]{map()}} for agent isolation, worker requirements, and provider limits.}
 }
 \value{
 With \code{extract_responses = TRUE}, a character vector the same length as \code{x} (or a

@@ -16,6 +16,7 @@ llmapply(
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
   image_path = NULL,
+  concurrency = 1L,
   ...
 )
 }
@@ -59,6 +60,10 @@ character vector sends one image with each element of \code{x}; a list of charac
 several (a \code{NULL} entry sends none). Length 1 is recycled across \code{x}, and a single prompt in
 \code{x} is recycled across \code{image_path}, so one question can be asked of many images. Every file
 is checked before the first request. See \link{generate}.}
+
+\item{concurrency}{Positive integer: Maximum number of independent input tasks running at
+once. Defaults to 1 (sequential). Values greater than 1 require the optional 'mirai'
+package. See \code{\link[=map]{map()}} for agent isolation, worker requirements, and provider limits.}
 
 \item{...}{Additional per-call arguments forwarded to \link{generate} (e.g. \code{temperature}, \code{top_p},
 \code{max_tokens}, \code{stop}, \code{think}, \code{top_k}, \code{seed}, and for Ollama \code{num_ctx} and \code{keep_alive}).}

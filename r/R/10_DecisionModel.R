@@ -758,14 +758,7 @@ decide <- new_generic(
 )
 
 
-# %% decide.DecisionModel ----
-method(decide, DecisionModel) <- function(
-  x,
-  state,
-  questions,
-  image_path = NULL,
-  verbosity = 1L
-) {
+.check_decision_questions <- function(questions) {
   if (S7_inherits(questions, Question)) {
     abort(
       "`questions` must be a named list of questions.\n",
@@ -786,6 +779,19 @@ method(decide, DecisionModel) <- function(
   if (is.null(keys) || any(!nzchar(keys)) || anyDuplicated(keys)) {
     abort("Name every question in `questions`, with distinct names.")
   }
+  invisible(NULL)
+}
+
+
+# %% decide.DecisionModel ----
+method(decide, DecisionModel) <- function(
+  x,
+  state,
+  questions,
+  image_path = NULL,
+  verbosity = 1L
+) {
+  .check_decision_questions(questions)
   state <- .decision_state(x@context, state)
   images <- .decision_images(image_path)
   wire <- lapply(questions, as_list)

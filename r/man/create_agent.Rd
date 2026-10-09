@@ -23,7 +23,8 @@ create_agent(
 
 \item{system_prompt}{Optional character: The system prompt to use.}
 
-\item{use_memory}{Logical: Whether to use conversation memory.}
+\item{use_memory}{Logical: Whether to retain conversation history across calls.
+A call retains its own messages and tool results with either setting.}
 
 \item{tools}{Optional list of Tool objects: The tools available to the agent.}
 
