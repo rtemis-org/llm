@@ -388,7 +388,9 @@ test_that("cooldowns are shared, finite, and names do not contain request conten
 
 test_that("provider adapters and relative image paths work in workers", {
   p <- local_provider()
-  testthat::local_mocked_bindings(ollama_check_model = function(...) invisible(TRUE))
+  testthat::local_mocked_bindings(ollama_check_model = function(...) {
+    invisible(TRUE)
+  })
   models <- list(
     Ollama(
       config = config_Ollama("fixture", base_url = p$url),
