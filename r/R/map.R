@@ -449,7 +449,7 @@ token_probs <- function(x, tokens, position = 1L) {
 # which returns a fresh character vector and so drops the attributes of its
 # input.
 .keep_errors <- function(out, from) {
-  for (a in c("errors", "elapsed")) {
+  for (a in c("errors", "elapsed", "batch_elapsed")) {
     if (!is.null(attr(from, a))) {
       attr(out, a) <- attr(from, a)
     }
@@ -473,104 +473,117 @@ token_probs <- function(x, tokens, position = 1L) {
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
   image_path = NULL,
-  run = NULL,
+  questions = NULL,
+  concurrency = 1L,
   ...
 ) {
+  check_pos_integer_scalar(concurrency, "concurrency")
+  batch_start <- proc.time()[["elapsed"]]
   on_error <- match.arg(on_error)
   on_validation_failure <- match.arg(on_validation_failure)
   extra <- list(...)
-  # `run(f, prompt, image_path, verbosity)` replaces generate() for calls that
-  # fill no schema, such as decide().
-  schema <- if (is.null(run)) extra[["output_schema"]]
-  if (is.null(run) && is.null(schema) && "output_schema" %in% prop_names(f)) {
+  schema <- if (is.null(questions)) extra[["output_schema"]]
+  if (
+    is.null(questions) && is.null(schema) && "output_schema" %in% prop_names(f)
+  ) {
     schema <- f@output_schema
   }
-  # Configuration/compilation errors must fail once, before any batch requests.
   .prepare_output_validation(schema, validate_output, on_validation_failure)
-  # One prompt over many images: the prompt is recycled, and the images name
-  # the results when the prompt does not.
+  if (!is.null(questions)) {
+    .check_decision_questions(questions)
+  }
   if (length(x) == 1L && length(image_path) > 1L) {
     x_names <- names(image_path)
     x <- rep(x, length(image_path))
     names(x) <- x_names
   }
   image_path <- .batch_image_path(image_path, length(x))
-  label <- repr_bracket(get_model_name(f))
-  error_index <- integer()
-  error_message <- character()
+  if (is.null(questions)) {
+    extra[["validate_output"]] <- validate_output
+    extra[["on_validation_failure"]] <- if (on_validation_failure == "warn") {
+      "collect"
+    } else {
+      on_validation_failure
+    }
+  }
+  errors <- vector("list", length(x))
   validation_failures <- vector("list", length(x))
   elapsed <- rep(NA_real_, length(x))
-  out <- progress_lapply(
-    seq_along(x),
-    function(i) {
-      start <- proc.time()[["elapsed"]]
-      on.exit(
-        elapsed[[i]] <<- proc.time()[["elapsed"]] - start,
-        add = TRUE
+  collect <- function(result, i) {
+    elapsed[[i]] <<- result[["elapsed"]]
+    e <- result[["error"]]
+    if (is.null(e)) {
+      return(result[["value"]])
+    }
+    if (on_error == "abort" || inherits(e, "llm_validation_engine_error")) {
+      stop(e)
+    }
+    errors[[i]] <<- conditionMessage(e)
+    if (inherits(e, "llm_output_validation_error")) {
+      validation_failures[[i]] <<- e[["validation"]]
+      warn(
+        "Element ",
+        i,
+        " failed schema validation. See validation_results().",
+        use_warning = FALSE,
+        verbosity = verbosity
       )
-      call_one <- if (!is.null(run)) {
-        function() run(f, x[[i]], image_path[[i]], verbosity - 1L)
-      } else {
-        function() {
-          generate(
+    } else {
+      warn(
+        "Element ",
+        i,
+        " failed: ",
+        conditionMessage(e),
+        "\nIts slot is NA_character_ in the result, or NULL with ",
+        "`extract_responses = FALSE`; retry the indices in ",
+        'attr(result, "errors").',
+        use_warning = TRUE
+      )
+    }
+    NULL
+  }
+  out <- if (concurrency > 1L) {
+    .map_concurrent(
+      x,
+      f,
+      image_path,
+      extra,
+      questions,
+      concurrency,
+      collect,
+      verbosity
+    )
+  } else {
+    progress_lapply(
+      seq_along(x),
+      function(i) {
+        collect(
+          .map_call(
             f,
             x[[i]],
-            image_path = image_path[[i]],
-            verbosity = verbosity - 1L,
-            validate_output = validate_output,
-            on_validation_failure = if (on_validation_failure == "warn") {
-              "collect"
-            } else {
-              on_validation_failure
-            },
-            ...
-          )
-        }
-      }
-      if (on_error == "abort") {
-        return(call_one())
-      }
-      tryCatch(call_one(), error = function(e) {
-        # An engine failure is an implementation/configuration error, not bad model output.
-        if (inherits(e, "llm_validation_engine_error")) {
-          stop(e)
-        }
-        error_index[[length(error_index) + 1L]] <<- i
-        error_message[[length(error_message) + 1L]] <<- conditionMessage(e)
-        if (inherits(e, "llm_output_validation_error")) {
-          validation_failures[[i]] <<- e[["validation"]]
-          # Explicit validation aborts retain their original text in the batch report.
-          warn(
-            "Element ",
-            i,
-            " failed schema validation. See validation_results().",
-            use_warning = FALSE,
-            verbosity = verbosity
-          )
-        } else {
-          warn(
-            "Element ",
-            i,
-            " failed: ",
-            conditionMessage(e),
-            "\nIts slot is NA_character_ in the result, or NULL with ",
-            "`extract_responses = FALSE`; retry the indices in ",
-            'attr(result, "errors").',
-            use_warning = TRUE
-          )
-        }
-        NULL
-      })
-    },
-    label = label,
-    kind = "llm_map",
-    verbosity = verbosity
-  )
+            image_path[[i]],
+            verbosity - 1L,
+            extra,
+            questions
+          ),
+          i
+        )
+      },
+      label = repr_bracket(get_model_name(f)),
+      kind = "llm_map",
+      verbosity = verbosity
+    )
+  }
   names(out) <- names(x)
   names(elapsed) <- names(x)
   attr(out, "elapsed") <- elapsed
+  attr(out, "batch_elapsed") <- proc.time()[["elapsed"]] - batch_start
   if (on_error == "na") {
-    attr(out, "errors") <- .map_errors(error_index, error_message)
+    index <- which(!vapply(errors, is.null, logical(1L)))
+    attr(out, "errors") <- .map_errors(
+      index,
+      unlist(errors[index], use.names = FALSE) %||% character()
+    )
   }
   if (!is.null(schema)) {
     report <- .combine_output_validation(out, schema, validation_failures)
@@ -589,9 +602,17 @@ method(map, list(class_character, LLM | Agent)) <- function(
   f,
   verbosity = 1L,
   on_error = c("na", "abort"),
+  concurrency = 1L,
   ...
 ) {
-  .map_iter(x, f, verbosity, on_error = match.arg(on_error), ...)
+  .map_iter(
+    x,
+    f,
+    verbosity,
+    on_error = match.arg(on_error),
+    concurrency = concurrency,
+    ...
+  )
 }
 
 
@@ -601,9 +622,17 @@ method(map, list(class_list, LLM | Agent)) <- function(
   f,
   verbosity = 1L,
   on_error = c("na", "abort"),
+  concurrency = 1L,
   ...
 ) {
-  .map_iter(x, f, verbosity, on_error = match.arg(on_error), ...)
+  .map_iter(
+    x,
+    f,
+    verbosity,
+    on_error = match.arg(on_error),
+    concurrency = concurrency,
+    ...
+  )
 }
 
 
@@ -613,9 +642,17 @@ method(map, list(class_character, DecisionModel)) <- function(
   f,
   verbosity = 1L,
   on_error = c("na", "abort"),
+  concurrency = 1L,
   ...
 ) {
-  .map_iter(x, f, verbosity, on_error = match.arg(on_error), ...)
+  .map_iter(
+    x,
+    f,
+    verbosity,
+    on_error = match.arg(on_error),
+    concurrency = concurrency,
+    ...
+  )
 }
 
 
@@ -625,9 +662,17 @@ method(map, list(class_list, DecisionModel)) <- function(
   f,
   verbosity = 1L,
   on_error = c("na", "abort"),
+  concurrency = 1L,
   ...
 ) {
-  .map_iter(x, f, verbosity, on_error = match.arg(on_error), ...)
+  .map_iter(
+    x,
+    f,
+    verbosity,
+    on_error = match.arg(on_error),
+    concurrency = concurrency,
+    ...
+  )
 }
 
 
@@ -702,6 +747,9 @@ method(map, list(class_list, DecisionModel)) <- function(
 #'   several (a `NULL` entry sends none). Length 1 is recycled across `x`, and a single prompt in
 #'   `x` is recycled across `image_path`, so one question can be asked of many images. Every file
 #'   is checked before the first request. See [generate].
+#' @param concurrency Positive integer: Maximum number of independent input tasks running at
+#'   once. Defaults to 1 (sequential). Values greater than 1 require the optional 'mirai'
+#'   package. See [map()] for agent isolation, worker requirements, and provider limits.
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses
 #'   (with `NA_character_` for missing assistant content). If `FALSE`, return the raw list of
 #'   `Message` objects from each call.
@@ -756,8 +804,10 @@ llmapply <- function(
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
   image_path = NULL,
+  concurrency = 1L,
   ...
 ) {
+  check_pos_integer_scalar(concurrency, "concurrency")
   call <- match.call()
   backend <- match.arg(backend)
   on_error <- match.arg(on_error)
@@ -809,6 +859,7 @@ llmapply <- function(
     x,
     llm,
     verbosity = verbosity,
+    concurrency = concurrency,
     on_error = on_error,
     validate_output = validate_output,
     on_validation_failure = on_validation_failure,
@@ -828,7 +879,9 @@ llmapply <- function(
 #' `output_schema`) or a pre-built `Agent` object.
 #'
 #' Unlike [llmapply], this function can carry tools and memory. The default is `use_memory = FALSE`
-#' because the common case for vectorized calls is independent queries.
+#' because the common case for vectorized calls is independent queries. Within-call tool history
+#' is retained with either memory setting. With `concurrency > 1L`, every input creates a fresh
+#' agent; the supplied agent's accumulated history is neither copied nor modified. See [map()].
 #'
 #' Progress is reported through rtemis.core's nested progress API: one status line labelled with
 #' the model name, ticking once per element, with an ETA. Set `verbosity = 0L` to silence it. When
@@ -852,6 +905,9 @@ llmapply <- function(
 #'   several (a `NULL` entry sends none). Length 1 is recycled across `x`, and a single prompt in
 #'   `x` is recycled across `image_path`, so one question can be asked of many images. Every file
 #'   is checked before the first request. See [generate].
+#' @param concurrency Positive integer: Maximum number of independent input tasks running at
+#'   once. Defaults to 1 (sequential). Values greater than 1 require the optional 'mirai'
+#'   package. See [map()] for agent isolation, worker requirements, and provider limits.
 #' @param extract_responses Logical: If `TRUE`, return a character vector of assistant responses.
 #'   If `FALSE`, return the raw list of lists of `Message` objects.
 #' @param on_error Character \{"na", "abort"\}: What to do when a single call fails. `"na"` warns,
@@ -897,8 +953,10 @@ agentapply <- function(
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
   image_path = NULL,
+  concurrency = 1L,
   ...
 ) {
+  check_pos_integer_scalar(concurrency, "concurrency")
   call <- match.call()
   backend <- match.arg(backend)
   on_error <- match.arg(on_error)
@@ -954,6 +1012,7 @@ agentapply <- function(
     x,
     agent,
     verbosity = verbosity,
+    concurrency = concurrency,
     on_error = on_error,
     validate_output = validate_output,
     on_validation_failure = on_validation_failure,
@@ -990,6 +1049,9 @@ agentapply <- function(
 #'   element of `x` is answered with [decide()] instead of filling a schema.
 #' @param verbosity Integer \[0, Inf): Verbosity level. The per-call verbosity is
 #'   `verbosity - 1L`.
+#' @param concurrency Positive integer: Maximum number of independent input tasks running at
+#'   once. Defaults to 1 (sequential). Values greater than 1 require the optional 'mirai'
+#'   package. See [map()] for agent isolation, worker requirements, and provider limits.
 #' @param extract_responses Logical: If `TRUE`, return the filled documents as a character vector
 #'   of JSON (or, with `questions`, the [probabilities()] table). If `FALSE`, return the list of
 #'   `DecisionMessage` (or `Decision`) objects.
@@ -1036,8 +1098,10 @@ dmapply <- function(
   on_error = c("na", "abort"),
   validate_output = TRUE,
   on_validation_failure = c("warn", "collect", "abort"),
-  image_path = NULL
+  image_path = NULL,
+  concurrency = 1L
 ) {
+  check_pos_integer_scalar(concurrency, "concurrency")
   call <- match.call()
   backend <- match.arg(backend)
   on_error <- match.arg(on_error)
@@ -1083,15 +1147,8 @@ dmapply <- function(
       verbosity,
       on_error = on_error,
       image_path = image_path,
-      run = function(f, prompt, image_path, verbosity) {
-        decide(
-          f,
-          prompt,
-          questions,
-          image_path = image_path,
-          verbosity = verbosity
-        )
-      }
+      questions = questions,
+      concurrency = concurrency
     )
     return(
       if (extract_responses) .keep_errors(probabilities(out), out) else out
@@ -1107,6 +1164,7 @@ dmapply <- function(
     x,
     dm,
     verbosity = verbosity,
+    concurrency = concurrency,
     on_error = on_error,
     validate_output = validate_output,
     on_validation_failure = on_validation_failure,

@@ -19,14 +19,14 @@ get_model_name <- new_generic("get_model_name", "x")
 #'
 #' @param x A character vector or list to map over.
 #' @param f An `LLM`, `Agent` or `DecisionModel` object.
-#' @param ... Additional arguments passed to `generate()`, plus the two arguments the methods
-#' accept: `verbosity` and `on_error`. See Details.
+#' @param ... Additional arguments passed to `generate()`, plus the method arguments
+#'   `verbosity`, `on_error`, and `concurrency`. See Details.
 #'
 #' @details
 #' Use [responses] to retrieve just the content from the assistant messages, or [reasoning] to
 #' retrieve the reasoning traces (if enabled).
 #'
-#' Both methods accept:
+#' All methods accept:
 #' - `verbosity` Integer \[0, Inf): Verbosity level. Progress is reported through rtemis.core's
 #'   nested progress API - one status line labelled with the model name, ticking once per element,
 #'   with an ETA - and `verbosity = 0L` silences it. The per-call verbosity is `verbosity - 1L`.
@@ -37,6 +37,40 @@ get_model_name <- new_generic("get_model_name", "x")
 #'   an `errors` attribute, a data.frame of `index` and `message` with one row per failed call.
 #'   [responses] and [reasoning] map those `NULL` slots to `NA_character_`. `"abort"` propagates
 #'   the error and discards every result in the batch.
+#'
+#' - `concurrency` Positive integer: Maximum number of independent input tasks active at once.
+#'   Defaults to 1. Values greater than 1 require 'mirai' and use a private pool of local R
+#'   workers. Results retain input order even when requests finish out of order.
+#'
+#' Concurrent agent calls are independent. Each input creates a new agent with its own
+#' conversation state, initialized from the supplied agent's configuration and system prompt.
+#' Messages, provider-returned reasoning, and tool results remain available throughout that
+#' input's run. Accumulated history from the supplied agent is not copied; its state remains
+#' unchanged. This also applies to successive inputs handled by one worker. Use
+#' `extract_responses = FALSE` in [agentapply()] to retain each run's message history.
+#' With `concurrency = 1L`, an agent can retain conversation history across inputs as configured.
+#'
+#' Workers reuse the normal generation path. Tool functions and captured data must be
+#' serializable; the caller's global environment and live connections are not available in
+#' workers. Use package-qualified function calls and explicitly captured data in custom tools.
+#' Tools must coordinate shared external resources themselves. Agent security records are
+#' appended to the configured log by the main R process. Nested concurrent mapping is rejected.
+#'
+#' Client concurrency bounds input tasks, including all their model requests and tool rounds.
+#' Provider limits apply separately: Ollama's `OLLAMA_NUM_PARALLEL` controls per-model server
+#' concurrency; the Apple bridge uses `--concurrency`; cloud APIs enforce account and model
+#' quotas. Increasing client concurrency can add queueing without improving throughput.
+#' Concurrent requests retry HTTP 429 and 503 up to three total attempts, honoring Retry-After
+#' or using backoff with jitter. A shared cooldown pauses further model requests within the
+#' batch. Retries have a 60-second budget after the first transient response; a longer server
+#' delay ends that input's retries. Model requests are retried individually, preserving
+#' completed tool steps. Transport failures follow `on_error` without automatic replay.
+#' Abort stops dispatch and cancels remaining workers; completed external effects remain.
+#'
+#' Results carry `elapsed` (seconds per input, including its retry waits, excluding worker
+#' startup and time awaiting dispatch) and `batch_elapsed` (wall time for mapping, including
+#' worker startup and shutdown). Overlapping input durations must not be summed to estimate
+#' batch wall time. Progress is emitted by the main R process as inputs finish.
 #'
 #' @return A list of `Message` objects (for `LLM`) or list of lists of `Message` objects
 #' (for `Agent`). With an output schema, [validation_results] retrieves an aligned

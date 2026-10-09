@@ -12,7 +12,8 @@
 #' @field llmconfig LLMConfig: The LLMConfig to use.
 #' @field state AgentMemory: The state of the agent contains the message history and metadata.
 #' @field system_prompt Optional character: The system prompt to use.
-#' @field use_memory Logical: Whether to store conversation history in agent state.
+#' @field use_memory Logical: Whether to retain conversation history across calls.
+#'   Within-call state is retained for all tool rounds with either setting.
 #' @field tools Optional list of Tool objects: The tools available to the agent.
 #' @field max_tool_rounds Integer: Maximum number of tool call rounds per query.
 #' @field output_schema Optional Schema: The output schema to enforce on the agent's response.
@@ -399,7 +400,8 @@ method(get_messages, Agent) <- function(x, last = FALSE) {
 #' @param llmconfig `LLMConfig`: The LLM configuration to use. Create using one of [config_Ollama],
 #'   [config_OpenAI], [config_Anthropic], or [config_Apple].
 #' @param system_prompt Optional character: The system prompt to use.
-#' @param use_memory Logical: Whether to use conversation memory.
+#' @param use_memory Logical: Whether to retain conversation history across calls.
+#'   A call retains its own messages and tool results with either setting.
 #' @param tools Optional list of Tool objects: The tools available to the agent.
 #' @param max_tool_rounds Integer: Maximum number of tool call rounds per query.
 #' @param output_schema Optional Schema: The output schema to enforce on the agent's response

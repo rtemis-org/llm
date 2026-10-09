@@ -337,7 +337,7 @@ test_that("llmapply keeps the batch by default", {
   testthat::expect_equal(
     caught[["value"]],
     c("A", NA_character_, "C"),
-    ignore_attr = c("errors", "elapsed")
+    ignore_attr = c("errors", "elapsed", "batch_elapsed")
   )
   testthat::expect_length(caught[["warnings"]], 1L)
 })
@@ -358,7 +358,7 @@ test_that("on_error = 'na' keeps the batch and marks the failures", {
   testthat::expect_equal(
     caught[["value"]],
     c("A", NA_character_, "C", NA_character_),
-    ignore_attr = c("errors", "elapsed")
+    ignore_attr = c("errors", "elapsed", "batch_elapsed")
   )
   # One warning per failure, each naming its element.
   testthat::expect_length(caught[["warnings"]], 2L)
@@ -380,7 +380,11 @@ test_that("the errors attribute names exactly the failing indices", {
 test_that("on_error = 'na' with no failures returns a zero-row errors table", {
   stub <- StubLLM()
   out <- llmapply(c("a", "b"), stub, verbosity = 0L, on_error = "na")
-  testthat::expect_equal(out, c("A", "B"), ignore_attr = c("errors", "elapsed"))
+  testthat::expect_equal(
+    out,
+    c("A", "B"),
+    ignore_attr = c("errors", "elapsed", "batch_elapsed")
+  )
   testthat::expect_identical(nrow(attr(out, "errors")), 0L)
   # The wall time of each call, kept through extraction.
   testthat::expect_length(attr(out, "elapsed"), 2L)
@@ -433,7 +437,7 @@ test_that("agentapply threads on_error through to the nested result", {
   testthat::expect_equal(
     caught[["value"]],
     c("A", NA_character_, "C"),
-    ignore_attr = c("errors", "elapsed")
+    ignore_attr = c("errors", "elapsed", "batch_elapsed")
   )
   testthat::expect_identical(attr(caught[["value"]], "errors")[["index"]], 2L)
 })
@@ -444,7 +448,7 @@ test_that("agentapply keeps the batch by default", {
   testthat::expect_equal(
     caught[["value"]],
     c("A", NA_character_),
-    ignore_attr = c("errors", "elapsed")
+    ignore_attr = c("errors", "elapsed", "batch_elapsed")
   )
 })
 

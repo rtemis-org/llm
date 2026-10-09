@@ -2,6 +2,8 @@
 
 ## 0.8.8
 
+- Added `concurrency` to `llmapply()`, `dmapply()`, `agentapply()`, and `map()`, with independent agent state per input, bounded local workers, and `batch_elapsed` timing.
+
 - License changed to BSD 3-clause.
 - Hashing now uses 'openssl', replacing the 'digest' dependency.
 - Added image input: `image_path` on `generate()` for LLMs and Agents, and on `llmapply()` and

@@ -27,10 +27,14 @@ Imports:
     rtemis.core (>= 0.4.6),
     S7
 Suggests:
+    mirai (>= 2.7.0),
+    pkgload,
+    processx,
+    withr,
     keyring,
     testthat (>= 3.0.0),
     xml2
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.1.0)
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1

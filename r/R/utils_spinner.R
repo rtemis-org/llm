@@ -158,6 +158,10 @@
 #' @keywords internal
 #' @noRd
 .req_perform_status <- function(req, verbosity = 1L) {
+  directory <- getOption("rtemis.llm.batch_directory")
+  if (!is.null(directory)) {
+    return(.batch_request(req, directory))
+  }
   if (.spinner_enabled(verbosity)) {
     req <- httr2::req_options(
       req,

@@ -11,8 +11,8 @@ map(x, f, ...)
 
 \item{f}{An \code{LLM}, \code{Agent} or \code{DecisionModel} object.}
 
-\item{...}{Additional arguments passed to \code{generate()}, plus the two arguments the methods
-accept: \code{verbosity} and \code{on_error}. See Details.}
+\item{...}{Additional arguments passed to \code{generate()}, plus the method arguments
+\code{verbosity}, \code{on_error}, and \code{concurrency}. See Details.}
 }
 \value{
 A list of \code{Message} objects (for \code{LLM}) or list of lists of \code{Message} objects
@@ -28,7 +28,7 @@ Map
 Use \link{responses} to retrieve just the content from the assistant messages, or \link{reasoning} to
 retrieve the reasoning traces (if enabled).
 
-Both methods accept:
+All methods accept:
 \itemize{
 \item \code{verbosity} Integer [0, Inf): Verbosity level. Progress is reported through rtemis.core's
 nested progress API - one status line labelled with the model name, ticking once per element,
@@ -40,7 +40,40 @@ default) warns, leaves \code{NULL} in that element's slot, and carries on; the r
 an \code{errors} attribute, a data.frame of \code{index} and \code{message} with one row per failed call.
 \link{responses} and \link{reasoning} map those \code{NULL} slots to \code{NA_character_}. \code{"abort"} propagates
 the error and discards every result in the batch.
+\item \code{concurrency} Positive integer: Maximum number of independent input tasks active at once.
+Defaults to 1. Values greater than 1 require 'mirai' and use a private pool of local R
+workers. Results retain input order even when requests finish out of order.
 }
+
+Concurrent agent calls are independent. Each input creates a new agent with its own
+conversation state, initialized from the supplied agent's configuration and system prompt.
+Messages, provider-returned reasoning, and tool results remain available throughout that
+input's run. Accumulated history from the supplied agent is not copied; its state remains
+unchanged. This also applies to successive inputs handled by one worker. Use
+\code{extract_responses = FALSE} in \code{\link[=agentapply]{agentapply()}} to retain each run's message history.
+With \code{concurrency = 1L}, an agent can retain conversation history across inputs as configured.
+
+Workers reuse the normal generation path. Tool functions and captured data must be
+serializable; the caller's global environment and live connections are not available in
+workers. Use package-qualified function calls and explicitly captured data in custom tools.
+Tools must coordinate shared external resources themselves. Agent security records are
+appended to the configured log by the main R process. Nested concurrent mapping is rejected.
+
+Client concurrency bounds input tasks, including all their model requests and tool rounds.
+Provider limits apply separately: Ollama's \code{OLLAMA_NUM_PARALLEL} controls per-model server
+concurrency; the Apple bridge uses \code{--concurrency}; cloud APIs enforce account and model
+quotas. Increasing client concurrency can add queueing without improving throughput.
+Concurrent requests retry HTTP 429 and 503 up to three total attempts, honoring Retry-After
+or using backoff with jitter. A shared cooldown pauses further model requests within the
+batch. Retries have a 60-second budget after the first transient response; a longer server
+delay ends that input's retries. Model requests are retried individually, preserving
+completed tool steps. Transport failures follow \code{on_error} without automatic replay.
+Abort stops dispatch and cancels remaining workers; completed external effects remain.
+
+Results carry \code{elapsed} (seconds per input, including its retry waits, excluding worker
+startup and time awaiting dispatch) and \code{batch_elapsed} (wall time for mapping, including
+worker startup and shutdown). Overlapping input durations must not be summed to estimate
+batch wall time. Progress is emitted by the main R process as inputs finish.
 }
 \examples{
 # Requires running Ollama server and gemma4:e4b model
