@@ -814,10 +814,14 @@ method(build_chat_messages, AnthropicConfig) <- function(x, state) {
 # %% build_response_format.AnthropicConfig ----
 #' Build Anthropic Response Format
 #'
+#' On models with structured outputs, the schema goes to `output_config.format`. On other models,
+#' structured output is a forced call of a synthetic tool whose input schema is the output schema.
+#'
 #' @param x AnthropicConfig: Anthropic configuration.
 #' @param output_schema Optional Schema: Output schema.
 #'
-#' @return Optional named list with `tools` and `tool_choice` fields.
+#' @return Optional named list: `format` (the `output_config.format` object), or `tools` and
+#' `tool_choice`.
 #'
 #' @author EDG
 #' @keywords internal
@@ -828,6 +832,15 @@ method(build_response_format, AnthropicConfig) <- function(
 ) {
   if (is.null(output_schema)) {
     return(NULL)
+  }
+  profile <- .anthropic_model_profile(x@model_name, x@capabilities)
+  if (profile[["structured_outputs"]]) {
+    return(list(
+      format = list(
+        type = "json_schema",
+        schema = .anthropic_output_format_schema(as_list(output_schema))
+      )
+    ))
   }
   list(
     tools = list(
@@ -844,17 +857,22 @@ method(build_response_format, AnthropicConfig) <- function(
 # %% build_chat_request_body.AnthropicConfig ----
 #' Build Anthropic Chat Request Body
 #'
+#' Each field follows the request rules of the configured model; a value the model rejects aborts
+#' before the request (spec: llm/anthropic-adapter#request-shape).
+#'
 #' @param x AnthropicConfig: Anthropic configuration.
 #' @param state AgentMemory: Agent memory.
 #' @param tools Optional list: Tools.
 #' @param output_schema Optional Schema: Output schema.
-#' @param think Optional logical: Whether to enable extended thinking.
+#' @param think Optional logical: Per-call override of the config's `think`.
 #' @param use_tools Logical: Whether tools are enabled.
 #' @param temperature Optional numeric \[0, 1\]: Per-call temperature override.
 #' @param top_p Optional numeric \[0, 1\]: Nucleus sampling cutoff.
 #' @param max_tokens Optional integer \[1, Inf): Per-call max_tokens override.
 #' @param stop Optional character: Stop sequence(s) (mapped to `stop_sequences`).
 #' @param top_k Optional integer \[1, Inf): Top-K sampling cutoff.
+#' @param effort Optional character \{"low", "medium", "high", "xhigh", "max"\}: Per-call
+#' override of the config's `effort`.
 #'
 #' @return Named list.
 #'
@@ -872,7 +890,8 @@ method(build_chat_request_body, AnthropicConfig) <- function(
   top_p = NULL,
   max_tokens = NULL,
   stop = NULL,
-  top_k = NULL
+  top_k = NULL,
+  effort = NULL
 ) {
   # Anthropic caps `temperature` at 1, not 2.
   .check_call_options(
@@ -883,18 +902,31 @@ method(build_chat_request_body, AnthropicConfig) <- function(
     top_k = top_k,
     temperature_max = 1
   )
-  request_body <- list(
-    model = x@model_name,
-    messages = build_chat_messages(x, state),
-    max_tokens = as.integer(max_tokens %||% x@max_tokens),
-    temperature = temperature %||% x@temperature
+  check_optional_logical_scalar(think, "think")
+  .check_anthropic_effort_arg(effort)
+  profile <- .anthropic_model_profile(x@model_name, x@capabilities)
+  max_tokens <- as.integer(max_tokens %||% x@max_tokens)
+  fields <- .anthropic_request_fields(
+    profile,
+    temperature = temperature %||% x@temperature,
+    top_p = top_p,
+    top_k = top_k,
+    think = think %||% x@think,
+    thinking_budget_tokens = x@thinking_budget_tokens,
+    effort = effort %||% x@effort,
+    fallbacks = x@fallbacks,
+    max_tokens = max_tokens
   )
-  if (!is.null(top_p)) {
-    request_body[["top_p"]] <- top_p
-  }
-  if (!is.null(top_k)) {
-    request_body[["top_k"]] <- as.integer(top_k)
-  }
+  messages <- build_chat_messages(x, state)
+  .anthropic_check_prefill(profile, messages)
+  request_body <- c(
+    list(
+      model = x@model_name,
+      messages = messages,
+      max_tokens = max_tokens
+    ),
+    fields[["sampling"]]
+  )
   if (!is.null(stop)) {
     request_body[["stop_sequences"]] <- as.character(stop)
   }
@@ -907,19 +939,33 @@ method(build_chat_request_body, AnthropicConfig) <- function(
     tool_specs <- lapply(tools, .tool_to_anthropic_schema)
   }
   response_format <- build_response_format(x, output_schema)
-  if (!is.null(response_format)) {
+  if (!is.null(response_format[["tool_choice"]])) {
+    # The API rejects a forced tool call while thinking is on.
+    if (profile[["known"]] && isTRUE(fields[["thinking_on"]])) {
+      .abort_anthropic_rule(
+        profile,
+        "think",
+        "Structured output on model '",
+        x@model_name,
+        "' is a forced tool call, which the API rejects while thinking is on.\n",
+        "Set `think = FALSE` for structured output on this model."
+      )
+    }
     tool_specs <- c(tool_specs, response_format[["tools"]])
     request_body[["tool_choice"]] <- response_format[["tool_choice"]]
   }
   if (length(tool_specs) > 0L) {
     request_body[["tools"]] <- tool_specs
   }
-  budget <- resolve_anthropic_thinking_budget(x, think = think)
-  if (!is.null(budget)) {
-    request_body[["thinking"]] <- list(
-      type = "enabled",
-      budget_tokens = budget
-    )
+  request_body[["thinking"]] <- fields[["thinking"]]
+  request_body[["fallbacks"]] <- fields[["fallbacks"]]
+  output_config <- list(
+    format = response_format[["format"]],
+    effort = fields[["effort"]]
+  )
+  output_config <- output_config[!vapply(output_config, is.null, logical(1L))]
+  if (length(output_config) > 0L) {
+    request_body[["output_config"]] <- output_config
   }
   if (!is.null(x@extra_body)) {
     request_body[names(x@extra_body)] <- x@extra_body
@@ -976,21 +1022,32 @@ method(parse_chat_response, AnthropicConfig) <- function(x, resp) {
   text_content <- .anthropic_text_from_content(content_blocks)
   reasoning <- .anthropic_reasoning_from_content(content_blocks)
   tool_calls <- .anthropic_tool_calls_from_content(content_blocks)
+  request_id <- httr2::resp_header(resp, "request-id") %||%
+    httr2::resp_header(resp, "x-request-id")
   stop_reason <- res[["stop_reason"]]
-  refusal <- if (identical(stop_reason, "refusal")) {
-    text_content
-  } else {
-    NULL
+  model <- res[["model"]] %||% x@model_name
+  if (identical(stop_reason, "refusal")) {
+    .abort_anthropic_refusal(res, model, text_content, request_id)
+  }
+  if (identical(stop_reason, "max_tokens")) {
+    warn(
+      "Model '",
+      model,
+      "' stopped at `max_tokens` (stop_reason \"max_tokens\"); the response is truncated.\n",
+      "Raise `max_tokens`: thinking counts toward it.",
+      use_warning = TRUE
+    )
   }
   metadata <- res[setdiff(names(res), c("content"))]
   metadata[["raw_content"]] <- content_blocks
-  metadata[["request_id"]] <- httr2::resp_header(resp, "request-id") %||%
-    httr2::resp_header(resp, "x-request-id")
+  metadata[["request_id"]] <- request_id
+  if (!is.null(x@fallbacks)) {
+    metadata[["fallback_served"]] <- .anthropic_fallback_served(res)
+  }
   list(
     content = text_content,
     reasoning = reasoning,
     tool_calls = tool_calls,
-    refusal = refusal,
     metadata = metadata
   )
 }

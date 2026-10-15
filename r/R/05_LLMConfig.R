@@ -20,6 +20,7 @@ ANTHROPIC_API_VERSION_DEFAULT <- "2023-06-01"
 ANTHROPIC_MAX_TOKENS_DEFAULT <- 4096L
 ANTHROPIC_TIMEOUT_DEFAULT <- 60
 ANTHROPIC_THINKING_MIN_BUDGET <- 1024L
+ANTHROPIC_EFFORT_LEVELS <- c("low", "medium", "high", "xhigh", "max")
 # rtemis-afm serves Apple's on-device model over the OpenAI wire on loopback; the
 # model id is fixed at "afm" so a stored configuration survives a macOS update
 # that renames the variant (spec: rtemis-afm/wire#get-v1models).
@@ -374,7 +375,8 @@ method(as_list, AppleConfig) <- function(x) {
 #' @title AnthropicConfig Class
 #'
 #' @description
-#' Anthropic Messages API configuration class.
+#' Anthropic Messages API configuration class. Requests follow the request rules of the model the
+#' config names (spec: llm/anthropic-adapter#model-table).
 #'
 #' @author EDG
 #' @noRd
@@ -385,7 +387,8 @@ AnthropicConfig <- new_class(
     temperature = prop_float(
       min = 0,
       max = 1,
-      description = "Sampling temperature"
+      nullable = TRUE,
+      description = "Sampling temperature; NULL is not sent"
     ),
     api_key = prop_string(nullable = TRUE, description = "API key"),
     api_key_env = prop_string(
@@ -415,6 +418,24 @@ AnthropicConfig <- new_class(
       min = 1L,
       description = "Token budget for extended thinking"
     ),
+    think = prop_boolean(
+      default = NULL,
+      nullable = TRUE,
+      description = "Thinking on or off; NULL runs the model default"
+    ),
+    effort = prop_string(
+      enum = ANTHROPIC_EFFORT_LEVELS,
+      nullable = TRUE,
+      description = "Effort level; NULL runs the model default"
+    ),
+    fallbacks = prop_string(
+      nullable = TRUE,
+      vector = TRUE,
+      description = "Server-side fallbacks: \"default\" or model names"
+    ),
+    capabilities = prop_bag(
+      description = "Model capabilities reported by the Models API"
+    ),
     validate_model = prop_boolean(
       default = NULL,
       description = "Check the model name against the endpoint"
@@ -422,8 +443,8 @@ AnthropicConfig <- new_class(
   ),
   constructor = function(
     model_name,
-    temperature,
-    base_url,
+    temperature = NULL,
+    base_url = ANTHROPIC_URL_DEFAULT,
     api_key = NULL,
     api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
     keychain_service = NULL,
@@ -434,6 +455,9 @@ AnthropicConfig <- new_class(
     extra_headers = NULL,
     extra_body = NULL,
     thinking_budget_tokens = NULL,
+    think = NULL,
+    effort = NULL,
+    fallbacks = NULL,
     validate_model = FALSE
   ) {
     check_character_scalar(model_name, "model_name")
@@ -446,6 +470,9 @@ AnthropicConfig <- new_class(
       check_character_scalar(keychain_service, "keychain_service")
     }
     check_character_scalar(anthropic_version, "anthropic_version")
+    check_optional_logical_scalar(think, "think")
+    .check_anthropic_effort_arg(effort)
+    .check_anthropic_fallbacks_arg(fallbacks)
     if (!is.null(anthropic_beta)) {
       if (
         !is.character(anthropic_beta) ||
@@ -502,8 +529,9 @@ AnthropicConfig <- new_class(
     }
     check_logical_scalar(validate_model, "validate_model")
     base_url <- .clean_base_url(base_url)
+    capabilities <- NULL
     if (validate_model) {
-      anthropic_check_model(
+      capabilities <- .anthropic_model_capabilities(
         x = model_name,
         base_url = base_url,
         api_key = api_key,
@@ -512,13 +540,28 @@ AnthropicConfig <- new_class(
         anthropic_version = anthropic_version
       )
     }
+    profile <- .anthropic_model_profile(model_name, capabilities)
+    .warn_anthropic_profile(profile, capabilities)
+    # Aborts here, before any request, on a value the model rejects.
+    .anthropic_request_fields(
+      profile,
+      temperature = temperature,
+      think = think,
+      thinking_budget_tokens = thinking_budget_tokens,
+      effort = effort,
+      fallbacks = fallbacks,
+      max_tokens = max_tokens
+    )
+    # LLMConfig declares `temperature` non-nullable; this class redeclares it
+    # as nullable and sets the value in new_object() below.
     new_object(
       LLMConfig(
         model_name = model_name,
-        temperature = temperature,
+        temperature = TEMPERATURE_DEFAULT,
         backend = "anthropic",
         base_url = base_url
       ),
+      temperature = temperature,
       api_key = api_key,
       api_key_env = api_key_env,
       keychain_service = keychain_service,
@@ -529,6 +572,10 @@ AnthropicConfig <- new_class(
       extra_headers = extra_headers,
       extra_body = extra_body,
       thinking_budget_tokens = thinking_budget_tokens,
+      think = think,
+      effort = effort,
+      fallbacks = fallbacks,
+      capabilities = capabilities,
       validate_model = validate_model
     )
   }
@@ -561,6 +608,10 @@ method(as_list, AnthropicConfig) <- function(x) {
     extra_headers = x@extra_headers,
     extra_body = x@extra_body,
     thinking_budget_tokens = x@thinking_budget_tokens,
+    think = x@think,
+    effort = x@effort,
+    fallbacks = x@fallbacks,
+    capabilities = if (!is.null(x@capabilities)) "<Models API>" else NULL,
     validate_model = x@validate_model
   )
 } # /as_list.AnthropicConfig

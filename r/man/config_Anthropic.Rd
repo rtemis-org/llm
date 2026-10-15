@@ -6,7 +6,7 @@
 \usage{
 config_Anthropic(
   model_name,
-  temperature = TEMPERATURE_DEFAULT,
+  temperature = NULL,
   base_url = ANTHROPIC_URL_DEFAULT,
   api_key = NULL,
   api_key_env = ANTHROPIC_API_KEY_ENV_DEFAULT,
@@ -18,14 +18,19 @@ config_Anthropic(
   extra_headers = NULL,
   extra_body = NULL,
   thinking_budget_tokens = NULL,
+  think = NULL,
+  effort = NULL,
+  fallbacks = NULL,
   validate_model = FALSE
 )
 }
 \arguments{
 \item{model_name}{Character: The name of the Anthropic model to use (for example
-\code{"claude-sonnet-4-6"}).}
+\code{"claude-opus-5-5"}).}
 
-\item{temperature}{Numeric [0, 2]: The temperature for the model.}
+\item{temperature}{Optional numeric [0, 1]: The temperature for the model. \code{NULL} omits it
+from the request, and the model uses its default. Claude Opus 4.7 and later reject it; Claude
+Sonnet 5, Claude Sonnet 5.5 and Claude Haiku 5.5 accept only \code{1}, their default.}
 
 \item{base_url}{Character: Base URL of the Anthropic API.}
 
@@ -40,8 +45,8 @@ config_Anthropic(
 \item{anthropic_beta}{Optional character: Value(s) for the \code{anthropic-beta} header. A character
 vector is comma-joined.}
 
-\item{max_tokens}{Integer [1, Inf): Maximum number of tokens the model may generate. Required by
-the Messages API.}
+\item{max_tokens}{Integer [1, Inf): Maximum number of tokens the model may generate, thinking
+included. Required by the Messages API.}
 
 \item{timeout}{Numeric (0, Inf): Request timeout in seconds.}
 
@@ -49,10 +54,28 @@ the Messages API.}
 
 \item{extra_body}{Optional list: Additional request body fields.}
 
-\item{thinking_budget_tokens}{Optional integer [1024, Inf): Budget for extended thinking. When
-set, each request enables extended thinking with this budget.}
+\item{thinking_budget_tokens}{Optional integer [1024, Inf): Budget for extended thinking, sent
+as \verb{thinking: \{type: "enabled", budget_tokens\}} on models that accept a budget (Claude Opus 4.6,
+Claude Sonnet 4.6, and Claude 4.5 models and earlier). Must be less than \code{max_tokens}.}
 
-\item{validate_model}{Logical: Whether to validate model availability using \verb{/models}.}
+\item{think}{Optional logical: Whether the model thinks. \code{NULL} runs the model's default. \code{TRUE}
+sends \code{thinking_budget_tokens} when set, and adaptive thinking otherwise. \code{FALSE} sends the
+model's off form: \code{{type: "disabled"}}, \code{{type: "between_tools"}} on Claude Sonnet 5.5, or no
+\code{thinking} field. Claude Opus 5.5 and Claude Fable 5 models always think, and \code{FALSE} aborts.
+Can be overridden per call.}
+
+\item{effort}{Optional character \{"low", "medium", "high", "xhigh", "max"\}: How much the model
+thinks and writes, sent as \code{output_config.effort}. \code{NULL} runs the model's default (\code{"medium"}
+on Claude Opus 5.5 and Claude Haiku 5.5, \code{"high"} on other models with effort). Can be
+overridden per call.}
+
+\item{fallbacks}{Optional character: Server-side fallbacks for refused requests: \code{"default"}
+(Anthropic chooses the fallback model by refusal category), or 1 to 3 model names. \code{NULL} sends
+no fallback, so every response comes from \code{model_name}. Claude Sonnet 5.5 accepts only
+\code{"default"}. The matching \code{anthropic-beta} header is added.}
+
+\item{validate_model}{Logical: Whether to check the model with the Models API and read its
+capabilities.}
 }
 \value{
 AnthropicConfig object
@@ -60,10 +83,26 @@ AnthropicConfig object
 \description{
 Creates a AnthropicConfig object which can be passed to \code{create_agent()}
 }
+\details{
+Every request follows the request rules of the model named in \code{model_name}: which sampling
+parameters it accepts, how thinking is turned on and off, its effort levels, whether
+structured output uses \code{output_config.format} or a forced tool call, whether it accepts a
+trailing assistant message, and whether it has server-side fallbacks. A value the model
+rejects aborts here or before the request, with a message naming the model and the argument.
+The rules come from a table built into the package. Model names absent from the table, such as
+those of Anthropic-compatible servers, send every configured field as given and use a forced
+tool call for structured output. With \code{validate_model = TRUE}, the model's capabilities read
+from the Models API (\code{GET /models/{id}}) replace the table's structured-output, thinking and
+effort entries.
+
+A response with \code{stop_reason} \code{"refusal"} raises an error of class \code{rtemis_llm_refusal}, whose
+\code{category} and \code{explanation} fields carry the response's \code{stop_details}. A response that stops
+at \code{max_tokens} raises a warning and returns the truncated text.
+}
 \examples{
-cfg <- config <- config_Anthropic(
-   model_name = "claude-sonnet-4-6",
-   temperature = 0.4,
+cfg <- config_Anthropic(
+   model_name = "claude-opus-5-5",
+   effort = "low",
    api_key = "test-key",
    max_tokens = 1024L,
    validate_model = FALSE

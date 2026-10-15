@@ -18,3 +18,6 @@ plan/
 AGENTS.md
 CLAUDE.md
 SKILL.md
+
+# Local coverage reports
+coverage/

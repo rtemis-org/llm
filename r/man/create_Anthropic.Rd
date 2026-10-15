@@ -7,7 +7,7 @@
 create_Anthropic(
   model_name,
   system_prompt = SYSTEM_PROMPT_DEFAULT,
-  temperature = TEMPERATURE_DEFAULT,
+  temperature = NULL,
   output_schema = NULL,
   name = NULL,
   base_url = ANTHROPIC_URL_DEFAULT,
@@ -21,18 +21,26 @@ create_Anthropic(
   extra_headers = NULL,
   extra_body = NULL,
   thinking_budget_tokens = NULL,
+  think = NULL,
+  effort = NULL,
+  fallbacks = NULL,
   validate_model = FALSE
 )
 }
 \arguments{
-\item{model_name}{Character: The name of the Anthropic model to use.}
+\item{model_name}{Character: The name of the Anthropic model to use (for example
+\code{"claude-opus-5-5"}).}
 
 \item{system_prompt}{Character: The system prompt to use.}
 
-\item{temperature}{Numeric [0, 2]: The temperature for the model.}
+\item{temperature}{Optional numeric [0, 1]: The temperature for the model. \code{NULL} omits it
+from the request, and the model uses its default. Claude Opus 4.7 and later reject it; Claude
+Sonnet 5, Claude Sonnet 5.5 and Claude Haiku 5.5 accept only \code{1}, their default.}
 
-\item{output_schema}{Optional Schema: Output schema created using \link{schema}. Structured output is
-implemented by forcing a single synthetic tool call whose \code{input_schema} is this schema.}
+\item{output_schema}{Optional Schema: Output schema created using \link{schema}. On models with
+structured outputs, the schema is sent as \code{output_config.format} and the answer is the text
+block of the response; on other models, structured output is a forced call of a synthetic tool
+whose input schema is this schema.}
 
 \item{name}{Optional character: Name for the LLM object.}
 
@@ -46,9 +54,11 @@ implemented by forcing a single synthetic tool call whose \code{input_schema} is
 
 \item{anthropic_version}{Character: Value of the required \code{anthropic-version} header.}
 
-\item{anthropic_beta}{Optional character: Value(s) for the \code{anthropic-beta} header.}
+\item{anthropic_beta}{Optional character: Value(s) for the \code{anthropic-beta} header. A character
+vector is comma-joined.}
 
-\item{max_tokens}{Integer [1, Inf): Maximum number of tokens the model may generate.}
+\item{max_tokens}{Integer [1, Inf): Maximum number of tokens the model may generate, thinking
+included. Required by the Messages API.}
 
 \item{timeout}{Numeric (0, Inf): Request timeout in seconds.}
 
@@ -56,9 +66,28 @@ implemented by forcing a single synthetic tool call whose \code{input_schema} is
 
 \item{extra_body}{Optional list: Additional request body fields.}
 
-\item{thinking_budget_tokens}{Optional integer [1024, Inf): Extended-thinking budget.}
+\item{thinking_budget_tokens}{Optional integer [1024, Inf): Budget for extended thinking, sent
+as \verb{thinking: \{type: "enabled", budget_tokens\}} on models that accept a budget (Claude Opus 4.6,
+Claude Sonnet 4.6, and Claude 4.5 models and earlier). Must be less than \code{max_tokens}.}
 
-\item{validate_model}{Logical: Whether to validate model availability using \verb{/models}.}
+\item{think}{Optional logical: Whether the model thinks. \code{NULL} runs the model's default. \code{TRUE}
+sends \code{thinking_budget_tokens} when set, and adaptive thinking otherwise. \code{FALSE} sends the
+model's off form: \code{{type: "disabled"}}, \code{{type: "between_tools"}} on Claude Sonnet 5.5, or no
+\code{thinking} field. Claude Opus 5.5 and Claude Fable 5 models always think, and \code{FALSE} aborts.
+Can be overridden per call.}
+
+\item{effort}{Optional character \{"low", "medium", "high", "xhigh", "max"\}: How much the model
+thinks and writes, sent as \code{output_config.effort}. \code{NULL} runs the model's default (\code{"medium"}
+on Claude Opus 5.5 and Claude Haiku 5.5, \code{"high"} on other models with effort). Can be
+overridden per call.}
+
+\item{fallbacks}{Optional character: Server-side fallbacks for refused requests: \code{"default"}
+(Anthropic chooses the fallback model by refusal category), or 1 to 3 model names. \code{NULL} sends
+no fallback, so every response comes from \code{model_name}. Claude Sonnet 5.5 accepts only
+\code{"default"}. The matching \code{anthropic-beta} header is added.}
+
+\item{validate_model}{Logical: Whether to check the model with the Models API and read its
+capabilities.}
 }
 \value{
 Anthropic LLM object
@@ -66,9 +95,12 @@ Anthropic LLM object
 \description{
 Create a Anthropic LLM Object
 }
+\details{
+See \link{config_Anthropic} for how each request follows the configured model's rules.
+}
 \examples{
 llm <- create_Anthropic(
-   model_name = "claude-sonnet-4-6",
+   model_name = "claude-opus-5-5",
    system_prompt = "You are a meticulous research assistant.",
    api_key = "test-key",
    validate_model = FALSE

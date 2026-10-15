@@ -58,10 +58,14 @@ resolve_anthropic_api_key <- function(config, error_if_missing = TRUE) {
     `x-api-key` = api_key,
     `anthropic-version` = config@anthropic_version
   )
-  if (!is.null(config@anthropic_beta)) {
+  beta <- unique(c(
+    config@anthropic_beta,
+    .anthropic_fallbacks_beta(config@fallbacks)
+  ))
+  if (!is.null(beta)) {
     req <- httr2::req_headers(
       req,
-      `anthropic-beta` = paste(config@anthropic_beta, collapse = ",")
+      `anthropic-beta` = paste(beta, collapse = ",")
     )
   }
   if (!is.null(config@extra_headers)) {
@@ -442,39 +446,6 @@ clean_anthropic_schema <- function(x) {
 }
 
 
-# %% resolve_anthropic_thinking_budget() ----
-#' Resolve Anthropic Thinking Budget
-#'
-#' @param config AnthropicConfig: Configuration object.
-#' @param think Optional logical: Per-call override.
-#'
-#' @return Optional integer.
-#'
-#' @author EDG
-#' @keywords internal
-#' @noRd
-resolve_anthropic_thinking_budget <- function(config, think = NULL) {
-  if (is.null(think)) {
-    return(config@thinking_budget_tokens)
-  }
-  if (length(think) != 1L || is.na(think)) {
-    abort("`think` must be a logical scalar or NULL.")
-  }
-  if (!isTRUE(as.logical(think))) {
-    return(NULL)
-  }
-  if (is.null(config@thinking_budget_tokens)) {
-    abort(
-      "`think = TRUE` requires a thinking budget for Anthropic.\n",
-      "Set `thinking_budget_tokens` on config_Anthropic() (minimum ",
-      ANTHROPIC_THINKING_MIN_BUDGET,
-      ")."
-    )
-  }
-  config@thinking_budget_tokens
-}
-
-
 # %% .anthropic_system_from_state() ----
 #' Extract Top-Level System Prompt From State
 #'
@@ -526,7 +497,6 @@ anthropic_list_models <- function(
 ) {
   config <- AnthropicConfig(
     model_name = "models",
-    temperature = TEMPERATURE_DEFAULT,
     base_url = base_url,
     api_key = api_key,
     api_key_env = api_key_env,
