@@ -16,7 +16,8 @@
 #' <https://www.rtemis.org>
 #'
 #' @name rtemis.llm-package
-#' @import rtemis.core data.table S7
+#' @import rtemis.core S7
+#' @import data.table, except = ":="
 #' @importFrom utils sessionInfo
 #' @importFrom stats setNames
 #' @importFrom utils View
