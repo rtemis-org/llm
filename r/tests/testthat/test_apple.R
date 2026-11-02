@@ -323,3 +323,56 @@ test_that("Apple agent completes a tool round trip against the bridge", {
   expect_true(any(grepl("ToolMessage", roles, fixed = TRUE)))
   expect_true(nzchar(messages[[length(messages)]]@content))
 })
+
+
+# %% Refusals in a batch ----
+test_that("llmapply and map record each refusal as a failed element", {
+  # The bridge refuses with HTTP 200, `content: null`, and `message.refusal`
+  # (spec: rtemis-afm/wire#response).
+  httr2::local_mocked_responses(function(req) {
+    prompt <- req[["body"]][["data"]][["messages"]][[2L]][["content"]]
+    message <- if (grepl("refuse", prompt, fixed = TRUE)) {
+      list(
+        role = "assistant",
+        content = NULL,
+        refusal = "The model refused to answer."
+      )
+    } else {
+      list(role = "assistant", content = "{\"answer\":\"yes\"}")
+    }
+    httr2::response(
+      status_code = 200,
+      headers = list(`content-type` = "application/json"),
+      body = charToRaw(jsonlite::toJSON(
+        list(
+          id = "chatcmpl_test",
+          model = "afm",
+          choices = list(list(
+            index = 0,
+            message = message,
+            finish_reason = "stop"
+          ))
+        ),
+        auto_unbox = TRUE,
+        null = "null"
+      ))
+    )
+  })
+  llm <- create_Apple(
+    system_prompt = "Extract.",
+    output_schema = schema("answer", field("answer", "Yes or no.")),
+    temperature = 0,
+    validate_model = FALSE
+  )
+  x <- c("note one", "refuse note two", "note three", "refuse note four")
+  refused <- c(FALSE, TRUE, FALSE, TRUE)
+  # llmapply() leaves NA_character_ in a failed slot; map() leaves NULL.
+  out <- suppressWarnings(llmapply(x, llm, verbosity = 0L))
+  expect_identical(is.na(out), refused)
+  expect_identical(attr(out, "errors")[["index"]], c(2L, 4L))
+  expect_match(attr(out, "errors")[["message"]], "The model refused to answer.")
+  out <- suppressWarnings(map(x, llm, verbosity = 0L))
+  expect_identical(vapply(out, is.null, logical(1L)), refused)
+  expect_identical(attr(out, "errors")[["index"]], c(2L, 4L))
+  expect_match(attr(out, "errors")[["message"]], "The model refused to answer.")
+})

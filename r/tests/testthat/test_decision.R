@@ -498,7 +498,7 @@ test_that("config_OllamaDecision tells a missing model from a language model", {
   local_mocked_bindings(.ollama_capabilities = function(model_name, base_url) {
     "decision"
   })
-  expect_identical(config_OllamaDecision("clef-flash")@backend, "ollama")
+  expect_identical(config_OllamaDecision("clef-flash:9b")@backend, "ollama")
 })
 
 
@@ -545,7 +545,7 @@ test_that("OpenRouter without a key aborts before the request", {
 test_that("clef-flash fills a triage schema", {
   skip_if_no_decision_model()
   dm <- create_DecisionModel(
-    config_OllamaDecision("clef-flash"),
+    config_OllamaDecision("clef-flash:9b"),
     output_schema = triage_schema()
   )
   m <- generate(
@@ -564,7 +564,7 @@ test_that("clef-flash fills a triage schema", {
 
 test_that("clef-flash judges an image sent with the state", {
   skip_if_no_decision_model()
-  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
   d <- decide(
     dm,
     "Look at the image.",

@@ -8,7 +8,8 @@ config_Ollama(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
   base_url = OLLAMA_URL_DEFAULT,
-  think = NULL
+  think = NULL,
+  schema_in_prompt = TRUE
 )
 }
 \arguments{
@@ -22,6 +23,13 @@ config_Ollama(
 for this config. Logical values target models like deepseek or qwen3; character values target
 gpt-oss. When \code{NULL}, the field is omitted from requests and Ollama uses the model default. Can
 be overridden per call.}
+
+\item{schema_in_prompt}{Logical: Whether to append the output schema to the system prompt of
+each request that has one. Ollama uses the schema, sent as \code{format}, only to constrain
+decoding, so the model sees field descriptions only through the prompt. The system prompt is
+followed by a blank line, \verb{Respond with JSON that conforms to this JSON Schema:}, and the
+schema as JSON. Set to \code{FALSE} when the system prompt already states the schema and the field
+instructions.}
 }
 \value{
 OllamaConfig object

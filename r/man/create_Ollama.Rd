@@ -11,7 +11,8 @@ create_Ollama(
   output_schema = NULL,
   name = NULL,
   base_url = OLLAMA_URL_DEFAULT,
-  think = NULL
+  think = NULL,
+  schema_in_prompt = TRUE
 )
 }
 \arguments{
@@ -22,9 +23,9 @@ create_Ollama(
 \item{temperature}{Numeric: The temperature for the model.}
 
 \item{output_schema}{Optional Schema: An optional output schema created using \link{schema}.
-Ollama constrains the response to the schema's structure, types, and \code{enum} values; the
-model does not see field descriptions. State the instructions for each field in
-\code{system_prompt}.}
+Ollama constrains the response to the schema's structure, types, and \code{enum} values. With
+\code{schema_in_prompt = TRUE}, the schema, including field descriptions, is also appended to the
+system prompt of each request.}
 
 \item{name}{Character or NULL: An optional name for the Ollama object.}
 
@@ -33,6 +34,13 @@ model does not see field descriptions. State the instructions for each field in
 \item{think}{Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
 Logical values target models like deepseek or qwen3; character values target gpt-oss.
 When \code{NULL}, the field is omitted from requests and Ollama uses the model default.}
+
+\item{schema_in_prompt}{Logical: Whether to append the output schema to the system prompt of
+each request that has one. Ollama uses the schema, sent as \code{format}, only to constrain
+decoding, so the model sees field descriptions only through the prompt. The system prompt is
+followed by a blank line, \verb{Respond with JSON that conforms to this JSON Schema:}, and the
+schema as JSON. Set to \code{FALSE} when the system prompt already states the schema and the field
+instructions.}
 }
 \value{
 Ollama LLM object

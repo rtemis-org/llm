@@ -48,7 +48,7 @@ mock_decision_model <- function(output_schema = NULL, context = NULL) {
 }
 
 skip_if_no_decision_model <- function(
-  model_name = "clef-flash",
+  model_name = "clef-flash:9b",
   base_url = ollama_test_url
 ) {
   skip_if_ollama_unavailable(base_url = base_url)
