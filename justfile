@@ -49,6 +49,10 @@ urls:
     cd {{r_dir}} && {{rscript}} -e "urlchecker::url_check()"
     @just _msg "Done"
 
+# Measure local test coverage, including tests skipped on CRAN
+coverage-local output="coverage/local":
+    {{rscript}} r/tools/coverage-local.R {{quote(output)}}
+
 # Build the source tarball
 build: clean
     @just _msg "─── Building {{pkg}} package... ───"

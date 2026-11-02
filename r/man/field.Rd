@@ -16,7 +16,10 @@ field(
 \arguments{
 \item{name}{Optional Character: The name of the field.}
 
-\item{description}{Optional Character: A brief description of the field.}
+\item{description}{Optional Character: A brief description of the field. Ollama uses an
+output schema only to constrain decoding and does not show the description to the model, so
+instructions a model must follow belong in the system prompt as well. Apple Foundation
+Models uses the description to guide generation.}
 
 \item{type}{Character \{"string", "number", "integer", "boolean", "array"\}: The field
 type. A field cannot be an object, because it carries no properties; for

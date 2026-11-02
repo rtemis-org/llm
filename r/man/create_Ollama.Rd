@@ -21,7 +21,10 @@ create_Ollama(
 
 \item{temperature}{Numeric: The temperature for the model.}
 
-\item{output_schema}{Optional Schema: An optional output schema created using \link{schema}.}
+\item{output_schema}{Optional Schema: An optional output schema created using \link{schema}.
+Ollama constrains the response to the schema's structure, types, and \code{enum} values; the
+model does not see field descriptions. State the instructions for each field in
+\code{system_prompt}.}
 
 \item{name}{Character or NULL: An optional name for the Ollama object.}
 

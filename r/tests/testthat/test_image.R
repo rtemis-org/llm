@@ -40,7 +40,7 @@ openai_test_config <- function() {
 
 anthropic_test_config <- function() {
   config_Anthropic(
-    model_name = "claude-test",
+    model_name = "claude-opus-5-5",
     api_key = "test-key",
     validate_model = FALSE
   )

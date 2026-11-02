@@ -35,7 +35,10 @@ Ignored when \code{model_or_llm} is an \code{LLM} object.}
 
 \item{output_schema}{Optional Schema: Output schema to enforce, created with \link{schema}. When
 \code{model_or_llm} is a string, this is baked into the built \code{LLM}. When \code{model_or_llm} is a
-pre-built \code{LLM}, supplying this here is a conflict and will error.}
+pre-built \code{LLM}, supplying this here is a conflict and will error. On the Ollama backend
+the schema constrains the structure, types, and \code{enum} values of each response, and the
+model does not see field descriptions: state the instructions for each field in
+\code{system_prompt}.}
 
 \item{verbosity}{Integer [0, Inf): Verbosity level. The per-call verbosity is \code{verbosity - 1L}.}
 

@@ -8,3 +8,4 @@
 ^justfile$
 ^revdep$
 ^cran-comments\.md$
+^tools/coverage-local[.]R$
