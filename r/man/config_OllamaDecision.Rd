@@ -13,7 +13,7 @@ config_OllamaDecision(
 }
 \arguments{
 \item{model_name}{Character: The decision model's name on the Ollama server, for example
-\code{"clef-flash"}.}
+\code{"clef-flash:9b"}.}
 
 \item{base_url}{Character: Base URL of the Ollama server.}
 
@@ -32,7 +32,7 @@ text. Ollama serves the ones it lists with the \code{decision} capability throug
 \examples{
 # Requires a running Ollama server with a decision model
 \dontrun{
-  config_OllamaDecision("clef-flash")
+  config_OllamaDecision("clef-flash:9b")
 }
 }
 \author{

@@ -1086,7 +1086,7 @@ agentapply <- function(
 #'     field("team", "Team to route to", enum = c("billing", "engineering", "sales")),
 #'     field("urgent", "Whether it needs an answer today", type = "boolean")
 #'   )
-#'   res <- dmapply(tickets, "clef-flash", output_schema = triage)
+#'   res <- dmapply(tickets, "clef-flash:9b", output_schema = triage)
 #'   attr(res, "elapsed")
 #' }
 dmapply <- function(

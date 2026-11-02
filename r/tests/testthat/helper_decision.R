@@ -5,7 +5,7 @@
 # A `/v1/systemone` server with scripted answers, keyed by question. A choice
 # picks `script[[key]]` (a label) or its first option; a noul answers
 # `script[[key]]` (a number) or 0.9. Every request body is kept in `calls`.
-mock_systemone <- function(script = list(), model = "clef-flash", env = NULL) {
+mock_systemone <- function(script = list(), model = "clef-flash:9b", env = NULL) {
   function(req) {
     body <- req[["body"]][["data"]]
     if (!is.null(env)) {
@@ -41,7 +41,7 @@ mock_systemone <- function(script = list(), model = "clef-flash", env = NULL) {
 
 mock_decision_model <- function(output_schema = NULL, context = NULL) {
   create_DecisionModel(
-    config_OllamaDecision("clef-flash", validate_model = FALSE),
+    config_OllamaDecision("clef-flash:9b", validate_model = FALSE),
     context = context,
     output_schema = output_schema
   )

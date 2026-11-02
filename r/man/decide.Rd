@@ -72,7 +72,7 @@ labeled passages.
 \examples{
 # Requires a running Ollama server with a decision model
 \dontrun{
-  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
   decide(
     dm,
     "The app crashes whenever I open the billing page. Please fix it today.",
