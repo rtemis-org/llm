@@ -692,3 +692,116 @@ test_that("a repeated role does not collapse two messages into one", {
     c("first", "second")
   )
 })
+
+
+# %% parse_chat_response.OpenAIConfig refusal ----
+# A chat completion body as an OpenAI-compatible server returns it.
+openai_completion <- function(message, model = "afm", finish_reason = "stop") {
+  jsonlite::toJSON(
+    list(
+      id = "chatcmpl_test",
+      model = model,
+      choices = list(list(
+        index = 0,
+        message = message,
+        finish_reason = finish_reason
+      ))
+    ),
+    auto_unbox = TRUE,
+    null = "null"
+  )
+}
+
+test_that("an OpenAI-compatible refusal is a failed call carrying the refusal", {
+  config <- config_Apple(validate_model = FALSE)
+  resp <- httr2::response(
+    status_code = 200,
+    headers = list(
+      `content-type` = "application/json",
+      `x-request-id` = "req_refused"
+    ),
+    body = charToRaw(openai_completion(list(
+      role = "assistant",
+      content = NULL,
+      refusal = "The model refused to answer."
+    )))
+  )
+  cnd <- expect_error(
+    parse_chat_response(config, resp),
+    "The model refused to answer.",
+    class = "rtemis_llm_refusal"
+  )
+  expect_identical(cnd[["provider"]], "Apple Foundation Models")
+  expect_identical(cnd[["model"]], "afm")
+  expect_identical(cnd[["refusal"]], "The model refused to answer.")
+  expect_identical(cnd[["finish_reason"]], "stop")
+  expect_identical(cnd[["request_id"]], "req_refused")
+  expect_identical(cnd[["status_code"]], 200L)
+})
+
+test_that("a null or empty refusal parses as an answer", {
+  config <- config_OpenAI(
+    model_name = "local-model",
+    base_url = "http://localhost:1234/v1",
+    validate_model = FALSE
+  )
+  for (refusal in list(NULL, "")) {
+    resp <- httr2::response(
+      status_code = 200,
+      headers = list(`content-type` = "application/json"),
+      body = charToRaw(openai_completion(
+        list(role = "assistant", content = "Paris", refusal = refusal),
+        model = "local-model"
+      ))
+    )
+    parsed <- parse_chat_response(config, resp)
+    expect_identical(parsed[["content"]], "Paris")
+    expect_named(
+      parsed,
+      c("content", "reasoning", "tool_calls", "metadata")
+    )
+  }
+})
+
+
+# %% perform_chat_request.OpenAIConfig HTTP errors ----
+test_that("an error body with code refusal aborts as a refusal", {
+  config <- config_Apple(validate_model = FALSE)
+  httr2::local_mocked_responses(function(req) {
+    httr2::response(
+      status_code = 400,
+      headers = list(`content-type` = "application/json"),
+      body = charToRaw(
+        '{"error": {"message": "The model refused to answer.", "type": "content_filter", "code": "refusal"}}'
+      )
+    )
+  })
+  cnd <- expect_error(
+    perform_chat_request(config, list(model = "afm"), verbosity = 0L),
+    "HTTP status 400",
+    class = "rtemis_llm_refusal"
+  )
+  expect_identical(cnd[["provider"]], "Apple Foundation Models")
+  expect_identical(cnd[["model"]], "afm")
+  expect_identical(cnd[["refusal"]], "The model refused to answer.")
+  expect_identical(cnd[["status_code"]], 400L)
+})
+
+test_that("other OpenAI-compatible HTTP errors carry the server's message", {
+  config <- config_Apple(validate_model = FALSE)
+  httr2::local_mocked_responses(function(req) {
+    httr2::response(
+      status_code = 400,
+      headers = list(`content-type` = "application/json"),
+      body = charToRaw(
+        '{"error": {"message": "Prompt does not fit.", "type": "invalid_request_error", "code": "context_length_exceeded"}}'
+      )
+    )
+  })
+  cnd <- expect_error(
+    perform_chat_request(config, list(model = "afm"), verbosity = 0L),
+    "Prompt does not fit.",
+    class = "rtemis_llm_api_error"
+  )
+  expect_identical(cnd[["status_code"]], 400L)
+})

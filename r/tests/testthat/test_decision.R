@@ -206,7 +206,7 @@ test_that("decide sends the state after the context, and no images key without i
     env[["calls"]][[1L]][["req"]][["url"]],
     "http://localhost:11434/v1/systemone"
   )
-  expect_identical(body[["model"]], "clef-flash")
+  expect_identical(body[["model"]], "clef-flash:9b")
   expect_identical(
     body[["state"]],
     "You route support tickets.\n\nRefund my invoice."
@@ -258,7 +258,7 @@ test_that("more than 64 questions are sent as several calls", {
 test_that("a response with no model gets the requested one", {
   httr2::local_mocked_responses(mock_systemone(model = NULL))
   d <- decide(mock_decision_model(), "x", list(a = noul("A?")), verbosity = 0L)
-  expect_identical(d@metadata[["models"]], "clef-flash")
+  expect_identical(d@metadata[["models"]], "clef-flash:9b")
 })
 
 
@@ -490,7 +490,7 @@ test_that("config_OllamaDecision tells a missing model from a language model", {
   local_mocked_bindings(.ollama_capabilities = function(model_name, base_url) {
     NULL
   })
-  expect_error(config_OllamaDecision("nope"), "ollama pull clef-flash")
+  expect_error(config_OllamaDecision("nope"), "ollama pull clef-flash:9b")
   local_mocked_bindings(.ollama_capabilities = function(model_name, base_url) {
     c("completion", "tools")
   })
@@ -498,7 +498,7 @@ test_that("config_OllamaDecision tells a missing model from a language model", {
   local_mocked_bindings(.ollama_capabilities = function(model_name, base_url) {
     "decision"
   })
-  expect_identical(config_OllamaDecision("clef-flash")@backend, "ollama")
+  expect_identical(config_OllamaDecision("clef-flash:9b")@backend, "ollama")
 })
 
 
@@ -542,10 +542,10 @@ test_that("OpenRouter without a key aborts before the request", {
 
 
 # %% Live ----
-test_that("clef-flash fills a triage schema", {
+test_that("clef-flash:9b fills a triage schema", {
   skip_if_no_decision_model()
   dm <- create_DecisionModel(
-    config_OllamaDecision("clef-flash"),
+    config_OllamaDecision("clef-flash:9b"),
     output_schema = triage_schema()
   )
   m <- generate(
@@ -562,9 +562,9 @@ test_that("clef-flash fills a triage schema", {
 })
 
 
-test_that("clef-flash judges an image sent with the state", {
+test_that("clef-flash:9b judges an image sent with the state", {
   skip_if_no_decision_model()
-  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
   d <- decide(
     dm,
     "Look at the image.",

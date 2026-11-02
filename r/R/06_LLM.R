@@ -658,6 +658,12 @@ method(generate, Anthropic) <- function(
 #' for this config. Logical values target models like deepseek or qwen3; character values target
 #' gpt-oss. When `NULL`, the field is omitted from requests and Ollama uses the model default. Can
 #' be overridden per call.
+#' @param schema_in_prompt Logical: Whether to append the output schema to the system prompt of
+#' each request that has one. Ollama uses the schema, sent as `format`, only to constrain
+#' decoding, so the model sees field descriptions only through the prompt. The system prompt is
+#' followed by a blank line, `Respond with JSON that conforms to this JSON Schema:`, and the
+#' schema as JSON. Set to `FALSE` when the system prompt already states the schema and the field
+#' instructions.
 #'
 #' @return OllamaConfig object
 #'
@@ -676,13 +682,15 @@ config_Ollama <- function(
   model_name,
   temperature = TEMPERATURE_DEFAULT,
   base_url = OLLAMA_URL_DEFAULT,
-  think = NULL
+  think = NULL,
+  schema_in_prompt = TRUE
 ) {
   OllamaConfig(
     model_name = model_name,
     temperature = temperature,
     base_url = base_url,
-    think = think
+    think = think,
+    schema_in_prompt = schema_in_prompt
   )
 } # /config_Ollama
 
@@ -694,14 +702,15 @@ config_Ollama <- function(
 #' @param system_prompt Character: The system prompt to use.
 #' @param temperature Numeric: The temperature for the model.
 #' @param output_schema Optional Schema: An optional output schema created using [schema].
-#'   Ollama constrains the response to the schema's structure, types, and `enum` values; the
-#'   model does not see field descriptions. State the instructions for each field in
-#'   `system_prompt`.
+#'   Ollama constrains the response to the schema's structure, types, and `enum` values. With
+#'   `schema_in_prompt = TRUE`, the schema, including field descriptions, is also appended to the
+#'   system prompt of each request.
 #' @param name Character or NULL: An optional name for the Ollama object.
 #' @param base_url Character: Base URL of Ollama server.
 #' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.
 #' Logical values target models like deepseek or qwen3; character values target gpt-oss.
 #' When `NULL`, the field is omitted from requests and Ollama uses the model default.
+#' @inheritParams config_Ollama
 #'
 #' @return Ollama LLM object
 #'
@@ -725,7 +734,8 @@ create_Ollama <- function(
   output_schema = NULL,
   name = NULL,
   base_url = OLLAMA_URL_DEFAULT,
-  think = NULL
+  think = NULL,
+  schema_in_prompt = TRUE
 ) {
   ollama_check_model(model_name)
   check_character_scalar(system_prompt, "system_prompt")
@@ -738,7 +748,8 @@ create_Ollama <- function(
       model_name = model_name,
       temperature = temperature,
       base_url = base_url,
-      think = think
+      think = think,
+      schema_in_prompt = schema_in_prompt
     ),
     system_prompt = system_prompt,
     output_schema = output_schema
@@ -858,6 +869,11 @@ config_OpenAI <- function(
 #' @details With `zero_data_retention = TRUE`, each OpenRouter request includes
 #' `provider.zdr = true`. OpenRouter will then consider only endpoints with a ZDR policy. This
 #' option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
+#'
+#' A response whose message carries a non-empty `refusal`, or an error response with code
+#' `"refusal"`, raises an error of class `rtemis_llm_refusal`, whose `refusal`, `finish_reason`,
+#' and `status_code` fields carry the server's refusal text, the choice's `finish_reason`, and the
+#' HTTP status.
 #'
 #' @author EDG
 #' @export
@@ -993,6 +1009,11 @@ config_Apple <- function(
 #' @param name Optional character: Name for the LLM object.
 #'
 #' @return Apple LLM object
+#'
+#' @details The on-device model declines some requests. The bridge returns each refusal as a
+#' message with a `refusal` field, which raises an error of class `rtemis_llm_refusal`; under
+#' `on_error = "na"`, [llmapply] and [map] leave `NA` in that element's slot and record it in the
+#' `errors` attribute.
 #'
 #' @author EDG
 #' @export

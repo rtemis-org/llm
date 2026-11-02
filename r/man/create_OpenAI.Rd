@@ -71,6 +71,11 @@ Create an OpenAI-compatible LLM Object
 With \code{zero_data_retention = TRUE}, each OpenRouter request includes
 \code{provider.zdr = true}. OpenRouter will then consider only endpoints with a ZDR policy. This
 option does not activate account-level ZDR at OpenAI, Anthropic, or other providers.
+
+A response whose message carries a non-empty \code{refusal}, or an error response with code
+\code{"refusal"}, raises an error of class \code{rtemis_llm_refusal}, whose \code{refusal}, \code{finish_reason},
+and \code{status_code} fields carry the server's refusal text, the choice's \code{finish_reason}, and the
+HTTP status.
 }
 \examples{
 llm <- create_OpenAI(

@@ -83,7 +83,7 @@ labeled passages.
 \examples{
 # Requires a running Ollama server with a decision model
 \dontrun{
-  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
   d <- decide(dm, "Please refund my last invoice.", list(refund = noul("Is this a refund?")))
   probabilities(d)
 }

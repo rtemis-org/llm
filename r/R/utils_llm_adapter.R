@@ -95,6 +95,48 @@ method(build_response_format, OllamaConfig) <- function(
 }
 
 
+# %% .ollama_schema_in_prompt() ----
+#' Append the Output Schema to the Ollama System Prompt
+#'
+#' Ollama compiles `format` into a decoding constraint and does not show it to the model, so
+#' field descriptions reach the model only through the prompt. Ollama's structured outputs
+#' documentation recommends passing the JSON Schema as a string in the prompt as well. The schema
+#' is serialized with the settings of `httr2::req_body_json()`, so the text is the `format` sent
+#' in the same request. The text is appended to the first system message, or sent as a system
+#' message when the conversation has none. Agent memory is left unchanged.
+#'
+#' @param messages List: Chat messages from `build_chat_messages()`.
+#' @param format List: JSON Schema sent as the request's `format`.
+#'
+#' @return List of message lists.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.ollama_schema_in_prompt <- function(messages, format) {
+  instruction <- paste0(
+    "Respond with JSON that conforms to this JSON Schema:\n",
+    jsonlite::toJSON(
+      format,
+      auto_unbox = TRUE,
+      digits = 22,
+      null = "null"
+    )
+  )
+  roles <- vapply(messages, function(m) m[["role"]] %||% "", character(1L))
+  i <- match("system", roles)
+  if (is.na(i)) {
+    return(c(list(list(role = "system", content = instruction)), messages))
+  }
+  messages[[i]][["content"]] <- paste0(
+    messages[[i]][["content"]],
+    "\n\n",
+    instruction
+  )
+  messages
+}
+
+
 # %% build_response_format.OpenAIConfig ----
 #' Build OpenAI-compatible Response Format
 #'
@@ -344,9 +386,14 @@ method(build_chat_request_body, OllamaConfig) <- function(
   if (!is.null(num_ctx)) {
     options[["num_ctx"]] <- as.integer(num_ctx)
   }
+  messages <- build_chat_messages(x, state)
+  format <- build_response_format(x, output_schema)
+  if (!is.null(format) && x@schema_in_prompt) {
+    messages <- .ollama_schema_in_prompt(messages, format)
+  }
   request_body <- list(
     model = x@model_name,
-    messages = build_chat_messages(x, state),
+    messages = messages,
     stream = FALSE,
     options = options
   )
@@ -365,8 +412,8 @@ method(build_chat_request_body, OllamaConfig) <- function(
   if (!is.null(effective_think)) {
     request_body[["think"]] <- effective_think
   }
-  if (!is.null(output_schema)) {
-    request_body[["format"]] <- build_response_format(x, output_schema)
+  if (!is.null(format)) {
+    request_body[["format"]] <- format
   }
   if (!is.null(tools) && use_tools) {
     request_body[["tools"]] <- lapply(tools, as_list)
@@ -525,9 +572,10 @@ method(perform_chat_request, OpenAIConfig) <- function(
     httr2::req_body_json(request_body) |>
     httr2::req_user_agent("rtemis.llm-r Agent (www.rtemis.org)") |>
     httr2::req_timeout(x@timeout) |>
-    .add_openai_headers(x)
+    .add_openai_headers(x) |>
+    httr2::req_error(is_error = function(resp) FALSE)
   resp <- .req_perform_status(req, verbosity = verbosity)
-  .check_http_response(resp, .openai_provider_name(x))
+  .check_http_response(resp, .openai_provider_name(x), model = x@model_name)
   resp
 }
 
@@ -553,7 +601,6 @@ method(parse_chat_response, OllamaConfig) <- function(x, resp) {
     content = message[["content"]] %||% "",
     reasoning = if (!is.null(reasoning) && nzchar(reasoning)) reasoning,
     tool_calls = message[["tool_calls"]],
-    refusal = NULL,
     metadata = res[setdiff(names(res), "message")]
   )
 }
@@ -585,6 +632,17 @@ method(parse_chat_response, OpenAIConfig) <- function(x, resp) {
   metadata <- res[setdiff(names(res), "choices")]
   metadata[["finish_reason"]] <- choice[["finish_reason"]]
   metadata[["request_id"]] <- httr2::resp_header(resp, "x-request-id")
+  refusal <- message[["refusal"]]
+  if (is.character(refusal) && length(refusal) == 1L && nzchar(refusal)) {
+    .abort_openai_refusal(
+      provider = .openai_provider_name(x),
+      model = res[["model"]] %||% x@model_name,
+      refusal = refusal,
+      finish_reason = choice[["finish_reason"]],
+      request_id = metadata[["request_id"]],
+      status_code = httr2::resp_status(resp)
+    )
+  }
   # Ollama returns its token log probabilities as a flat top-level list, which
   # the Ollama parser sweeps into metadata for free; OpenAI nests the same
   # per-token shape under `choices[[1]]$logprobs$content`. Unwrap it here so
@@ -599,7 +657,6 @@ method(parse_chat_response, OpenAIConfig) <- function(x, resp) {
     content = content,
     reasoning = reasoning,
     tool_calls = message[["tool_calls"]],
-    refusal = message[["refusal"]],
     metadata = metadata
   )
 }

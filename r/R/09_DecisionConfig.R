@@ -371,7 +371,7 @@ method(.decision_auth, OpenRouterDecisionConfig) <- function(x, req) {
       "' is not available on the Ollama server at ",
       base_url,
       ".\n",
-      "Pull it (for example `ollama pull clef-flash`), or list the decision ",
+      "Pull it (for example `ollama pull clef-flash:9b`), or list the decision ",
       "models the server has with ollama_list_decision_models()."
     )
   }
@@ -396,7 +396,7 @@ method(.decision_auth, OpenRouterDecisionConfig) <- function(x, req) {
 #' text. Ollama serves the ones it lists with the `decision` capability through `/v1/systemone`.
 #'
 #' @param model_name Character: The decision model's name on the Ollama server, for example
-#'   `"clef-flash"`.
+#'   `"clef-flash:9b"`.
 #' @param base_url Character: Base URL of the Ollama server.
 #' @param timeout Numeric (0, Inf): Request timeout in seconds.
 #' @param validate_model Logical: If `TRUE`, check that the server has the model and that it is a
@@ -410,7 +410,7 @@ method(.decision_auth, OpenRouterDecisionConfig) <- function(x, req) {
 #' @examples
 #' # Requires a running Ollama server with a decision model
 #' \dontrun{
-#'   config_OllamaDecision("clef-flash")
+#'   config_OllamaDecision("clef-flash:9b")
 #' }
 config_OllamaDecision <- function(
   model_name,

@@ -107,15 +107,20 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
 # %% .check_http_response() ----
 #' Check HTTP Response
 #'
+#' An error body with `error.code` `"refusal"`, which the rtemis-afm bridge returns for a
+#' refusal outside the normal response path, aborts as a refusal, with the class and condition
+#' data of a refusal in a `200` response.
+#'
 #' @param resp httr2_response: Response object.
 #' @param provider Character: Provider name.
+#' @param model Optional character: Model named in the request.
 #'
 #' @return NULL, invisibly.
 #'
 #' @author EDG
 #' @keywords internal
 #' @noRd
-.check_http_response <- function(resp, provider) {
+.check_http_response <- function(resp, provider, model = NULL) {
   if (!httr2::resp_is_error(resp)) {
     return(invisible(NULL))
   }
@@ -134,6 +139,15 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
   } else if (!is.null(body[["message"]])) {
     api_message <- body[["message"]]
   }
+  if (is.list(err) && identical(err[["code"]], "refusal")) {
+    .abort_openai_refusal(
+      provider = provider,
+      model = model,
+      refusal = api_message,
+      request_id = request_id,
+      status_code = status
+    )
+  }
   abort(
     provider,
     " API request failed with HTTP status ",
@@ -148,6 +162,57 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
       provider = provider,
       request_id = request_id,
       api_message = api_message
+    )
+  )
+}
+
+
+# %% .abort_openai_refusal() ----
+#' Abort on a Refused OpenAI-compatible Request
+#'
+#' A response whose message carries a non-empty `refusal`, or an error body with `error.code`
+#' `"refusal"`, is a failed call of class `rtemis_llm_refusal`, as an Anthropic refusal is.
+#' `llmapply()` and `map()` under `on_error = "na"` record it in the `errors` attribute.
+#'
+#' @param provider Character: Provider name.
+#' @param model Optional character: Model that produced the response.
+#' @param refusal Optional character: Refusal text returned by the server.
+#' @param finish_reason Optional character: `finish_reason` of the choice.
+#' @param request_id Optional character: Request id.
+#' @param status_code Integer: HTTP status of the response.
+#'
+#' @return Does not return.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.abort_openai_refusal <- function(
+  provider,
+  model,
+  refusal,
+  finish_reason = NULL,
+  request_id = NULL,
+  status_code = 200L
+) {
+  abort(
+    if (!is.null(model)) paste0("Model '", model, "' (", provider, ")") else provider,
+    " declined the request (",
+    if (status_code == 200L) {
+      "`refusal` in the response message"
+    } else {
+      paste0("HTTP status ", status_code, ", error code \"refusal\"")
+    },
+    ").",
+    if (!is.null(refusal)) paste0("\n", refusal),
+    if (!is.null(request_id)) paste0("\nRequest id: ", request_id, "."),
+    class = "rtemis_llm_refusal",
+    data = list(
+      provider = provider,
+      model = model,
+      refusal = refusal,
+      finish_reason = finish_reason,
+      request_id = request_id,
+      status_code = status_code
     )
   )
 }

@@ -48,6 +48,12 @@ Apple LLM object
 A stateless LLM backed by Apple's on-device Foundation Model through the \code{rtemis-afm}
 bridge; see \link{config_Apple} for what the bridge is and how to start it.
 }
+\details{
+The on-device model declines some requests. The bridge returns each refusal as a
+message with a \code{refusal} field, which raises an error of class \code{rtemis_llm_refusal}; under
+\code{on_error = "na"}, \link{llmapply} and \link{map} leave \code{NA} in that element's slot and record it in the
+\code{errors} attribute.
+}
 \examples{
 # Requires a running rtemis-afm bridge
 \dontrun{

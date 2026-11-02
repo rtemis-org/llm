@@ -529,7 +529,7 @@ noul <- function(instructions) {
 #'     field("team", "Team to route to", enum = c("billing", "engineering", "sales")),
 #'     field("urgent", "Whether it needs an answer today", type = "boolean")
 #'   )
-#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash"), output_schema = triage)
+#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"), output_schema = triage)
 #'   generate(dm, "The app crashes whenever I open the billing page.")
 #' }
 create_DecisionModel <- function(
@@ -739,7 +739,7 @@ as_questions <- function(x) {
 #' @examples
 #' # Requires a running Ollama server with a decision model
 #' \dontrun{
-#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
 #'   decide(
 #'     dm,
 #'     "The app crashes whenever I open the billing page. Please fix it today.",
@@ -938,7 +938,7 @@ method(generate, DecisionModel) <- function(
 #' @examples
 #' # Requires a running Ollama server with a decision model
 #' \dontrun{
-#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+#'   dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
 #'   d <- decide(dm, "Please refund my last invoice.", list(refund = noul("Is this a refund?")))
 #'   probabilities(d)
 #' }

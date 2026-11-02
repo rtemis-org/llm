@@ -237,3 +237,134 @@ test_that("Ollama response parsing carries logprobs onto metadata", {
   parsed <- parse_chat_response(config, resp)
   expect_equal(parsed[["metadata"]][["logprobs"]][[1L]][["token"]], "Yes")
 })
+
+
+# %% build_chat_request_body.OllamaConfig schema_in_prompt ----
+# spec: llm/ollama-schema-instructions#request
+ollama_schema_state <- function(system_prompt = "Extract.") {
+  state <- InProcessAgentMemory()
+  if (!is.null(system_prompt)) {
+    append_message(
+      state,
+      SystemMessage(content = system_prompt),
+      echo = FALSE,
+      verbosity = 0L
+    )
+  }
+  append_message(
+    state,
+    InputMessage(content = "The sky is blue."),
+    echo = FALSE,
+    verbosity = 0L
+  )
+  state
+}
+
+ollama_fruit_schema <- function() {
+  schema(
+    "answer",
+    field("fruit", "Always the single word pineapple."),
+    field("number", "Always the number 42.", type = "integer")
+  )
+}
+
+test_that("Ollama appends the output schema to the system prompt", {
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  config <- config_Ollama(model_name = model_name)
+  expect_true(config@schema_in_prompt)
+  state <- ollama_schema_state()
+  body <- build_chat_request_body(
+    config,
+    state = state,
+    output_schema = ollama_fruit_schema()
+  )
+  # The prompt carries the same JSON Schema as `format`, serialized as httr2
+  # serializes the request body.
+  format_json <- jsonlite::toJSON(
+    body[["format"]],
+    auto_unbox = TRUE,
+    digits = 22,
+    null = "null"
+  )
+  expect_identical(
+    body[["messages"]][[1L]][["content"]],
+    paste0(
+      "Extract.\n\nRespond with JSON that conforms to this JSON Schema:\n",
+      format_json
+    )
+  )
+  expect_match(
+    body[["messages"]][[1L]][["content"]],
+    "Always the single word pineapple.",
+    fixed = TRUE
+  )
+  expect_identical(body[["messages"]][[2L]][["content"]], "The sky is blue.")
+  # Agent memory keeps the system prompt as written.
+  expect_identical(get_message_list(state)[[1L]][["content"]], "Extract.")
+})
+
+test_that("Ollama sends the schema as a system message when there is none", {
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  body <- build_chat_request_body(
+    config_Ollama(model_name = model_name),
+    state = ollama_schema_state(system_prompt = NULL),
+    output_schema = ollama_fruit_schema()
+  )
+  expect_length(body[["messages"]], 2L)
+  expect_identical(body[["messages"]][[1L]][["role"]], "system")
+  expect_match(
+    body[["messages"]][[1L]][["content"]],
+    "^Respond with JSON that conforms to this JSON Schema:\n"
+  )
+})
+
+test_that("schema_in_prompt = FALSE sends the system prompt as written", {
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  config <- config_Ollama(model_name = model_name, schema_in_prompt = FALSE)
+  body <- build_chat_request_body(
+    config,
+    state = ollama_schema_state(),
+    output_schema = ollama_fruit_schema()
+  )
+  expect_identical(body[["messages"]][[1L]][["content"]], "Extract.")
+  expect_false(is.null(body[["format"]]))
+})
+
+test_that("a request without an output schema leaves the system prompt as written", {
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  body <- build_chat_request_body(
+    config_Ollama(model_name = model_name),
+    state = ollama_schema_state()
+  )
+  expect_identical(body[["messages"]][[1L]][["content"]], "Extract.")
+  expect_null(body[["format"]])
+})
+
+test_that("create_Ollama forwards schema_in_prompt and repr shows it", {
+  testthat::local_mocked_bindings(
+    ollama_check_model = function(x) invisible(NULL),
+    .package = "rtemis.llm"
+  )
+  llm <- create_Ollama(model_name, schema_in_prompt = FALSE)
+  expect_false(llm@config@schema_in_prompt)
+  expect_false(as_list(llm@config)[["schema_in_prompt"]])
+  expect_match(
+    repr(llm@config, output_type = "plain"),
+    "schema_in_prompt",
+    fixed = TRUE
+  )
+  expect_error(config_Ollama(model_name, schema_in_prompt = NA))
+  expect_error(config_Ollama(model_name, schema_in_prompt = "yes"))
+})

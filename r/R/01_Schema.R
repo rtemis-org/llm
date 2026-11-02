@@ -427,10 +427,10 @@ method(to_json, Schema) <- function(x) {
 #' Define a schema field
 #'
 #' @param name Optional Character: The name of the field.
-#' @param description Optional Character: A brief description of the field. Ollama uses an
-#'   output schema only to constrain decoding and does not show the description to the model, so
-#'   instructions a model must follow belong in the system prompt as well. Apple Foundation
-#'   Models uses the description to guide generation.
+#' @param description Optional Character: A brief description of the field. Apple Foundation
+#'   Models uses the description to guide generation. Ollama uses an output schema only to
+#'   constrain decoding, so the model sees the description through the prompt: an Ollama LLM
+#'   appends the schema to the system prompt (see `schema_in_prompt` in [create_Ollama]).
 #' @param type Character \{"string", "number", "integer", "boolean", "array"\}: The field
 #'   type. A field cannot be an object, because it carries no properties; for
 #'   an array of objects, set `type = "array"` and `items = schema(...)`.

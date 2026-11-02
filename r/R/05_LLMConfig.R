@@ -117,13 +117,18 @@ OllamaConfig <- new_class(
     think = S7::new_property(
       class = S7::new_union(S7::class_logical, S7::class_character, NULL),
       default = NULL
+    ),
+    schema_in_prompt = prop_boolean(
+      default = TRUE,
+      description = "Append the output schema to the system prompt"
     )
   ),
   constructor = function(
     model_name,
     temperature,
     base_url,
-    think = NULL
+    think = NULL,
+    schema_in_prompt = TRUE
   ) {
     ollama_check_model(model_name)
     .check_ollama_think(think, "think")
@@ -134,7 +139,8 @@ OllamaConfig <- new_class(
         backend = "ollama",
         base_url = base_url
       ),
-      think = think
+      think = think,
+      schema_in_prompt = schema_in_prompt
     )
   }
 )
@@ -155,7 +161,8 @@ method(as_list, OllamaConfig) <- function(x) {
     temperature = x@temperature,
     backend = x@backend,
     base_url = x@base_url,
-    think = x@think
+    think = x@think,
+    schema_in_prompt = x@schema_in_prompt
   )
 } # /as_list.OllamaConfig
 

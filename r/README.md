@@ -154,7 +154,7 @@ checked before the first request.
 
 A decision model answers typed questions about a passage with a probability for
 every option, and writes no text. Ollama serves decision models such as
-`clef-flash` locally; OpenRouter serves others with an API key.
+`clef-flash:9b` locally; OpenRouter serves others with an API key.
 
 **Questions are its natural interface.** A `choice()` picks among 2 to 26
 options, each with what it means; a `noul()` asks how true a statement is. You
@@ -162,7 +162,7 @@ write the wording and the option meanings, and the model judges the passage
 against them. For example, to screen study abstracts:
 
 ```r
-dm <- create_DecisionModel(config_OllamaDecision("clef-flash"))
+dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"))
 qs <- list(
   design = choice(
     "Which study design does the abstract describe?",
@@ -204,7 +204,7 @@ study <- schema(
 is_decidable(study)  # TRUE; otherwise the open fields are listed
 as_questions(study)  # what the decision model is asked
 
-dm_study <- create_DecisionModel(config_OllamaDecision("clef-flash"), output_schema = study)
+dm_study <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"), output_schema = study)
 msg <- generate(dm_study, abstract)
 msg@content          # {"design":"cohort","significant":false}
 ```

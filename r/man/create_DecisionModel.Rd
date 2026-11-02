@@ -57,7 +57,7 @@ a schema is closed.
     field("team", "Team to route to", enum = c("billing", "engineering", "sales")),
     field("urgent", "Whether it needs an answer today", type = "boolean")
   )
-  dm <- create_DecisionModel(config_OllamaDecision("clef-flash"), output_schema = triage)
+  dm <- create_DecisionModel(config_OllamaDecision("clef-flash:9b"), output_schema = triage)
   generate(dm, "The app crashes whenever I open the billing page.")
 }
 }

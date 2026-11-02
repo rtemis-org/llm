@@ -8,6 +8,7 @@
 - Added `think`, `effort` and `fallbacks` to `config_Anthropic()` and `create_Anthropic()`. With `validate_model = TRUE`, the config reads the model's capabilities from the Models API.
 - `config_Anthropic()` and `create_Anthropic()` default to `temperature = NULL`, which leaves the temperature to the model.
 - An Anthropic response with `stop_reason` `"refusal"` raises an error of class `rtemis_llm_refusal`; a response that stops at `max_tokens` raises a warning.
+- An OpenAI-compatible response with a `refusal`, including a refusal from Apple Foundation Models, raises an error of class `rtemis_llm_refusal`; `llmapply()` and `map()` record each refusal in the `errors` attribute. HTTP errors from OpenAI-compatible chat requests have class `rtemis_llm_api_error` and include the server's error message.
 - License changed to BSD 3-clause.
 - Hashing now uses 'openssl', replacing the 'digest' dependency.
 - Added image input: `image_path` on `generate()` for LLMs and Agents, and on `llmapply()` and
@@ -19,7 +20,7 @@
   conversation in its memory.
 - Added decision models: `create_DecisionModel()` with `config_OllamaDecision()` or `config_OpenRouterDecision()` fills a closed schema through `generate()` and `dmapply()`, with a probability per field from `probabilities()`, and answers typed questions built with `choice()` and `noul()` through `decide()`. `as_questions()` converts a closed schema into those questions, `is_decidable()` reports whether a schema can be filled this way, and `ollama_list_decision_models()` lists the decision models on an Ollama server.
 - `llmapply()`, `agentapply()` and `dmapply()` results carry an `elapsed` attribute: the wall time of each call, in seconds.
-- The documentation of `field()`, `create_Ollama()`, and `llmapply()` states that Ollama uses an output schema only to constrain decoding: the model does not see field descriptions, which belong in the system prompt as well.
+- Ollama LLMs append the output schema, as JSON Schema text, to the system prompt of each request, as Ollama's documentation recommends, so the model sees field descriptions. `schema_in_prompt = FALSE` on `config_Ollama()` and `create_Ollama()` sends the system prompt as written.
 
 ## 0.8.7
 

@@ -90,7 +90,7 @@ it, so the speed of a decision model and an LLM can be compared item by item.
     field("team", "Team to route to", enum = c("billing", "engineering", "sales")),
     field("urgent", "Whether it needs an answer today", type = "boolean")
   )
-  res <- dmapply(tickets, "clef-flash", output_schema = triage)
+  res <- dmapply(tickets, "clef-flash:9b", output_schema = triage)
   attr(res, "elapsed")
 }
 }
