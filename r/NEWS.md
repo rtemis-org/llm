@@ -2,7 +2,7 @@
 
 ## 0.8.8
 
-- Updates for compatibility with S7 > 0.2.2.
+- Compatible with S7 releases after 0.2.2: the namespace imports data.table's `:=` and excludes S7's, which removes the import-replacement warning on load, and load, unload, and build hooks use `S7_on_load()`, `S7_on_unload()`, and `S7_on_build()` when S7 provides them, with `methods_register()` for earlier S7 releases. The minimum S7 version is unchanged.
 
 - Added `concurrency` to `llmapply()`, `dmapply()`, `agentapply()`, and `map()`, with independent agent state per input, bounded local workers, and `batch_elapsed` timing.
 
