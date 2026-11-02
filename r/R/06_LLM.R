@@ -694,6 +694,9 @@ config_Ollama <- function(
 #' @param system_prompt Character: The system prompt to use.
 #' @param temperature Numeric: The temperature for the model.
 #' @param output_schema Optional Schema: An optional output schema created using [schema].
+#'   Ollama constrains the response to the schema's structure, types, and `enum` values; the
+#'   model does not see field descriptions. State the instructions for each field in
+#'   `system_prompt`.
 #' @param name Character or NULL: An optional name for the Ollama object.
 #' @param base_url Character: Base URL of Ollama server.
 #' @param think Optional Logical or Character \{"low", "medium", "high"\}: Default thinking mode.

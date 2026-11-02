@@ -19,6 +19,7 @@
   conversation in its memory.
 - Added decision models: `create_DecisionModel()` with `config_OllamaDecision()` or `config_OpenRouterDecision()` fills a closed schema through `generate()` and `dmapply()`, with a probability per field from `probabilities()`, and answers typed questions built with `choice()` and `noul()` through `decide()`. `as_questions()` converts a closed schema into those questions, `is_decidable()` reports whether a schema can be filled this way, and `ollama_list_decision_models()` lists the decision models on an Ollama server.
 - `llmapply()`, `agentapply()` and `dmapply()` results carry an `elapsed` attribute: the wall time of each call, in seconds.
+- The documentation of `field()`, `create_Ollama()`, and `llmapply()` states that Ollama uses an output schema only to constrain decoding: the model does not see field descriptions, which belong in the system prompt as well.
 
 ## 0.8.7
 

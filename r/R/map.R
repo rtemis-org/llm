@@ -739,7 +739,10 @@ method(map, list(class_list, DecisionModel)) <- function(
 #'   Ignored when `model_or_llm` is an `LLM` object.
 #' @param output_schema Optional Schema: Output schema to enforce, created with [schema]. When
 #'   `model_or_llm` is a string, this is baked into the built `LLM`. When `model_or_llm` is a
-#'   pre-built `LLM`, supplying this here is a conflict and will error.
+#'   pre-built `LLM`, supplying this here is a conflict and will error. On the Ollama backend
+#'   the schema constrains the structure, types, and `enum` values of each response, and the
+#'   model does not see field descriptions: state the instructions for each field in
+#'   `system_prompt`.
 #' @param verbosity Integer \[0, Inf): Verbosity level. The per-call verbosity is `verbosity - 1L`.
 #' @inheritParams generate
 #' @param image_path Optional character or list: Local image files to send with the prompts. A
