@@ -3,13 +3,11 @@
 ## 0.8.8
 
 - Compatible with S7 releases after 0.2.2: the namespace imports data.table's `:=` and excludes S7's, which removes the import-replacement warning on load, and load, unload, and build hooks use `S7_on_load()`, `S7_on_unload()`, and `S7_on_build()` when S7 provides them, with `methods_register()` for earlier S7 releases. The minimum S7 version is unchanged.
-
 - Added `concurrency` to `llmapply()`, `dmapply()`, `agentapply()`, and `map()`, with independent agent state per input, bounded local workers, and `batch_elapsed` timing.
 - Anthropic requests follow the rules of the configured Claude model, including Claude Opus 5.5, Claude Sonnet 5.5 and Claude Haiku 5.5: sampling parameters, thinking, effort, structured output and tool choice are sent in the form the model accepts, and a value the model rejects stops before the request. Structured output uses `output_config.format` on models with structured outputs.
 - Added `think`, `effort` and `fallbacks` to `config_Anthropic()` and `create_Anthropic()`. With `validate_model = TRUE`, the config reads the model's capabilities from the Models API.
 - `config_Anthropic()` and `create_Anthropic()` default to `temperature = NULL`, which leaves the temperature to the model.
 - An Anthropic response with `stop_reason` `"refusal"` raises an error of class `rtemis_llm_refusal`; a response that stops at `max_tokens` raises a warning.
-
 - License changed to BSD 3-clause.
 - Hashing now uses 'openssl', replacing the 'digest' dependency.
 - Added image input: `image_path` on `generate()` for LLMs and Agents, and on `llmapply()` and
