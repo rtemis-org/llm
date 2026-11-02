@@ -39,7 +39,8 @@ APPLE_PROVIDER_NAME <- "Apple Foundation Models"
 #'
 #' @field model_name Character: The name of the LLM model to use.
 #' @field system_prompt Character: The system prompt to use.
-#' @field temperature Numeric: The temperature for the model.
+#' @field temperature Numeric or NULL: The temperature for the model. NULL is valid where a
+#'   subclass declares it nullable.
 #' @field backend Character: The backend to use.
 #'
 #' @author EDG
@@ -48,9 +49,12 @@ LLMConfig <- new_class(
   "LLMConfig",
   properties = list(
     model_name = prop_string(description = "Model name"),
+    # Nullable so that a subclass may declare NULL as "not sent"; each
+    # subclass narrows the type and range its backend accepts.
     temperature = prop_float(
       min = 0,
       max = 2,
+      nullable = TRUE,
       description = "Sampling temperature"
     ),
     backend = prop_string(description = "Backend name"),
@@ -105,6 +109,11 @@ OllamaConfig <- new_class(
   "OllamaConfig",
   parent = LLMConfig,
   properties = list(
+    temperature = prop_float(
+      min = 0,
+      max = 2,
+      description = "Sampling temperature"
+    ),
     think = S7::new_property(
       class = S7::new_union(S7::class_logical, S7::class_character, NULL),
       default = NULL
