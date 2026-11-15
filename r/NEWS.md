@@ -1,6 +1,4 @@
-# rtemis.llm NEWS
-
-## 0.8.8
+# rtemis.llm 0.8.8
 
 - Compatible with S7 releases after 0.2.2: the namespace imports data.table's `:=` and excludes S7's, which removes the import-replacement warning on load, and load, unload, and build hooks use `S7_on_load()`, `S7_on_unload()`, and `S7_on_build()` when S7 provides them, with `methods_register()` for earlier S7 releases. The minimum S7 version is unchanged.
 - Added `concurrency` to `llmapply()`, `dmapply()`, `agentapply()`, and `map()`, with independent agent state per input, bounded local workers, and `batch_elapsed` timing.
@@ -22,7 +20,7 @@
 - `llmapply()`, `agentapply()` and `dmapply()` results carry an `elapsed` attribute: the wall time of each call, in seconds.
 - Ollama LLMs append the output schema, as JSON Schema text, to the system prompt of each request, as Ollama's documentation recommends, so the model sees field descriptions. `schema_in_prompt = FALSE` on `config_Ollama()` and `create_Ollama()` sends the system prompt as written.
 
-## 0.8.7
+# rtemis.llm 0.8.7
 
 - Added `config_Apple()` and `create_Apple()` for Apple Foundation Models: Apple's
   on-device model, served over the OpenAI Chat Completions wire by the `rtemis-afm`
@@ -34,7 +32,7 @@
   served model, its availability, and its context window; `apple_check_available()`
   performs the check on its own.
 
-## 0.8.6
+# rtemis.llm 0.8.6
 
 - Added `items` to `field()`: an `"array"` field now says what it contains, as a type
   name (`items = "string"`), a `field()` where the elements carry their own description
@@ -51,7 +49,7 @@
 - `validate_output()` checks array elements against `items`, where before an array field
   constrained only its outer type.
 
-## 0.8.5
+# rtemis.llm 0.8.5
 
 - Structured responses are validated locally by default with a cached Ajv validator.
   `validate_output = FALSE` skips validation while still requesting the schema.
@@ -88,7 +86,7 @@
   up to 20 on OpenAI. `top_logprobs` requires `logprobs = TRUE`, which every backend that
   returns alternatives needs in order to return them.
 
-## 0.8.4
+# rtemis.llm 0.8.4
 
 - Added `zero_data_retention` to `config_OpenAI()` and `create_OpenAI()` for per-request OpenRouter ZDR routing.
 - Added `think` to `config_Ollama()`, `create_Ollama()`, and `generate()` for Ollama thinking control.
