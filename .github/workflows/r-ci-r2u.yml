@@ -54,6 +54,14 @@ jobs:
               ))
               install.packages(c("remotes", "rcmdcheck"))
               remotes::install_deps(dependencies = TRUE)
+              # bspm installs the r2u binary, built from the CRAN release;
+              # the rtemis packages come from r-universe, built from main.
+              bspm::disable()
+              install.packages(
+                "rtemis.core",
+                repos = "https://rtemis-org.r-universe.dev"
+              )
+              cat("rtemis.core", format(packageVersion("rtemis.core")), "\n")
             '
 
       - uses: r-lib/actions/check-r-package@v2
