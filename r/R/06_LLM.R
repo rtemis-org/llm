@@ -71,8 +71,12 @@ Ollama <- new_class(
   "Ollama",
   parent = LLM,
   properties = list(
-    config = OllamaConfig,
-    output_schema = optional(Schema)
+    config = prop_instance(OllamaConfig, description = "Configuration"),
+    output_schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    )
   ),
   constructor = function(
     name = NULL,
@@ -149,8 +153,15 @@ OpenAI <- new_class(
   "OpenAI",
   parent = LLM,
   properties = list(
-    config = OpenAIConfig,
-    output_schema = optional(Schema)
+    config = prop_union(
+      list(prop_instance(OpenAIConfig), prop_instance(AppleConfig)),
+      description = "Configuration"
+    ),
+    output_schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    )
   ),
   constructor = function(
     name = NULL,
@@ -224,7 +235,7 @@ Apple <- new_class(
   "Apple",
   parent = OpenAI,
   properties = list(
-    config = AppleConfig
+    config = prop_instance(AppleConfig, description = "Configuration")
   ),
   constructor = function(
     name = NULL,
@@ -256,8 +267,12 @@ Anthropic <- new_class(
   "Anthropic",
   parent = LLM,
   properties = list(
-    config = AnthropicConfig,
-    output_schema = optional(Schema)
+    config = prop_instance(AnthropicConfig, description = "Configuration"),
+    output_schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    )
   ),
   constructor = function(
     name = NULL,
@@ -739,8 +754,8 @@ create_Ollama <- function(
 ) {
   ollama_check_model(model_name)
   check_character_scalar(system_prompt, "system_prompt")
-  check_optional_nonneg_double_scalar(temperature, "temperature")
-  check_optional_character_scalar(name, "name")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_character_scalar(name, "name")
   check_character_scalar(base_url, "base_url")
   Ollama(
     name = name,
@@ -820,7 +835,7 @@ config_OpenAI <- function(
   validate_model = FALSE
 ) {
   check_character_scalar(model_name)
-  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
   check_character_scalar(base_url, "base_url")
   OpenAIConfig(
     model_name = model_name,
@@ -906,8 +921,8 @@ create_OpenAI <- function(
 ) {
   check_character_scalar(model_name)
   check_character_scalar(system_prompt, "system_prompt")
-  check_optional_nonneg_double_scalar(temperature, "temperature")
-  check_optional_character_scalar(name, "name")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_character_scalar(name, "name")
   check_character_scalar(base_url, "base_url")
   OpenAI(
     name = name,
@@ -982,7 +997,7 @@ config_Apple <- function(
   extra_body = NULL,
   validate_model = TRUE
 ) {
-  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
   check_character_scalar(model_name, "model_name")
   check_character_scalar(base_url, "base_url")
   AppleConfig(
@@ -1037,8 +1052,8 @@ create_Apple <- function(
   validate_model = TRUE
 ) {
   check_character_scalar(system_prompt, "system_prompt")
-  check_optional_nonneg_double_scalar(temperature, "temperature")
-  check_optional_character_scalar(name, "name")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_character_scalar(name, "name")
   Apple(
     name = name,
     config = config_Apple(
@@ -1146,7 +1161,7 @@ config_Anthropic <- function(
   validate_model = FALSE
 ) {
   check_character_scalar(model_name)
-  check_optional_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
   check_character_scalar(base_url, "base_url")
   AnthropicConfig(
     model_name = model_name,
@@ -1220,8 +1235,8 @@ create_Anthropic <- function(
 ) {
   check_character_scalar(model_name)
   check_character_scalar(system_prompt, "system_prompt")
-  check_optional_nonneg_double_scalar(temperature, "temperature")
-  check_optional_character_scalar(name, "name")
+  check_nullable_nonneg_double_scalar(temperature, "temperature")
+  check_nullable_character_scalar(name, "name")
   check_character_scalar(base_url, "base_url")
   Anthropic(
     name = name,

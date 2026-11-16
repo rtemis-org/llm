@@ -1,3 +1,8 @@
+# rtemis.llm 0.8.9
+
+- Requires rtemis.core 0.5.0; every class property is an rtemis.core property declaration.
+- Message timestamps are written as RFC 3339 date-times in UTC, with fractional seconds.
+
 # rtemis.llm 0.8.8
 
 - Compatible with S7 releases after 0.2.2: the namespace imports data.table's `:=` and excludes S7's, which removes the import-replacement warning on load, and load, unload, and build hooks use `S7_on_load()`, `S7_on_unload()`, and `S7_on_build()` when S7 provides them, with `methods_register()` for earlier S7 releases. The minimum S7 version is unchanged.

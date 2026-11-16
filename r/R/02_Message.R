@@ -36,13 +36,20 @@ Message <- new_class(
     # tool calls or with a reasoning trace alone returns "", as does a tool
     # whose result is empty.
     content = prop_string(
-      allow_empty = TRUE,
+      min_length = 0L,
       description = "Message content"
     ),
     role = prop_string(description = "Message role"),
     name = prop_string(nullable = TRUE, description = "Message author name"),
-    timestamp = class_POSIXct,
-    metadata = prop_bag(description = "Arbitrary metadata")
+    timestamp = prop_datetime(
+      quote(Sys.time()),
+      description = "Creation time"
+    ),
+    metadata = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Arbitrary metadata"
+    )
   ),
   constructor = function(
     content,
@@ -194,13 +201,21 @@ InputMessage <- new_class(
   "InputMessage",
   parent = Message,
   properties = list(
-    image_path = prop_string(
+    image_path = prop_array(
+      prop_string(),
       nullable = TRUE,
-      vector = TRUE,
       description = "Absolute paths of the attached image files"
     ),
     # Internal: one list(path, media_type, data) per image, from `.read_images()`.
-    images = optional(S7::class_list)
+    images = prop_array(
+      prop_struct(list(
+        path = prop_string(),
+        media_type = prop_string(),
+        data = prop_string()
+      )),
+      nullable = TRUE,
+      description = "Attached images: path, media type, and base64 data"
+    )
   ),
   constructor = function(
     content,
@@ -273,7 +288,7 @@ method(as_list, InputMessage) <- function(x) {
     name = x@name,
     content = x@content,
     image_path = x@image_path,
-    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    timestamp = prop_encode(Message@properties[["timestamp"]], x@timestamp),
     metadata = x@metadata
   )
 }
@@ -292,7 +307,12 @@ LLMMessage <- new_class(
   parent = Message,
   properties = list(
     reasoning = prop_string(nullable = TRUE, description = "Reasoning trace"),
-    tool_calls = optional(S7::class_list),
+    tool_calls = prop_array(
+      prop_any(),
+      min_items = 0L,
+      nullable = TRUE,
+      description = "Tool calls requested by the model"
+    ),
     model_name = prop_string(
       description = "Model that produced the message"
     )
@@ -383,7 +403,7 @@ method(as_list, LLMMessage) <- function(x) {
     reasoning = x@reasoning,
     content = x@content,
     tool_calls = x@tool_calls,
-    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    timestamp = prop_encode(Message@properties[["timestamp"]], x@timestamp),
     metadata = x@metadata,
     model_name = x@model_name
   )
@@ -631,7 +651,7 @@ method(as_list, ToolMessage) <- function(x) {
     name = x@name,
     tool_call_id = x@tool_call_id,
     content = x@content,
-    timestamp = format(x@timestamp, "%Y-%m-%dT%H:%M:%SZ"),
+    timestamp = prop_encode(Message@properties[["timestamp"]], x@timestamp),
     metadata = x@metadata
   )
 }

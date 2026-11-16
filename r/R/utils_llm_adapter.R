@@ -276,29 +276,29 @@ method(build_response_format, OpenAIConfig) <- function(
   temperature_max = 2,
   top_logprobs_max = Inf
 ) {
-  check_optional_bounded_double_scalar(
+  check_nullable_bounded_double_scalar(
     temperature,
     lower = 0,
     upper = temperature_max,
     arg_name = "temperature"
   )
-  check_optional_prob_scalar(top_p, arg_name = "top_p")
-  check_optional_pos_integer_scalar(max_tokens, arg_name = "max_tokens")
-  check_optional_pos_integer_scalar(top_k, arg_name = "top_k")
-  check_optional_pos_integer_scalar(num_ctx, arg_name = "num_ctx")
-  check_optional_bounded_integer_scalar(
+  check_nullable_prob_scalar(top_p, arg_name = "top_p")
+  check_nullable_pos_integer_scalar(max_tokens, arg_name = "max_tokens")
+  check_nullable_pos_integer_scalar(top_k, arg_name = "top_k")
+  check_nullable_pos_integer_scalar(num_ctx, arg_name = "num_ctx")
+  check_nullable_bounded_integer_scalar(
     top_logprobs,
     lower = 0,
     upper = top_logprobs_max,
     arg_name = "top_logprobs"
   )
-  check_optional_integer_scalar(seed, arg_name = "seed")
+  check_nullable_integer_scalar(seed, arg_name = "seed")
   check_character(stop, arg_name = "stop")
   if (!is.null(stop) && length(stop) == 0L) {
     abort("`stop` must name at least one sequence.")
   }
   .check_keep_alive(keep_alive)
-  check_optional_logical_scalar(logprobs, arg_name = "logprobs")
+  check_nullable_logical_scalar(logprobs, arg_name = "logprobs")
   .check_logprobs_args(logprobs, top_logprobs)
   invisible(NULL)
 }
@@ -959,7 +959,7 @@ method(build_chat_request_body, AnthropicConfig) <- function(
     top_k = top_k,
     temperature_max = 1
   )
-  check_optional_logical_scalar(think, "think")
+  check_nullable_logical_scalar(think, "think")
   .check_anthropic_effort_arg(effort)
   profile <- .anthropic_model_profile(x@model_name, x@capabilities)
   max_tokens <- as.integer(max_tokens %||% x@max_tokens)

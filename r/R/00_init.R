@@ -432,7 +432,11 @@ AIThinking <- new_class(
   "AIThinking",
   properties = list(
     content = prop_string(description = "Thinking content"),
-    metadata = class_list
+    metadata = prop_map(
+      prop_any(),
+      min_members = 0L,
+      description = "Metadata about the thinking step"
+    )
   ),
   constructor = function(content, metadata = list()) {
     new_object(

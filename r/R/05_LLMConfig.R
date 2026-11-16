@@ -51,7 +51,7 @@ LLMConfig <- new_class(
     model_name = prop_string(description = "Model name"),
     # Nullable so that a subclass may declare NULL as "not sent"; each
     # subclass narrows the type and range its backend accepts.
-    temperature = prop_float(
+    temperature = prop_number(
       min = 0,
       max = 2,
       nullable = TRUE,
@@ -109,14 +109,16 @@ OllamaConfig <- new_class(
   "OllamaConfig",
   parent = LLMConfig,
   properties = list(
-    temperature = prop_float(
+    temperature = prop_number(
       min = 0,
       max = 2,
       description = "Sampling temperature"
     ),
-    think = S7::new_property(
-      class = S7::new_union(S7::class_logical, S7::class_character, NULL),
-      default = NULL
+    backend = prop_string(const = "ollama", description = "Backend name"),
+    think = prop_union(
+      list(prop_boolean(), prop_string(enum = c("low", "medium", "high"))),
+      nullable = TRUE,
+      description = "Thinking on or off, or a thinking level"
     ),
     schema_in_prompt = prop_boolean(
       default = TRUE,
@@ -179,7 +181,11 @@ OpenAIConfig <- new_class(
   "OpenAIConfig",
   parent = LLMConfig,
   properties = list(
-    temperature = prop_float(
+    backend = prop_string(
+      const = "openai-compatible",
+      description = "Backend name"
+    ),
+    temperature = prop_number(
       min = 0,
       max = 2,
       description = "Sampling temperature"
@@ -194,12 +200,20 @@ OpenAIConfig <- new_class(
     ),
     organization = prop_string(nullable = TRUE, description = "Organization"),
     project = prop_string(nullable = TRUE, description = "Project"),
-    timeout = prop_float(
+    timeout = prop_number(
       exclusive_min = 0,
       description = "Request timeout (seconds)"
     ),
-    extra_headers = prop_bag(description = "Extra HTTP headers"),
-    extra_body = prop_bag(description = "Extra request body fields"),
+    extra_headers = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Extra HTTP headers"
+    ),
+    extra_body = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Extra request body fields"
+    ),
     zero_data_retention = prop_boolean(
       default = NULL,
       nullable = TRUE,
@@ -254,7 +268,7 @@ OpenAIConfig <- new_class(
     if (!is.null(extra_body) && !.is_named_list(extra_body)) {
       abort("`extra_body` must be a named list or NULL.")
     }
-    check_optional_logical_scalar(
+    check_nullable_logical_scalar(
       zero_data_retention,
       "zero_data_retention"
     )
@@ -328,6 +342,9 @@ OpenAIConfig <- new_class(
 AppleConfig <- new_class(
   "AppleConfig",
   parent = OpenAIConfig,
+  properties = list(
+    backend = prop_string(const = "apple", description = "Backend name")
+  ),
   constructor = function(
     model_name = APPLE_MODEL_DEFAULT,
     temperature = TEMPERATURE_DEFAULT,
@@ -400,7 +417,8 @@ AnthropicConfig <- new_class(
   "AnthropicConfig",
   parent = LLMConfig,
   properties = list(
-    temperature = prop_float(
+    backend = prop_string(const = "anthropic", description = "Backend name"),
+    temperature = prop_number(
       min = 0,
       max = 1,
       nullable = TRUE,
@@ -423,12 +441,20 @@ AnthropicConfig <- new_class(
       min = 1L,
       description = "Maximum tokens to generate"
     ),
-    timeout = prop_float(
+    timeout = prop_number(
       exclusive_min = 0,
       description = "Request timeout (seconds)"
     ),
-    extra_headers = prop_bag(description = "Extra HTTP headers"),
-    extra_body = prop_bag(description = "Extra request body fields"),
+    extra_headers = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Extra HTTP headers"
+    ),
+    extra_body = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Extra request body fields"
+    ),
     thinking_budget_tokens = prop_integer(
       nullable = TRUE,
       min = 1L,
@@ -444,12 +470,14 @@ AnthropicConfig <- new_class(
       nullable = TRUE,
       description = "Effort level; NULL runs the model default"
     ),
-    fallbacks = prop_string(
+    fallbacks = prop_array(
+      prop_string(),
       nullable = TRUE,
-      vector = TRUE,
       description = "Server-side fallbacks: \"default\" or model names"
     ),
-    capabilities = prop_bag(
+    capabilities = prop_map(
+      prop_any(),
+      nullable = TRUE,
       description = "Model capabilities reported by the Models API"
     ),
     validate_model = prop_boolean(
@@ -486,7 +514,7 @@ AnthropicConfig <- new_class(
       check_character_scalar(keychain_service, "keychain_service")
     }
     check_character_scalar(anthropic_version, "anthropic_version")
-    check_optional_logical_scalar(think, "think")
+    check_nullable_logical_scalar(think, "think")
     .check_anthropic_effort_arg(effort)
     .check_anthropic_fallbacks_arg(fallbacks)
     if (!is.null(anthropic_beta)) {

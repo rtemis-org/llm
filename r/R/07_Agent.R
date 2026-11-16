@@ -33,8 +33,16 @@
 Agent <- new_class(
   "Agent",
   properties = list(
-    llmconfig = LLMConfig,
-    state = AgentMemory,
+    llmconfig = prop_union(
+      list(
+        prop_instance(OllamaConfig),
+        prop_instance(OpenAIConfig),
+        prop_instance(AppleConfig),
+        prop_instance(AnthropicConfig)
+      ),
+      description = "LLM configuration"
+    ),
+    state = prop_r(AgentMemory, description = "Conversation memory"),
     system_prompt = prop_string(
       nullable = TRUE,
       description = "System prompt"
@@ -43,12 +51,21 @@ Agent <- new_class(
       default = NULL,
       description = "Retain conversation history across calls"
     ),
-    tools = optional(S7::class_list),
+    tools = prop_array(
+      prop_instance(Tool),
+      min_items = 0L,
+      nullable = TRUE,
+      description = "Tools the agent may call"
+    ),
     max_tool_rounds = prop_integer(
       min = 1L,
       description = "Maximum tool-call rounds per generation"
     ),
-    output_schema = optional(Schema),
+    output_schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    ),
     name = prop_string(nullable = TRUE, description = "Agent name"),
     allow_custom_tools = prop_boolean(
       default = NULL,
@@ -450,13 +467,13 @@ create_agent <- function(
   verbosity = 1L
 ) {
   .refuse_decision_model(llmconfig, "llmconfig")
-  check_optional_character_scalar(system_prompt, "system_prompt")
+  check_nullable_character_scalar(system_prompt, "system_prompt")
   check_logical_scalar(use_memory, "use_memory")
   max_tool_rounds <- clean_int(max_tool_rounds)
   check_pos_integer_scalar(max_tool_rounds, "max_tool_rounds")
-  check_optional_character_scalar(name, "name")
+  check_nullable_character_scalar(name, "name")
   check_logical_scalar(allow_custom_tools, "allow_custom_tools")
-  check_optional_character_scalar(logfile, "logfile")
+  check_nullable_character_scalar(logfile, "logfile")
   agent <- Agent(
     llmconfig = llmconfig,
     system_prompt = system_prompt,
