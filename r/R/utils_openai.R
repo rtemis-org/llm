@@ -195,7 +195,11 @@ resolve_api_key <- function(config, error_if_missing = TRUE) {
   status_code = 200L
 ) {
   abort(
-    if (!is.null(model)) paste0("Model '", model, "' (", provider, ")") else provider,
+    if (!is.null(model)) {
+      paste0("Model '", model, "' (", provider, ")")
+    } else {
+      provider
+    },
     " declined the request (",
     if (status_code == 200L) {
       "`refusal` in the response message"

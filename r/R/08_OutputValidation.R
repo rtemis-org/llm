@@ -13,10 +13,39 @@
 OutputValidation <- new_class(
   "OutputValidation",
   properties = list(
-    schema = optional(Schema),
-    output = class_character,
-    status = class_character,
-    issues = class_data.frame
+    schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    ),
+    output = prop_union(
+      list(
+        prop_array(
+          prop_string(min_length = 0L, nullable = TRUE),
+          min_items = 0L
+        ),
+        prop_map(
+          prop_string(min_length = 0L, nullable = TRUE),
+          min_members = 0L
+        )
+      ),
+      description = "Response text of each input"
+    ),
+    status = prop_array(
+      prop_string(enum = c("valid", "invalid", "unavailable", "not_validated")),
+      min_items = 0L,
+      description = "Validation status of each response"
+    ),
+    issues = prop_table(
+      list(
+        index = prop_integer(min = 1L),
+        path = prop_string(min_length = 0L),
+        keyword = prop_string(min_length = 0L),
+        message = prop_string(min_length = 0L)
+      ),
+      min_items = 0L,
+      description = "Diagnostics: input index, path, keyword, and message"
+    )
   ),
   validator = function(self) {
     if (
@@ -76,7 +105,7 @@ method(print, OutputValidation) <- function(x, ...) {
   ".prepare_output_validation",
   "schema"
 )
-method(.prepare_output_validation, optional(Schema)) <- function(
+method(.prepare_output_validation, nullable(Schema)) <- function(
   schema,
   enabled,
   policy
@@ -134,7 +163,7 @@ method(.prepare_output_validation, optional(Schema)) <- function(
 #' @keywords internal
 #' @noRd
 .validate_output_text <- new_generic(".validate_output_text", "schema")
-method(.validate_output_text, optional(Schema)) <- function(
+method(.validate_output_text, nullable(Schema)) <- function(
   schema,
   output,
   validator = NULL
@@ -187,7 +216,7 @@ method(.validate_output_text, optional(Schema)) <- function(
   }
   OutputValidation(
     schema = schema,
-    output = output,
+    output = .response_text(output),
     status = status,
     issues = do.call(rbind, issues)
   )
@@ -461,4 +490,21 @@ method(.json_validation_input, class_character) <- function(x) {
     ),
     class = "json"
   )
+}
+
+
+# %% .response_text ----
+#' Response text with its names and no other attributes
+#'
+#' @param x Character: Responses, possibly carrying batch attributes.
+#'
+#' @return Character: The values of `x`, named as `x` is.
+#'
+#' @author EDG
+#' @keywords internal
+#' @noRd
+.response_text <- function(x) {
+  out <- as.vector(x)
+  names(out) <- names(x)
+  out
 }

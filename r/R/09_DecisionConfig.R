@@ -40,7 +40,7 @@ DecisionConfig <- new_class(
     model_name = prop_string(description = "Decision model name"),
     backend = prop_string(description = "Backend name"),
     base_url = prop_string(description = "API base URL"),
-    timeout = prop_float(
+    timeout = prop_number(
       exclusive_min = 0,
       description = "Request timeout (seconds)"
     )
@@ -70,6 +70,7 @@ OllamaDecisionConfig <- new_class(
   "OllamaDecisionConfig",
   parent = DecisionConfig,
   properties = list(
+    backend = prop_string(const = "ollama", description = "Backend name"),
     validate_model = prop_boolean(
       default = NULL,
       description = "Check that the server has the model and that it is a decision model"
@@ -114,6 +115,7 @@ OpenRouterDecisionConfig <- new_class(
   "OpenRouterDecisionConfig",
   parent = DecisionConfig,
   properties = list(
+    backend = prop_string(const = "openrouter", description = "Backend name"),
     api_key = prop_string(nullable = TRUE, description = "API key"),
     api_key_env = prop_string(
       description = "Environment variable holding the API key"
@@ -122,7 +124,11 @@ OpenRouterDecisionConfig <- new_class(
       nullable = TRUE,
       description = "Keychain service holding the API key"
     ),
-    extra_headers = prop_bag(description = "Extra HTTP headers")
+    extra_headers = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Extra HTTP headers"
+    )
   ),
   constructor = function(
     model_name,

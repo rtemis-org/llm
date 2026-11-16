@@ -125,10 +125,10 @@ Field <- S7::new_class(
     # enforces arity (at least one value), missingness and uniqueness, and the
     # class validator below enforces what it cannot see -- that the values fit
     # the declared `type`. `as_list()` coerces them back on the way out.
-    enum = prop_string(
-      nullable = TRUE,
-      vector = TRUE,
+    enum = prop_array(
+      prop_string(),
       unique_items = TRUE,
+      nullable = TRUE,
       description = "Permitted values"
     ),
     required = prop_boolean(
@@ -138,10 +138,7 @@ Field <- S7::new_class(
     # Typed as `any` because the permitted classes include Field and Schema,
     # neither of which is bound while this class is being defined. The
     # validator below is what actually constrains it.
-    items = new_property(
-      class = class_any,
-      default = NULL
-    )
+    items = prop_any(description = "Element type, Field, or Schema")
   ),
   validator = function(self) {
     # An array with no `items` is valid JSON Schema and useless in practice:
@@ -250,12 +247,12 @@ Schema <- S7::new_class(
   "Schema",
   properties = list(
     name = prop_string(nullable = TRUE, description = "Schema name"),
-    type = prop_const("object", description = "JSON Schema type"),
+    type = prop_string(const = "object", description = "JSON Schema type"),
     description = prop_string(
       nullable = TRUE,
       description = "Schema description"
     ),
-    fields = class_list
+    fields = prop_array(prop_instance(Field), description = "Fields")
   ),
   constructor = function(
     name = NULL,
@@ -267,7 +264,8 @@ Schema <- S7::new_class(
       name = name,
       type = "object",
       description = description,
-      fields = fields
+      # Each Field carries its own name; the list holds them in order.
+      fields = unname(fields)
     )
   },
   validator = function(self) {

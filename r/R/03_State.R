@@ -30,8 +30,15 @@ InProcessAgentMemory <- new_class(
   "InProcessAgentMemory",
   parent = AgentMemory,
   properties = list(
-    state = class_environment,
-    metadata = prop_bag(description = "Arbitrary metadata")
+    state = prop_r(
+      S7::class_environment,
+      description = "Messages of the conversation"
+    ),
+    metadata = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Arbitrary metadata"
+    )
   ),
   constructor = function(
     metadata = NULL

@@ -41,8 +41,8 @@ Choice <- new_class(
   "Choice",
   parent = Question,
   properties = list(
-    options = prop_string(
-      map = TRUE,
+    options = prop_map(
+      prop_string(),
       description = "Options and their meanings"
     )
   ),
@@ -153,9 +153,17 @@ method(print, Question) <- function(x, output_type = NULL, ...) {
 Decision <- new_class(
   "Decision",
   properties = list(
-    answers = class_list,
+    answers = prop_map(
+      prop_any(),
+      min_members = 0L,
+      description = "Answer to each question"
+    ),
     model_name = prop_string(description = "Model that answered"),
-    metadata = prop_bag(description = "Provider, calls, usage, elapsed")
+    metadata = prop_map(
+      prop_any(),
+      nullable = TRUE,
+      description = "Provider, calls, usage, elapsed"
+    )
   )
 )
 
@@ -232,9 +240,19 @@ DecisionModel <- new_class(
   "DecisionModel",
   properties = list(
     name = prop_string(nullable = TRUE, description = "Name"),
-    config = DecisionConfig,
+    config = prop_union(
+      list(
+        prop_instance(OllamaDecisionConfig),
+        prop_instance(OpenRouterDecisionConfig)
+      ),
+      description = "Decision model configuration"
+    ),
     context = prop_string(nullable = TRUE, description = "Context"),
-    output_schema = optional(Schema)
+    output_schema = prop_instance(
+      Schema,
+      nullable = TRUE,
+      description = "Output schema"
+    )
   ),
   constructor = function(
     config,
@@ -317,8 +335,16 @@ DecisionMessage <- new_class(
   "DecisionMessage",
   parent = LLMMessage,
   properties = list(
-    fields = class_list,
-    omitted = class_character
+    fields = prop_array(
+      prop_any(),
+      min_items = 0L,
+      description = "One element per filled field"
+    ),
+    omitted = prop_array(
+      prop_string(),
+      min_items = 0L,
+      description = "Optional fields the passage does not give"
+    )
   ),
   constructor = function(
     content,
@@ -551,8 +577,8 @@ create_DecisionModel <- function(
       class = c("rtemis_type_error", "rtemis_input_error")
     )
   }
-  check_optional_character_scalar(context, "context")
-  check_optional_character_scalar(name, "name")
+  check_nullable_character_scalar(context, "context")
+  check_nullable_character_scalar(name, "name")
   DecisionModel(
     config = config,
     context = context,

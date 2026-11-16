@@ -5,7 +5,11 @@
 # A `/v1/systemone` server with scripted answers, keyed by question. A choice
 # picks `script[[key]]` (a label) or its first option; a noul answers
 # `script[[key]]` (a number) or 0.9. Every request body is kept in `calls`.
-mock_systemone <- function(script = list(), model = "clef-flash:9b", env = NULL) {
+mock_systemone <- function(
+  script = list(),
+  model = "clef-flash:9b",
+  env = NULL
+) {
   function(req) {
     body <- req[["body"]][["data"]]
     if (!is.null(env)) {

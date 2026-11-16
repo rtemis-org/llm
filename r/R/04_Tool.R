@@ -107,8 +107,18 @@ Tool <- new_class(
     name = prop_string(description = "Tool name"),
     function_name = prop_string(description = "Name of the function to call"),
     description = prop_string(description = "Tool description"),
-    parameters = class_list,
-    impl = optional(class_function)
+    parameters = prop_union(
+      list(
+        prop_array(prop_instance(ToolParameter), min_items = 0L),
+        prop_map(prop_instance(ToolParameter), min_members = 0L)
+      ),
+      description = "Tool parameters, unnamed or named by parameter"
+    ),
+    impl = prop_r(
+      S7::class_function,
+      nullable = TRUE,
+      description = "Implementation of a custom tool"
+    )
   ),
   validator = function(self) {
     for (param in self@parameters) {
